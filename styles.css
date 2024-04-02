@@ -1,0 +1,30 @@
+body {
+    /* Prevent text highlighting for the entire document */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer */
+    user-select: none; /* Standard syntax */
+}
+
+.circle {
+    border-radius: 50%; /* Ensures circular shape */
+    position: absolute; /* Position relative to the container */
+    display: flex; /* Use flexbox layout */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    transition: transform 0.1s ease-in-out, font-size 0.1s ease-in-out;
+}
+
+.circle:hover {
+    /* box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); */
+    transform: scale(1.05);
+    font-size: 1.05em;
+}
+
+.line {
+    position: absolute;
+    height: 0;
+    border: 1px solid black;
+    z-index: -10000;
+}
