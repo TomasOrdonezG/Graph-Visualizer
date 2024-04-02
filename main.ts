@@ -13,27 +13,41 @@ class Edge {
     public line_div: HTMLDivElement;
     public left_arrowhead_div: HTMLDivElement;
     public right_arrowhead_div: HTMLDivElement;
+    public hitbox_div: HTMLDivElement;
     // #endregion
 
     constructor(source: GraphNode, destination: GraphNode) {
         this.source = source;
         this.destination = destination;
 
-        // Create the three arrow divs
+        // Create divs
         this.line_div = document.createElement("div");
-        this.left_arrowhead_div = document.createElement("div");
-        this.right_arrowhead_div = document.createElement("div");
         this.line_div.className = "line";
-        this.left_arrowhead_div.className = "line";
-        this.right_arrowhead_div.className = "line";
         GRAPH.HTML_Container?.appendChild(this.line_div);
+
+        this.left_arrowhead_div = document.createElement("div");
+        this.left_arrowhead_div.className = "line";
         GRAPH.HTML_Container?.appendChild(this.left_arrowhead_div);
+
+        this.right_arrowhead_div = document.createElement("div");
+        this.right_arrowhead_div.className = "line";
         GRAPH.HTML_Container?.appendChild(this.right_arrowhead_div);
+
+        this.hitbox_div = document.createElement("div");
+        this.hitbox_div.className = "hitbox";
+        GRAPH.HTML_Container?.appendChild(this.hitbox_div);
     }
 
     public updateColour = (): void => {};
-    public updatePos = (): void => {
+    public updateTipPos = (): void => {
         // Updates all out_neighbour and in_neighbouring edges' position
+        const x2 = this.destination.x;
+        const y2 = this.destination.y;
+        const norm = GraphNode.RADIUS / Math.sqrt((x2 - this.source.x) ** 2 + (y2 - this.source.y) ** 2);
+        const edge: { x: number; y: number } = {
+            x: x2 + norm * (this.source.x - x2),
+            y: y2 + norm * (this.source.y - y2),
+        };
 
         const get_line_styles = (x1: number, y1: number, x2: number, y2: number): string => {
             // Gets the styles needed to draw a line as a div
@@ -60,17 +74,6 @@ class Edge {
             return styles;
         };
 
-        // * Updates the position of an arrow based on a source and a neighbour
-
-        // Compute the edge position. This will end at the edge of the neighbour node (not at its center)
-        const x2 = this.destination.x;
-        const y2 = this.destination.y;
-        const norm = GraphNode.RADIUS / Math.sqrt((x2 - this.source.x) ** 2 + (y2 - this.source.y) ** 2);
-        const edge: { x: number; y: number } = {
-            x: x2 + norm * (this.source.x - x2),
-            y: y2 + norm * (this.source.y - y2),
-        };
-
         // Set edge position
         const line_styles = get_line_styles(this.source.x, this.source.y, edge.x, edge.y);
         this.line_div.setAttribute("style", line_styles);
@@ -90,6 +93,22 @@ class Edge {
         this.left_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow1.x, arrow1.y));
         this.right_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow2.x, arrow2.y));
     };
+    public delete(): void {
+        // Delete edges of out_neighbours
+        GRAPH.HTML_Container?.removeChild(this.line_div);
+        GRAPH.HTML_Container?.removeChild(this.left_arrowhead_div);
+        GRAPH.HTML_Container?.removeChild(this.right_arrowhead_div);
+
+        // Remove edge from source's out_edges
+        let i = this.source.out_edges.indexOf(this);
+        if (i === -1) throw Error("Edge does not exist in source's out_edges array");
+        else this.source.out_edges.splice(i, 1);
+
+        // Remove source from destination's in_neighbours
+        let j = this.destination.in_neighbours.indexOf(this.source);
+        if (j === -1) throw Error("Source does not exist inside destination's in_neighbour's array");
+        else this.destination.in_neighbours.splice(j, 1);
+    }
 }
 
 class GraphNode {
@@ -162,9 +181,7 @@ class GraphNode {
         document.addEventListener("mousemove", (event: MouseEvent): void => {
             event.preventDefault();
             if (this.dragging) {
-                this.x = event.clientX - this.initialX_drag;
-                this.y = event.clientY - this.initialY_drag;
-                this.updatePos();
+                this.updatePos(event.clientX - this.initialX_drag, event.clientY - this.initialY_drag);
             }
         });
 
@@ -183,36 +200,61 @@ class GraphNode {
         });
     }
 
-    private connect(final_node: GraphNode): void {
+    // Connection
+    private connect(destination_node: GraphNode): void {
         GRAPH.initial_node = null;
 
         // Don't connect if already connected
-        if (this.out_edges.map((out_edge) => out_edge.destination).includes(final_node)) return;
+        if (this.out_edges.map((out_edge) => out_edge.destination).includes(destination_node)) return;
 
         // Select the final node
         GRAPH.deselect_all();
-        final_node.select();
+        destination_node.select();
 
         // Add neighbour and calculate position of arrow
-        this.out_edges.push(new Edge(this, final_node));
-        final_node.in_neighbours.push(this);
+        this.out_edges.push(new Edge(this, destination_node));
+        destination_node.in_neighbours.push(this);
         this.updateEdgesPos();
     }
 
     // * PUBLIC METHODS
+    public delete(): void {
+        // Remove from array
+        let i = GRAPH.nodes.indexOf(this);
+        if (i == -1) throw Error("Error: Attempting to delete node that isn't a part of GRAPH.nodes");
+        else GRAPH.nodes.splice(i, 1);
 
+        // Delete node HTML element
+        GRAPH.HTML_Container?.removeChild(this.div);
+
+        // Delete out_edges
+        for (let j = this.out_edges.length - 1; j >= 0; j--) {
+            this.out_edges[j].delete();
+        }
+
+        // Delete in_edges
+        for (let l = this.in_neighbours.length - 1; l >= 0; l--) {
+            for (let out_edge_of_in_neighbour of this.in_neighbours[l].out_edges) {
+                if (out_edge_of_in_neighbour.destination === this) {
+                    out_edge_of_in_neighbour.delete();
+                }
+            }
+        }
+
+        GRAPH.size--;
+    }
+
+    // Selection
     public select(): void {
         this.border_colour = GraphNode.SELECTED_BORDER_COLOUR;
         this.updateColour();
         this.selected = true;
     }
-
     public deselect(): void {
         this.border_colour = "black";
         this.updateColour();
         this.selected = false;
     }
-
     public toggle_select(): void {
         if (this.selected) this.deselect();
         else this.select();
@@ -220,12 +262,13 @@ class GraphNode {
 
     // Update Methods
     public updateAll = (): void => {
-        this.updatePos();
         this.updateValue();
         this.updateColour();
         this.updateSize();
     };
-    public updatePos = (): void => {
+    public updatePos = (x: number, y: number): void => {
+        this.x = x;
+        this.y = y;
         this.div.style.left = this.x - GraphNode.RADIUS + "px";
         this.div.style.top = this.y - GraphNode.RADIUS + "px";
         this.updateEdgesPos();
@@ -244,7 +287,7 @@ class GraphNode {
     public updateEdgesPos = (): void => {
         // Update each out_edge
         for (let out_edge of this.out_edges) {
-            out_edge.updatePos();
+            out_edge.updateTipPos();
         }
 
         // Update each in_neighbour
@@ -252,7 +295,7 @@ class GraphNode {
         for (let in_neighbour of this.in_neighbours) {
             for (let out_edge_of_in_neighbour of in_neighbour.out_edges) {
                 if (out_edge_of_in_neighbour.destination == this) {
-                    out_edge_of_in_neighbour.updatePos();
+                    out_edge_of_in_neighbour.updateTipPos();
                 }
             }
         }
@@ -269,7 +312,6 @@ interface Graph {
     init(): void;
     addNode(event: MouseEvent): void;
     deselect_all(): void;
-    delete_node(node: GraphNode): void;
 }
 const GRAPH: Graph = {
     nodes: [],
@@ -311,45 +353,6 @@ const GRAPH: Graph = {
             node.deselect();
         }
     },
-    delete_node(node) {
-        // Remove from array
-        let i = this.nodes.indexOf(node);
-        if (i == -1) throw Error("Cannot delete node that isn't a part of GRAPH.nodes");
-        else this.nodes.splice(i, 1);
-
-        // Delete node HTML element
-        this.HTML_Container?.removeChild(node.div);
-
-        // Delete edges of out_neighbours
-        for (let out_edge of node.out_edges) {
-            GRAPH.HTML_Container?.removeChild(out_edge.line_div);
-            GRAPH.HTML_Container?.removeChild(out_edge.left_arrowhead_div);
-            GRAPH.HTML_Container?.removeChild(out_edge.right_arrowhead_div);
-
-            // Remove from out_neighbours' in_neighbours list
-            let i = out_edge.destination.in_neighbours.indexOf(node);
-            out_edge.destination.in_neighbours.splice(i, 1);
-        }
-
-        // Find node to be deleted in its in_neighbours' out_neighbours list
-        for (let in_neighbour of node.in_neighbours) {
-            for (let i = 0; i < in_neighbour.out_edges.length; i++) {
-                if (in_neighbour.out_edges[i].destination == node) {
-                    // Delete edge HTML elements
-                    let node_as_n = in_neighbour.out_edges[i];
-                    GRAPH.HTML_Container?.removeChild(node_as_n.line_div);
-                    GRAPH.HTML_Container?.removeChild(node_as_n.left_arrowhead_div);
-                    GRAPH.HTML_Container?.removeChild(node_as_n.right_arrowhead_div);
-
-                    // Remove from in_neighbours' out_neighbours list
-                    in_neighbour.out_edges.splice(i, 1);
-                    break;
-                }
-            }
-        }
-
-        this.size--;
-    },
 };
 GRAPH.init();
 
@@ -387,7 +390,7 @@ document.addEventListener("keydown", (event) => {
         // Delete selected nodes
         for (let i = GRAPH.nodes.length - 1; i >= 0; i--) {
             if (GRAPH.nodes[i].selected) {
-                GRAPH.delete_node(GRAPH.nodes[i]);
+                GRAPH.nodes[i].delete();
             }
         }
         if (GRAPH.size === 0) GRAPH.next_node_val = 0;

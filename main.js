@@ -2,11 +2,18 @@ var Edge = /** @class */ (function () {
     // #endregion
     function Edge(source, destination) {
         var _this = this;
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         this.colour = "black";
         this.updateColour = function () { };
-        this.updatePos = function () {
+        this.updateTipPos = function () {
             // Updates all out_neighbour and in_neighbouring edges' position
+            var x2 = _this.destination.x;
+            var y2 = _this.destination.y;
+            var norm = GraphNode.RADIUS / Math.sqrt(Math.pow((x2 - _this.source.x), 2) + Math.pow((y2 - _this.source.y), 2));
+            var edge = {
+                x: x2 + norm * (_this.source.x - x2),
+                y: y2 + norm * (_this.source.y - y2),
+            };
             var get_line_styles = function (x1, y1, x2, y2) {
                 // Gets the styles needed to draw a line as a div
                 var width = x1 - x2;
@@ -25,15 +32,6 @@ var Edge = /** @class */ (function () {
                     "top: ".concat(y.toString(), "px; ") +
                     "left: ".concat(x.toString(), "px; ");
                 return styles;
-            };
-            // * Updates the position of an arrow based on a source and a neighbour
-            // Compute the edge position. This will end at the edge of the neighbour node (not at its center)
-            var x2 = _this.destination.x;
-            var y2 = _this.destination.y;
-            var norm = GraphNode.RADIUS / Math.sqrt(Math.pow((x2 - _this.source.x), 2) + Math.pow((y2 - _this.source.y), 2));
-            var edge = {
-                x: x2 + norm * (_this.source.x - x2),
-                y: y2 + norm * (_this.source.y - y2),
             };
             // Set edge position
             var line_styles = get_line_styles(_this.source.x, _this.source.y, edge.x, edge.y);
@@ -54,17 +52,39 @@ var Edge = /** @class */ (function () {
         };
         this.source = source;
         this.destination = destination;
-        // Create the three arrow divs
+        // Create divs
         this.line_div = document.createElement("div");
-        this.left_arrowhead_div = document.createElement("div");
-        this.right_arrowhead_div = document.createElement("div");
         this.line_div.className = "line";
-        this.left_arrowhead_div.className = "line";
-        this.right_arrowhead_div.className = "line";
         (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.line_div);
+        this.left_arrowhead_div = document.createElement("div");
+        this.left_arrowhead_div.className = "line";
         (_b = GRAPH.HTML_Container) === null || _b === void 0 ? void 0 : _b.appendChild(this.left_arrowhead_div);
+        this.right_arrowhead_div = document.createElement("div");
+        this.right_arrowhead_div.className = "line";
         (_c = GRAPH.HTML_Container) === null || _c === void 0 ? void 0 : _c.appendChild(this.right_arrowhead_div);
+        this.hitbox_div = document.createElement("div");
+        this.hitbox_div.className = "hitbox";
+        (_d = GRAPH.HTML_Container) === null || _d === void 0 ? void 0 : _d.appendChild(this.hitbox_div);
     }
+    Edge.prototype.delete = function () {
+        var _a, _b, _c;
+        // Delete edges of out_neighbours
+        (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.removeChild(this.line_div);
+        (_b = GRAPH.HTML_Container) === null || _b === void 0 ? void 0 : _b.removeChild(this.left_arrowhead_div);
+        (_c = GRAPH.HTML_Container) === null || _c === void 0 ? void 0 : _c.removeChild(this.right_arrowhead_div);
+        // Remove edge from source's out_edges
+        var i = this.source.out_edges.indexOf(this);
+        if (i === -1)
+            throw Error("Edge does not exist in source's out_edges array");
+        else
+            this.source.out_edges.splice(i, 1);
+        // Remove source from destination's in_neighbours
+        var j = this.destination.in_neighbours.indexOf(this.source);
+        if (j === -1)
+            throw Error("Source does not exist inside destination's in_neighbour's array");
+        else
+            this.destination.in_neighbours.splice(j, 1);
+    };
     // #region ATTRIBUTES
     // Constants
     Edge.ARROWHEAD_LENGTH = 15;
@@ -87,12 +107,13 @@ var GraphNode = /** @class */ (function () {
         this.initialY_drag = 0;
         // Update Methods
         this.updateAll = function () {
-            _this.updatePos();
             _this.updateValue();
             _this.updateColour();
             _this.updateSize();
         };
-        this.updatePos = function () {
+        this.updatePos = function (x, y) {
+            _this.x = x;
+            _this.y = y;
             _this.div.style.left = _this.x - GraphNode.RADIUS + "px";
             _this.div.style.top = _this.y - GraphNode.RADIUS + "px";
             _this.updateEdgesPos();
@@ -112,7 +133,7 @@ var GraphNode = /** @class */ (function () {
             // Update each out_edge
             for (var _i = 0, _a = _this.out_edges; _i < _a.length; _i++) {
                 var out_edge = _a[_i];
-                out_edge.updatePos();
+                out_edge.updateTipPos();
             }
             // Update each in_neighbour
             // Find this in this' in_neighbour's out_neighbours and update it as the neighbour (but in reality it's this)
@@ -121,7 +142,7 @@ var GraphNode = /** @class */ (function () {
                 for (var _d = 0, _e = in_neighbour.out_edges; _d < _e.length; _d++) {
                     var out_edge_of_in_neighbour = _e[_d];
                     if (out_edge_of_in_neighbour.destination == _this) {
-                        out_edge_of_in_neighbour.updatePos();
+                        out_edge_of_in_neighbour.updateTipPos();
                     }
                 }
             }
@@ -167,9 +188,7 @@ var GraphNode = /** @class */ (function () {
         document.addEventListener("mousemove", function (event) {
             event.preventDefault();
             if (_this.dragging) {
-                _this.x = event.clientX - _this.initialX_drag;
-                _this.y = event.clientY - _this.initialY_drag;
-                _this.updatePos();
+                _this.updatePos(event.clientX - _this.initialX_drag, event.clientY - _this.initialY_drag);
             }
         });
         // Mouse up
@@ -187,20 +206,47 @@ var GraphNode = /** @class */ (function () {
             }
         });
     };
-    GraphNode.prototype.connect = function (final_node) {
+    // Connection
+    GraphNode.prototype.connect = function (destination_node) {
         GRAPH.initial_node = null;
         // Don't connect if already connected
-        if (this.out_edges.map(function (out_edge) { return out_edge.destination; }).includes(final_node))
+        if (this.out_edges.map(function (out_edge) { return out_edge.destination; }).includes(destination_node))
             return;
         // Select the final node
         GRAPH.deselect_all();
-        final_node.select();
+        destination_node.select();
         // Add neighbour and calculate position of arrow
-        this.out_edges.push(new Edge(this, final_node));
-        final_node.in_neighbours.push(this);
+        this.out_edges.push(new Edge(this, destination_node));
+        destination_node.in_neighbours.push(this);
         this.updateEdgesPos();
     };
     // * PUBLIC METHODS
+    GraphNode.prototype.delete = function () {
+        var _a;
+        // Remove from array
+        var i = GRAPH.nodes.indexOf(this);
+        if (i == -1)
+            throw Error("Error: Attempting to delete node that isn't a part of GRAPH.nodes");
+        else
+            GRAPH.nodes.splice(i, 1);
+        // Delete node HTML element
+        (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.removeChild(this.div);
+        // Delete out_edges
+        for (var j = this.out_edges.length - 1; j >= 0; j--) {
+            this.out_edges[j].delete();
+        }
+        // Delete in_edges
+        for (var l = this.in_neighbours.length - 1; l >= 0; l--) {
+            for (var _i = 0, _b = this.in_neighbours[l].out_edges; _i < _b.length; _i++) {
+                var out_edge_of_in_neighbour = _b[_i];
+                if (out_edge_of_in_neighbour.destination === this) {
+                    out_edge_of_in_neighbour.delete();
+                }
+            }
+        }
+        GRAPH.size--;
+    };
+    // Selection
     GraphNode.prototype.select = function () {
         this.border_colour = GraphNode.SELECTED_BORDER_COLOUR;
         this.updateColour();
@@ -264,44 +310,6 @@ var GRAPH = {
             node.deselect();
         }
     },
-    delete_node: function (node) {
-        var _a, _b, _c, _d, _e, _f, _g;
-        // Remove from array
-        var i = this.nodes.indexOf(node);
-        if (i == -1)
-            throw Error("Cannot delete node that isn't a part of GRAPH.nodes");
-        else
-            this.nodes.splice(i, 1);
-        // Delete node HTML element
-        (_a = this.HTML_Container) === null || _a === void 0 ? void 0 : _a.removeChild(node.div);
-        // Delete edges of out_neighbours
-        for (var _i = 0, _h = node.out_edges; _i < _h.length; _i++) {
-            var out_edge = _h[_i];
-            (_b = GRAPH.HTML_Container) === null || _b === void 0 ? void 0 : _b.removeChild(out_edge.line_div);
-            (_c = GRAPH.HTML_Container) === null || _c === void 0 ? void 0 : _c.removeChild(out_edge.left_arrowhead_div);
-            (_d = GRAPH.HTML_Container) === null || _d === void 0 ? void 0 : _d.removeChild(out_edge.right_arrowhead_div);
-            // Remove from out_neighbours' in_neighbours list
-            var i_1 = out_edge.destination.in_neighbours.indexOf(node);
-            out_edge.destination.in_neighbours.splice(i_1, 1);
-        }
-        // Find node to be deleted in its in_neighbours' out_neighbours list
-        for (var _j = 0, _k = node.in_neighbours; _j < _k.length; _j++) {
-            var in_neighbour = _k[_j];
-            for (var i_2 = 0; i_2 < in_neighbour.out_edges.length; i_2++) {
-                if (in_neighbour.out_edges[i_2].destination == node) {
-                    // Delete edge HTML elements
-                    var node_as_n = in_neighbour.out_edges[i_2];
-                    (_e = GRAPH.HTML_Container) === null || _e === void 0 ? void 0 : _e.removeChild(node_as_n.line_div);
-                    (_f = GRAPH.HTML_Container) === null || _f === void 0 ? void 0 : _f.removeChild(node_as_n.left_arrowhead_div);
-                    (_g = GRAPH.HTML_Container) === null || _g === void 0 ? void 0 : _g.removeChild(node_as_n.right_arrowhead_div);
-                    // Remove from in_neighbours' out_neighbours list
-                    in_neighbour.out_edges.splice(i_2, 1);
-                    break;
-                }
-            }
-        }
-        this.size--;
-    },
 };
 GRAPH.init();
 // Add node on click
@@ -333,7 +341,7 @@ document.addEventListener("keydown", function (event) {
         // Delete selected nodes
         for (var i = GRAPH.nodes.length - 1; i >= 0; i--) {
             if (GRAPH.nodes[i].selected) {
-                GRAPH.delete_node(GRAPH.nodes[i]);
+                GRAPH.nodes[i].delete();
             }
         }
         if (GRAPH.size === 0)
