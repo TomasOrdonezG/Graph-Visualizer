@@ -1,29 +1,114 @@
-interface OutEdge {
-    out_neighbour: GraphNode;
-    edge_div: HTMLDivElement;
-    left_arrowhead_div: HTMLDivElement;
-    right_arrowhead_div: HTMLDivElement;
-    edge_colour: string;
+class Edge {
+    // #region ATTRIBUTES
+
+    // Constants
+    static ARROWHEAD_LENGTH = 15;
+    static ARROHEAD_ANGLE = Math.PI / 6;
+
+    public source: GraphNode;
+    public destination: GraphNode;
+
+    public colour: string = "black";
+
+    public line_div: HTMLDivElement;
+    public left_arrowhead_div: HTMLDivElement;
+    public right_arrowhead_div: HTMLDivElement;
+    // #endregion
+
+    constructor(source: GraphNode, destination: GraphNode) {
+        this.source = source;
+        this.destination = destination;
+
+        // Create the three arrow divs
+        this.line_div = document.createElement("div");
+        this.left_arrowhead_div = document.createElement("div");
+        this.right_arrowhead_div = document.createElement("div");
+        this.line_div.className = "line";
+        this.left_arrowhead_div.className = "line";
+        this.right_arrowhead_div.className = "line";
+        GRAPH.HTML_Container?.appendChild(this.line_div);
+        GRAPH.HTML_Container?.appendChild(this.left_arrowhead_div);
+        GRAPH.HTML_Container?.appendChild(this.right_arrowhead_div);
+    }
+
+    public updateColour = (): void => {};
+    public updatePos = (): void => {
+        // Updates all out_neighbour and in_neighbouring edges' position
+
+        const get_line_styles = (x1: number, y1: number, x2: number, y2: number): string => {
+            // Gets the styles needed to draw a line as a div
+            let width = x1 - x2;
+            let height = y1 - y2;
+            let length = Math.sqrt(width * width + height * height);
+
+            let sx = (x1 + x2) / 2;
+            let sy = (y1 + y2) / 2;
+
+            let x = sx - length / 2;
+            let y = sy;
+
+            let angle = Math.PI - Math.atan2(-height, width);
+
+            let styles =
+                `width: ${length.toString()}px; ` +
+                `-moz-transform: rotate(${angle.toString()}rad); ` +
+                `-webkit-transform: rotate(${angle.toString()}rad); ` +
+                `-o-transform: rotate(${angle.toString()}rad); ` +
+                `-ms-transform: rotate(${angle.toString()}rad); ` +
+                `top: ${y.toString()}px; ` +
+                `left: ${x.toString()}px; `;
+            return styles;
+        };
+
+        // * Updates the position of an arrow based on a source and a neighbour
+
+        // Compute the edge position. This will end at the edge of the neighbour node (not at its center)
+        const x2 = this.destination.x;
+        const y2 = this.destination.y;
+        const norm = GraphNode.RADIUS / Math.sqrt((x2 - this.source.x) ** 2 + (y2 - this.source.y) ** 2);
+        const edge: { x: number; y: number } = {
+            x: x2 + norm * (this.source.x - x2),
+            y: y2 + norm * (this.source.y - y2),
+        };
+
+        // Set edge position
+        const line_styles = get_line_styles(this.source.x, this.source.y, edge.x, edge.y);
+        this.line_div.setAttribute("style", line_styles);
+
+        // Compute arrowhead sides positions
+        const v_angle = Math.atan2(edge.y - this.source.y, edge.x - this.source.x);
+        const arrow1: { x: number; y: number } = {
+            x: edge.x - Edge.ARROWHEAD_LENGTH * Math.cos(v_angle - Edge.ARROHEAD_ANGLE),
+            y: edge.y - Edge.ARROWHEAD_LENGTH * Math.sin(v_angle - Edge.ARROHEAD_ANGLE),
+        };
+        const arrow2: { x: number; y: number } = {
+            x: edge.x - Edge.ARROWHEAD_LENGTH * Math.cos(v_angle + Edge.ARROHEAD_ANGLE),
+            y: edge.y - Edge.ARROWHEAD_LENGTH * Math.sin(v_angle + Edge.ARROHEAD_ANGLE),
+        };
+
+        // Set arrowhead sides positions
+        this.left_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow1.x, arrow1.y));
+        this.right_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow2.x, arrow2.y));
+    };
 }
+
 class GraphNode {
     // #region * ATTRIBUTES
 
     // Constants
     static RADIUS = 25;
     static BORDER_WIDTH = 2;
-    static ARROWHEAD_LENGTH = 15;
-    static ARROHEAD_ANGLE = Math.PI / 6;
     static SELECTED_BORDER_COLOUR = "green";
 
     // Attributes
     private value: number;
-    private y: number;
-    private x: number;
+    public y: number;
+    public x: number;
     public div: HTMLElement;
 
     private background_colour: string = "white";
     private border_colour: string = "black";
-    public out_neighbours: OutEdge[] = [];
+    public out_edges: Edge[] = [];
     public in_neighbours: GraphNode[] = [];
     public selected: boolean = true;
 
@@ -102,31 +187,14 @@ class GraphNode {
         GRAPH.initial_node = null;
 
         // Don't connect if already connected
-        if (this.out_neighbours.map((neighbour) => neighbour.out_neighbour).includes(final_node)) return;
+        if (this.out_edges.map((out_edge) => out_edge.destination).includes(final_node)) return;
 
         // Select the final node
         GRAPH.deselect_all();
         final_node.select();
 
-        // Create arrow divs
-        let line = document.createElement("div");
-        let left_arrowhead = document.createElement("div");
-        let right_arrowhead = document.createElement("div");
-        line.className = "line";
-        left_arrowhead.className = "line";
-        right_arrowhead.className = "line";
-        GRAPH.HTML_Container?.appendChild(line);
-        GRAPH.HTML_Container?.appendChild(left_arrowhead);
-        GRAPH.HTML_Container?.appendChild(right_arrowhead);
-
         // Add neighbour and calculate position of arrow
-        this.out_neighbours.push({
-            out_neighbour: final_node,
-            edge_div: line,
-            left_arrowhead_div: left_arrowhead,
-            right_arrowhead_div: right_arrowhead,
-            edge_colour: "black",
-        });
+        this.out_edges.push(new Edge(this, final_node));
         final_node.in_neighbours.push(this);
         this.updateEdgesPos();
     }
@@ -174,76 +242,17 @@ class GraphNode {
         this.div.style.height = 2 * GraphNode.RADIUS + "px";
     };
     public updateEdgesPos = (): void => {
-        // Updates all out_neighbour and in_neighbouring edges' position
-
-        const get_line_styles = (x1: number, y1: number, x2: number, y2: number): string => {
-            // Gets the styles needed to draw a line as a div
-            let width = x1 - x2;
-            let height = y1 - y2;
-            let length = Math.sqrt(width * width + height * height);
-
-            let sx = (x1 + x2) / 2;
-            let sy = (y1 + y2) / 2;
-
-            let x = sx - length / 2;
-            let y = sy;
-
-            let angle = Math.PI - Math.atan2(-height, width);
-
-            let styles =
-                `width: ${length.toString()}px; ` +
-                `-moz-transform: rotate(${angle.toString()}rad); ` +
-                `-webkit-transform: rotate(${angle.toString()}rad); ` +
-                `-o-transform: rotate(${angle.toString()}rad); ` +
-                `-ms-transform: rotate(${angle.toString()}rad); ` +
-                `top: ${y.toString()}px; ` +
-                `left: ${x.toString()}px; `;
-            return styles;
-        };
-
-        const update_arrow = (source_node: GraphNode, out_edge: OutEdge): void => {
-            // * Updates the position of an arrow based on a source and a neighbour
-
-            // Compute the edge position. This will end at the edge of the neighbour node (not at its center)
-            const x2 = out_edge.out_neighbour.x;
-            const y2 = out_edge.out_neighbour.y;
-            const norm = GraphNode.RADIUS / Math.sqrt((x2 - source_node.x) ** 2 + (y2 - source_node.y) ** 2);
-            const edge: { x: number; y: number } = {
-                x: x2 + norm * (source_node.x - x2),
-                y: y2 + norm * (source_node.y - y2),
-            };
-
-            // Set edge position
-            const edge_styles = get_line_styles(source_node.x, source_node.y, edge.x, edge.y);
-            out_edge.edge_div.setAttribute("style", edge_styles);
-
-            // Compute arrowhead sides positions
-            const v_angle = Math.atan2(edge.y - source_node.y, edge.x - source_node.x);
-            const arrow1: { x: number; y: number } = {
-                x: edge.x - GraphNode.ARROWHEAD_LENGTH * Math.cos(v_angle - GraphNode.ARROHEAD_ANGLE),
-                y: edge.y - GraphNode.ARROWHEAD_LENGTH * Math.sin(v_angle - GraphNode.ARROHEAD_ANGLE),
-            };
-            const arrow2: { x: number; y: number } = {
-                x: edge.x - GraphNode.ARROWHEAD_LENGTH * Math.cos(v_angle + GraphNode.ARROHEAD_ANGLE),
-                y: edge.y - GraphNode.ARROWHEAD_LENGTH * Math.sin(v_angle + GraphNode.ARROHEAD_ANGLE),
-            };
-
-            // Set arrowhead sides positions
-            out_edge.left_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow1.x, arrow1.y));
-            out_edge.right_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow2.x, arrow2.y));
-        };
-
-        // Update each out_neighbour
-        for (let out_neighbour of this.out_neighbours) {
-            update_arrow(this, out_neighbour);
+        // Update each out_edge
+        for (let out_edge of this.out_edges) {
+            out_edge.updatePos();
         }
 
         // Update each in_neighbour
         // Find this in this' in_neighbour's out_neighbours and update it as the neighbour (but in reality it's this)
         for (let in_neighbour of this.in_neighbours) {
-            for (let out_neighbour_of_in_neighbour of in_neighbour.out_neighbours) {
-                if (out_neighbour_of_in_neighbour.out_neighbour == this) {
-                    update_arrow(in_neighbour, out_neighbour_of_in_neighbour);
+            for (let out_edge_of_in_neighbour of in_neighbour.out_edges) {
+                if (out_edge_of_in_neighbour.destination == this) {
+                    out_edge_of_in_neighbour.updatePos();
                 }
             }
         }
@@ -312,28 +321,28 @@ const GRAPH: Graph = {
         this.HTML_Container?.removeChild(node.div);
 
         // Delete edges of out_neighbours
-        for (let out_edge of node.out_neighbours) {
-            GRAPH.HTML_Container?.removeChild(out_edge.edge_div);
+        for (let out_edge of node.out_edges) {
+            GRAPH.HTML_Container?.removeChild(out_edge.line_div);
             GRAPH.HTML_Container?.removeChild(out_edge.left_arrowhead_div);
             GRAPH.HTML_Container?.removeChild(out_edge.right_arrowhead_div);
 
             // Remove from out_neighbours' in_neighbours list
-            let i = out_edge.out_neighbour.in_neighbours.indexOf(node);
-            out_edge.out_neighbour.in_neighbours.splice(i, 1);
+            let i = out_edge.destination.in_neighbours.indexOf(node);
+            out_edge.destination.in_neighbours.splice(i, 1);
         }
 
         // Find node to be deleted in its in_neighbours' out_neighbours list
         for (let in_neighbour of node.in_neighbours) {
-            for (let i = 0; i < in_neighbour.out_neighbours.length; i++) {
-                if (in_neighbour.out_neighbours[i].out_neighbour == node) {
+            for (let i = 0; i < in_neighbour.out_edges.length; i++) {
+                if (in_neighbour.out_edges[i].destination == node) {
                     // Delete edge HTML elements
-                    let node_as_n = in_neighbour.out_neighbours[i];
-                    GRAPH.HTML_Container?.removeChild(node_as_n.edge_div);
+                    let node_as_n = in_neighbour.out_edges[i];
+                    GRAPH.HTML_Container?.removeChild(node_as_n.line_div);
                     GRAPH.HTML_Container?.removeChild(node_as_n.left_arrowhead_div);
                     GRAPH.HTML_Container?.removeChild(node_as_n.right_arrowhead_div);
 
                     // Remove from in_neighbours' out_neighbours list
-                    in_neighbour.out_neighbours.splice(i, 1);
+                    in_neighbour.out_edges.splice(i, 1);
                     break;
                 }
             }
