@@ -4,11 +4,16 @@ class Edge {
     // Constants
     static ARROWHEAD_LENGTH = 15;
     static ARROHEAD_ANGLE = Math.PI / 6;
+    static HITBOX_RADIUS = 10;
+    static HOVER_COLOUR = "blue";
+    static DEFAULT_COLOUR = "black";
 
     public source: GraphNode;
     public destination: GraphNode;
 
-    public colour: string = "black";
+    public colour: string = Edge.DEFAULT_COLOUR;
+    public hovering: boolean = false;
+    public moving: boolean = false;
 
     public line_div: HTMLDivElement;
     public left_arrowhead_div: HTMLDivElement;
@@ -20,7 +25,7 @@ class Edge {
         this.source = source;
         this.destination = destination;
 
-        // Create divs
+        // Create Divs
         this.line_div = document.createElement("div");
         this.line_div.className = "line";
         GRAPH.HTML_Container?.appendChild(this.line_div);
@@ -36,10 +41,50 @@ class Edge {
         this.hitbox_div = document.createElement("div");
         this.hitbox_div.className = "hitbox";
         GRAPH.HTML_Container?.appendChild(this.hitbox_div);
+
+        this.updateColour(Edge.DEFAULT_COLOUR);
+
+        // Add mouse event listeners
+        this.addMouseEventListeners();
     }
 
-    public updateColour = (): void => {};
-    public updateTipPos = (): void => {
+    private addMouseEventListeners() {
+        // Hover
+        this.hitbox_div.addEventListener("mouseenter", (event: MouseEvent) => {
+            this.updateColour(Edge.HOVER_COLOUR);
+        });
+        this.hitbox_div.addEventListener("mouseleave", (event: MouseEvent) => {
+            this.updateColour(Edge.DEFAULT_COLOUR);
+        });
+
+        // Mouse down
+        this.hitbox_div.addEventListener("mousedown", (event: MouseEvent): void => {
+            if (this.hovering) {
+                this.moving = true;
+            }
+        });
+
+        // Mouse up
+        this.hitbox_div.addEventListener("mouseup", (event: MouseEvent): void => {
+            if (this.hovering) {
+                this.moving = false;
+            }
+        });
+
+        // Mouse drag
+        document.addEventListener("mousemove", (event: MouseEvent): void => {
+            if (this.moving) {
+            }
+        });
+    }
+
+    public updateColour = (colour: string): void => {
+        this.colour = colour;
+        this.line_div.style.border = `1px solid ${this.colour}`;
+        this.left_arrowhead_div.style.border = `1px solid ${this.colour}`;
+        this.right_arrowhead_div.style.border = `1px solid ${this.colour}`;
+    };
+    public updatePos = (): void => {
         // Updates all out_neighbour and in_neighbouring edges' position
         const x2 = this.destination.x;
         const y2 = this.destination.y;
@@ -92,12 +137,25 @@ class Edge {
         // Set arrowhead sides positions
         this.left_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow1.x, arrow1.y));
         this.right_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow2.x, arrow2.y));
+
+        // Set hitbox
+        const hitbox_norm =
+            Edge.HITBOX_RADIUS / Math.sqrt((edge.x - this.source.x) ** 2 + (edge.y - this.source.y) ** 2);
+        const hx = edge.x - Edge.HITBOX_RADIUS + hitbox_norm * (this.source.x - edge.x);
+        const hy = edge.y - Edge.HITBOX_RADIUS + hitbox_norm * (this.source.y - edge.y);
+        const hitbox_style =
+            `width: ${(Edge.HITBOX_RADIUS * 2).toString()}px;` +
+            `height: ${(Edge.HITBOX_RADIUS * 2).toString()}px;` +
+            `top: ${hy.toString()}px;` +
+            `left: ${hx.toString()}px;`;
+        this.hitbox_div.setAttribute("style", hitbox_style);
     };
     public delete(): void {
-        // Delete edges of out_neighbours
+        // Remove divs
         GRAPH.HTML_Container?.removeChild(this.line_div);
         GRAPH.HTML_Container?.removeChild(this.left_arrowhead_div);
         GRAPH.HTML_Container?.removeChild(this.right_arrowhead_div);
+        GRAPH.HTML_Container?.removeChild(this.hitbox_div);
 
         // Remove edge from source's out_edges
         let i = this.source.out_edges.indexOf(this);
@@ -287,15 +345,14 @@ class GraphNode {
     public updateEdgesPos = (): void => {
         // Update each out_edge
         for (let out_edge of this.out_edges) {
-            out_edge.updateTipPos();
+            out_edge.updatePos();
         }
 
         // Update each in_neighbour
-        // Find this in this' in_neighbour's out_neighbours and update it as the neighbour (but in reality it's this)
         for (let in_neighbour of this.in_neighbours) {
             for (let out_edge_of_in_neighbour of in_neighbour.out_edges) {
                 if (out_edge_of_in_neighbour.destination == this) {
-                    out_edge_of_in_neighbour.updateTipPos();
+                    out_edge_of_in_neighbour.updatePos();
                 }
             }
         }

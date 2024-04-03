@@ -3,9 +3,16 @@ var Edge = /** @class */ (function () {
     function Edge(source, destination) {
         var _this = this;
         var _a, _b, _c, _d;
-        this.colour = "black";
-        this.updateColour = function () { };
-        this.updateTipPos = function () {
+        this.colour = Edge.DEFAULT_COLOUR;
+        this.hovering = false;
+        this.moving = false;
+        this.updateColour = function (colour) {
+            _this.colour = colour;
+            _this.line_div.style.border = "1px solid ".concat(_this.colour);
+            _this.left_arrowhead_div.style.border = "1px solid ".concat(_this.colour);
+            _this.right_arrowhead_div.style.border = "1px solid ".concat(_this.colour);
+        };
+        this.updatePos = function () {
             // Updates all out_neighbour and in_neighbouring edges' position
             var x2 = _this.destination.x;
             var y2 = _this.destination.y;
@@ -49,10 +56,19 @@ var Edge = /** @class */ (function () {
             // Set arrowhead sides positions
             _this.left_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow1.x, arrow1.y));
             _this.right_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow2.x, arrow2.y));
+            // Set hitbox
+            var hitbox_norm = Edge.HITBOX_RADIUS / Math.sqrt(Math.pow((edge.x - _this.source.x), 2) + Math.pow((edge.y - _this.source.y), 2));
+            var hx = edge.x - Edge.HITBOX_RADIUS + hitbox_norm * (_this.source.x - edge.x);
+            var hy = edge.y - Edge.HITBOX_RADIUS + hitbox_norm * (_this.source.y - edge.y);
+            var hitbox_style = "width: ".concat((Edge.HITBOX_RADIUS * 2).toString(), "px;") +
+                "height: ".concat((Edge.HITBOX_RADIUS * 2).toString(), "px;") +
+                "top: ".concat(hy.toString(), "px;") +
+                "left: ".concat(hx.toString(), "px;");
+            _this.hitbox_div.setAttribute("style", hitbox_style);
         };
         this.source = source;
         this.destination = destination;
-        // Create divs
+        // Create Divs
         this.line_div = document.createElement("div");
         this.line_div.className = "line";
         (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.line_div);
@@ -65,13 +81,44 @@ var Edge = /** @class */ (function () {
         this.hitbox_div = document.createElement("div");
         this.hitbox_div.className = "hitbox";
         (_d = GRAPH.HTML_Container) === null || _d === void 0 ? void 0 : _d.appendChild(this.hitbox_div);
+        this.updateColour(Edge.DEFAULT_COLOUR);
+        // Add mouse event listeners
+        this.addMouseEventListeners();
     }
+    Edge.prototype.addMouseEventListeners = function () {
+        var _this = this;
+        // Hover
+        this.hitbox_div.addEventListener("mouseenter", function (event) {
+            _this.updateColour(Edge.HOVER_COLOUR);
+        });
+        this.hitbox_div.addEventListener("mouseleave", function (event) {
+            _this.updateColour(Edge.DEFAULT_COLOUR);
+        });
+        // Mouse down
+        this.hitbox_div.addEventListener("mousedown", function (event) {
+            if (_this.hovering) {
+                _this.moving = true;
+            }
+        });
+        // Mouse up
+        this.hitbox_div.addEventListener("mouseup", function (event) {
+            if (_this.hovering) {
+                _this.moving = false;
+            }
+        });
+        // Mouse drag
+        document.addEventListener("mousemove", function (event) {
+            if (_this.moving) {
+            }
+        });
+    };
     Edge.prototype.delete = function () {
-        var _a, _b, _c;
-        // Delete edges of out_neighbours
+        var _a, _b, _c, _d;
+        // Remove divs
         (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.removeChild(this.line_div);
         (_b = GRAPH.HTML_Container) === null || _b === void 0 ? void 0 : _b.removeChild(this.left_arrowhead_div);
         (_c = GRAPH.HTML_Container) === null || _c === void 0 ? void 0 : _c.removeChild(this.right_arrowhead_div);
+        (_d = GRAPH.HTML_Container) === null || _d === void 0 ? void 0 : _d.removeChild(this.hitbox_div);
         // Remove edge from source's out_edges
         var i = this.source.out_edges.indexOf(this);
         if (i === -1)
@@ -89,6 +136,9 @@ var Edge = /** @class */ (function () {
     // Constants
     Edge.ARROWHEAD_LENGTH = 15;
     Edge.ARROHEAD_ANGLE = Math.PI / 6;
+    Edge.HITBOX_RADIUS = 10;
+    Edge.HOVER_COLOUR = "blue";
+    Edge.DEFAULT_COLOUR = "black";
     return Edge;
 }());
 var GraphNode = /** @class */ (function () {
@@ -133,16 +183,15 @@ var GraphNode = /** @class */ (function () {
             // Update each out_edge
             for (var _i = 0, _a = _this.out_edges; _i < _a.length; _i++) {
                 var out_edge = _a[_i];
-                out_edge.updateTipPos();
+                out_edge.updatePos();
             }
             // Update each in_neighbour
-            // Find this in this' in_neighbour's out_neighbours and update it as the neighbour (but in reality it's this)
             for (var _b = 0, _c = _this.in_neighbours; _b < _c.length; _b++) {
                 var in_neighbour = _c[_b];
                 for (var _d = 0, _e = in_neighbour.out_edges; _d < _e.length; _d++) {
                     var out_edge_of_in_neighbour = _e[_d];
                     if (out_edge_of_in_neighbour.destination == _this) {
-                        out_edge_of_in_neighbour.updateTipPos();
+                        out_edge_of_in_neighbour.updatePos();
                     }
                 }
             }
