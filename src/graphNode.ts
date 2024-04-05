@@ -6,11 +6,12 @@ export default class GraphNode {
 
     // Constants
     static RADIUS = 25;
-    static BORDER_WIDTH = 2;
-    static SELECTED_BORDER_COLOUR = "green";
+    static BORDER_WIDTH = 3;
+    // static SELECTED_BORDER_COLOUR = "green";
+    static SELECTED_BORDER_COLOUR = "red";
 
     // Attributes
-    private value: number;
+    public value: number;
     public y: number;
     public x: number;
     public div: HTMLElement;
@@ -36,19 +37,14 @@ export default class GraphNode {
         this.div = div;
         this.updateAll();
         this.mouseEventListeners();
-
-        if (!keyboardState.CTRL) GRAPH.deselect_all();
-        this.select();
     }
-
-    // * PRIVATE METHODS
 
     private mouseEventListeners(): void {
         // Mouse down
         this.div.addEventListener("mousedown", (event: MouseEvent): void => {
             event.preventDefault();
             if (event.button === 0 && !keyboardState.SHIFT) {
-                // * LEFT CLICK
+                // * LEFT CLICK NO SHIFT: Select node and initialize drag for all selected nodes
 
                 // Select
                 if (!keyboardState.CTRL) GRAPH.deselect_all();
@@ -62,8 +58,20 @@ export default class GraphNode {
                         node.initialY_drag = event.clientY - node.y;
                     }
                 }
-            } else if (event.button === 2 || (event.button === 0 && keyboardState.SHIFT)) {
-                // * RIGHT CLICK
+            } else if (event.button === 0 && keyboardState.SHIFT) {
+                // * LEFT CLICK SHIFT: Connect from all selected nodes
+                for (let node of GRAPH.nodes) {
+                    if (node == this) continue;
+                    if (node.selected) {
+                        node.connect(this);
+
+                        // Select only this as newly connected node destination
+                        GRAPH.deselect_all();
+                        this.select();
+                    }
+                }
+            } else if (event.button === 2) {
+                // * RIGHT CLICK: Set as source node for next connection
                 GRAPH.initial_node = this;
             }
         });
@@ -84,23 +92,26 @@ export default class GraphNode {
         });
         this.div.addEventListener("mouseup", (event: MouseEvent): void => {
             if (GRAPH.initial_node && GRAPH.initial_node !== this) {
+                // Connect to the initial node previously determined by right click drag
                 GRAPH.initial_node.connect(this);
+
+                // Select only this node as the newly connected node destination
+                GRAPH.deselect_all();
+                this.select();
             } else {
+                // Don't connect if there is no initial node or if initial node is itself
                 GRAPH.initial_node = null;
             }
         });
     }
 
     // Connection
-    private connect(destination_node: GraphNode): Edge | null {
+    public connect(destination_node: GraphNode): Edge | null {
         GRAPH.initial_node = null;
 
-        // Don't connect if already connected
+        // Don't connect if already connected or if connected to itself
+        if (destination_node === this) return null;
         if (this.out_edges.map((out_edge) => out_edge.destination).includes(destination_node)) return null;
-
-        // Select the final node
-        GRAPH.deselect_all();
-        destination_node.select();
 
         // Add neighbour and calculate position of arrow
         const new_edge = new Edge(this, destination_node);
@@ -111,7 +122,6 @@ export default class GraphNode {
         return new_edge;
     }
 
-    // * PUBLIC METHODS
     public delete(): void {
         // Remove from array
         let i = GRAPH.nodes.indexOf(this);

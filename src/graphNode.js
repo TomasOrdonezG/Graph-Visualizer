@@ -59,17 +59,13 @@ class GraphNode {
         this.div = div;
         this.updateAll();
         this.mouseEventListeners();
-        if (!keyboardState.CTRL)
-            GRAPH.deselect_all();
-        this.select();
     }
-    // * PRIVATE METHODS
     mouseEventListeners() {
         // Mouse down
         this.div.addEventListener("mousedown", (event) => {
             event.preventDefault();
             if (event.button === 0 && !keyboardState.SHIFT) {
-                // * LEFT CLICK
+                // * LEFT CLICK NO SHIFT: Select node and initialize drag for all selected nodes
                 // Select
                 if (!keyboardState.CTRL)
                     GRAPH.deselect_all();
@@ -83,8 +79,21 @@ class GraphNode {
                     }
                 }
             }
-            else if (event.button === 2 || (event.button === 0 && keyboardState.SHIFT)) {
-                // * RIGHT CLICK
+            else if (event.button === 0 && keyboardState.SHIFT) {
+                // * LEFT CLICK SHIFT: Connect from all selected nodes
+                for (let node of GRAPH.nodes) {
+                    if (node == this)
+                        continue;
+                    if (node.selected) {
+                        node.connect(this);
+                        // Select only this as newly connected node destination
+                        GRAPH.deselect_all();
+                        this.select();
+                    }
+                }
+            }
+            else if (event.button === 2) {
+                // * RIGHT CLICK: Set as source node for next connection
                 GRAPH.initial_node = this;
             }
         });
@@ -103,9 +112,14 @@ class GraphNode {
         });
         this.div.addEventListener("mouseup", (event) => {
             if (GRAPH.initial_node && GRAPH.initial_node !== this) {
+                // Connect to the initial node previously determined by right click drag
                 GRAPH.initial_node.connect(this);
+                // Select only this node as the newly connected node destination
+                GRAPH.deselect_all();
+                this.select();
             }
             else {
+                // Don't connect if there is no initial node or if initial node is itself
                 GRAPH.initial_node = null;
             }
         });
@@ -113,12 +127,11 @@ class GraphNode {
     // Connection
     connect(destination_node) {
         GRAPH.initial_node = null;
-        // Don't connect if already connected
+        // Don't connect if already connected or if connected to itself
+        if (destination_node === this)
+            return null;
         if (this.out_edges.map((out_edge) => out_edge.destination).includes(destination_node))
             return null;
-        // Select the final node
-        GRAPH.deselect_all();
-        destination_node.select();
         // Add neighbour and calculate position of arrow
         const new_edge = new Edge(this, destination_node);
         this.out_edges.push(new_edge); // TODO: Push node in increasing order of destination_node.value
@@ -126,7 +139,6 @@ class GraphNode {
         this.updateEdgesPos();
         return new_edge;
     }
-    // * PUBLIC METHODS
     delete() {
         var _a;
         // Remove from array
@@ -166,6 +178,7 @@ class GraphNode {
 // #region * ATTRIBUTES
 // Constants
 GraphNode.RADIUS = 25;
-GraphNode.BORDER_WIDTH = 2;
-GraphNode.SELECTED_BORDER_COLOUR = "green";
+GraphNode.BORDER_WIDTH = 3;
+// static SELECTED_BORDER_COLOUR = "green";
+GraphNode.SELECTED_BORDER_COLOUR = "red";
 export default GraphNode;

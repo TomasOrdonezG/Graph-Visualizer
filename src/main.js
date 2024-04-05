@@ -45,18 +45,14 @@ class Graph {
     addNode(event) {
         var _a;
         // Prevent adding a node when mouse is on a node div, or edge div
-        if (event.button !== 0)
+        if (event.button !== 0 ||
+            this.traversing ||
+            event.target.closest(".circle") ||
+            event.target.closest(".hitbox") ||
+            event.target.closest(".line") ||
+            event.target.closest(".button")) {
             return;
-        if (this.traversing)
-            return;
-        if (event.target.closest(".circle"))
-            return;
-        if (event.target.closest(".hitbox"))
-            return;
-        if (event.target.closest(".line"))
-            return;
-        if (event.target.closest(".button"))
-            return;
+        }
         // Create node
         const circleDiv = document.createElement("div");
         circleDiv.className = "circle";
@@ -67,6 +63,19 @@ class Graph {
         (_a = this.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(circleDiv);
         // Create the new node object
         const new_node = new GraphNode(event.clientX, event.clientY, this.next_node_val, circleDiv);
+        // Connect all selected nodes to the new node if SHIFT is down
+        if (keyboardState.SHIFT && !keyboardState.CTRL) {
+            for (let node of this.nodes) {
+                if (node.selected) {
+                    node.connect(new_node);
+                }
+            }
+        }
+        // Select only new node
+        if (!keyboardState.CTRL)
+            this.deselect_all();
+        new_node.select();
+        // Update GRAPH attributes
         this.nodes.push(new_node);
         this.next_node_val++;
         this.size++;
@@ -79,13 +88,18 @@ class Graph {
     // TRAVERSAL
     BFS() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.traversing = true;
-            let root = this.get_first_selected();
-            if (!root)
+            if (this.traversing || this.size === 0)
                 return;
+            this.traversing = true;
+            // Reset the colour of all nodes and edges in the graph
             this.reset_colour();
             yield delay(Graph.DELAY_TIME);
-            // Create queue
+            // Get root as the first selected node then mark as discovered
+            let root = this.get_first_selected();
+            if (!root)
+                root = this.nodes[0];
+            yield this.setNodeColour(root, "gray");
+            // Create queue and enqueue root
             const Q = {
                 queue: [],
                 is_empty() {
@@ -98,28 +112,19 @@ class Graph {
                     return this.queue.splice(0, 1)[0];
                 },
             };
-            root.colour = "gray";
-            root.updateColour();
-            yield delay(Graph.DELAY_TIME);
             Q.enqueue(root);
             // Main BFS loop
             while (!Q.is_empty()) {
                 let node = Q.dequeue();
                 for (let out_edge of node.out_edges) {
-                    const adj = out_edge.destination;
-                    if (adj.colour === "white") {
-                        out_edge.updateColour(Edge.HIGHLIGHT_COLOUR);
-                        yield delay(Graph.DELAY_TIME);
-                        adj.colour = "gray";
-                        adj.updateColour();
-                        yield delay(Graph.DELAY_TIME);
-                        Q.enqueue(adj);
+                    const adj_node = out_edge.destination;
+                    if (adj_node.colour === "white") {
+                        yield this.highlightEdge(out_edge);
+                        yield this.setNodeColour(adj_node, "gray");
+                        Q.enqueue(adj_node);
                     }
                 }
-                node.colour = "black";
-                node.text_colour = "white";
-                node.updateColour();
-                yield delay(Graph.DELAY_TIME);
+                yield this.setNodeColour(node, "black");
             }
             yield this.displayTraversalTree();
             this.traversing = false;
@@ -127,32 +132,25 @@ class Graph {
     }
     DFS() {
         return __awaiter(this, void 0, void 0, function* () {
+            if (this.traversing || this.size === 0)
+                return;
             this.traversing = true;
-            function DFS_Visit(root) {
-                return __awaiter(this, void 0, void 0, function* () {
-                    // Visits one node and traverses through with DFS
-                    // Mark root as discovered
-                    root.colour = "gray";
-                    root.updateColour();
-                    yield delay(Graph.DELAY_TIME);
-                    // Run DFS on each neighbour in order
-                    for (let out_edge of root.out_edges) {
-                        if (out_edge.destination.colour === "white") {
-                            // Highlight edge path
-                            out_edge.updateColour(Edge.HIGHLIGHT_COLOUR);
-                            yield delay(Graph.DELAY_TIME);
-                            // Recurse
-                            yield DFS_Visit(out_edge.destination);
-                        }
+            this.deselect_all();
+            // Visits one node and traverses through with DFS
+            const DFS_Visit = (root) => __awaiter(this, void 0, void 0, function* () {
+                // Mark root as discovered
+                yield this.setNodeColour(root, "gray");
+                // Run DFS on each neighbour in order
+                for (let out_edge of root.out_edges) {
+                    const adj_node = out_edge.destination;
+                    if (adj_node.colour === "white") {
+                        yield this.highlightEdge(out_edge);
+                        yield DFS_Visit(adj_node);
                     }
-                    // Mark root as searched
-                    root.colour = "black";
-                    root.text_colour = "white";
-                    root.updateColour();
-                    yield delay(Graph.DELAY_TIME);
-                });
-            }
-            // Reset colour
+                }
+                // Mark root as searched
+                yield this.setNodeColour(root, "black");
+            });
             this.reset_colour();
             yield delay(Graph.DELAY_TIME);
             // Main DFS loop
@@ -180,12 +178,29 @@ class Graph {
             this.reset_colour();
         });
     }
+    setNodeColour(node, colour) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Updates the node and text colour of a node and sets a delay
+            // Should only be called from inside animation methods or reset_colour method
+            const text_colour = colour === "black" ? "white" : "black";
+            node.colour = colour;
+            node.text_colour = text_colour;
+            node.updateColour();
+            yield delay(Graph.DELAY_TIME);
+        });
+    }
+    highlightEdge(edge) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Highlights an edge and sets a delay
+            // Should only be called from inside animation methods
+            edge.updateColour(Edge.HIGHLIGHT_COLOUR);
+            yield delay(Graph.DELAY_TIME);
+        });
+    }
     reset_colour() {
         // Initialize each node to white and egde to gray
         for (let node of this.nodes) {
-            node.colour = "white";
-            node.text_colour = "black";
-            node.updateColour();
+            this.setNodeColour(node, "white");
             for (let edge of node.out_edges) {
                 edge.updateColour(Edge.DEFAULT_COLOUR);
             }

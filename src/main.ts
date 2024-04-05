@@ -51,12 +51,16 @@ class Graph {
 
     public addNode(event: MouseEvent): void {
         // Prevent adding a node when mouse is on a node div, or edge div
-        if (event.button !== 0) return;
-        if (this.traversing) return;
-        if ((event.target as HTMLElement).closest(".circle")) return;
-        if ((event.target as HTMLElement).closest(".hitbox")) return;
-        if ((event.target as HTMLElement).closest(".line")) return;
-        if ((event.target as HTMLElement).closest(".button")) return;
+        if (
+            event.button !== 0 ||
+            this.traversing ||
+            (event.target as HTMLElement).closest(".circle") ||
+            (event.target as HTMLElement).closest(".hitbox") ||
+            (event.target as HTMLElement).closest(".line") ||
+            (event.target as HTMLElement).closest(".button")
+        ) {
+            return;
+        }
 
         // Create node
         const circleDiv = document.createElement("div");
@@ -71,6 +75,21 @@ class Graph {
 
         // Create the new node object
         const new_node = new GraphNode(event.clientX, event.clientY, this.next_node_val, circleDiv);
+
+        // Connect all selected nodes to the new node if SHIFT is down
+        if (keyboardState.SHIFT && !keyboardState.CTRL) {
+            for (let node of this.nodes) {
+                if (node.selected) {
+                    node.connect(new_node);
+                }
+            }
+        }
+
+        // Select only new node
+        if (!keyboardState.CTRL) this.deselect_all();
+        new_node.select();
+
+        // Update GRAPH attributes
         this.nodes.push(new_node);
         this.next_node_val++;
         this.size++;
@@ -84,14 +103,19 @@ class Graph {
 
     // TRAVERSAL
     public async BFS(): Promise<void> {
+        if (this.traversing || this.size === 0) return;
         this.traversing = true;
-        let root = this.get_first_selected();
-        if (!root) return;
 
+        // Reset the colour of all nodes and edges in the graph
         this.reset_colour();
         await delay(Graph.DELAY_TIME);
 
-        // Create queue
+        // Get root as the first selected node then mark as discovered
+        let root = this.get_first_selected();
+        if (!root) root = this.nodes[0];
+        await this.setNodeColour(root, "gray");
+
+        // Create queue and enqueue root
         const Q: {
             queue: GraphNode[];
             is_empty(): boolean;
@@ -109,31 +133,20 @@ class Graph {
                 return this.queue.splice(0, 1)[0];
             },
         };
-        root.colour = "gray";
-        root.updateColour();
-        await delay(Graph.DELAY_TIME);
         Q.enqueue(root);
 
         // Main BFS loop
         while (!Q.is_empty()) {
             let node = Q.dequeue();
             for (let out_edge of node.out_edges) {
-                const adj = out_edge.destination;
-                if (adj.colour === "white") {
-                    out_edge.updateColour(Edge.HIGHLIGHT_COLOUR);
-                    await delay(Graph.DELAY_TIME);
-
-                    adj.colour = "gray";
-                    adj.updateColour();
-                    await delay(Graph.DELAY_TIME);
-
-                    Q.enqueue(adj);
+                const adj_node = out_edge.destination;
+                if (adj_node.colour === "white") {
+                    await this.highlightEdge(out_edge);
+                    await this.setNodeColour(adj_node, "gray");
+                    Q.enqueue(adj_node);
                 }
             }
-            node.colour = "black";
-            node.text_colour = "white";
-            node.updateColour();
-            await delay(Graph.DELAY_TIME);
+            await this.setNodeColour(node, "black");
         }
 
         await this.displayTraversalTree();
@@ -141,36 +154,28 @@ class Graph {
     }
 
     public async DFS(): Promise<void> {
+        if (this.traversing || this.size === 0) return;
         this.traversing = true;
+        this.deselect_all();
 
-        async function DFS_Visit(root: GraphNode): Promise<void> {
-            // Visits one node and traverses through with DFS
-
+        // Visits one node and traverses through with DFS
+        const DFS_Visit = async (root: GraphNode): Promise<void> => {
             // Mark root as discovered
-            root.colour = "gray";
-            root.updateColour();
-            await delay(Graph.DELAY_TIME);
+            await this.setNodeColour(root, "gray");
 
             // Run DFS on each neighbour in order
             for (let out_edge of root.out_edges) {
-                if (out_edge.destination.colour === "white") {
-                    // Highlight edge path
-                    out_edge.updateColour(Edge.HIGHLIGHT_COLOUR);
-                    await delay(Graph.DELAY_TIME);
-
-                    // Recurse
-                    await DFS_Visit(out_edge.destination);
+                const adj_node = out_edge.destination;
+                if (adj_node.colour === "white") {
+                    await this.highlightEdge(out_edge);
+                    await DFS_Visit(adj_node);
                 }
             }
 
             // Mark root as searched
-            root.colour = "black";
-            root.text_colour = "white";
-            root.updateColour();
-            await delay(Graph.DELAY_TIME);
-        }
+            await this.setNodeColour(root, "black");
+        };
 
-        // Reset colour
         this.reset_colour();
         await delay(Graph.DELAY_TIME);
 
@@ -200,13 +205,27 @@ class Graph {
         this.reset_colour();
     }
 
+    private async setNodeColour(node: GraphNode, colour: string): Promise<void> {
+        // Updates the node and text colour of a node and sets a delay
+        // Should only be called from inside animation methods or reset_colour method
+        const text_colour = colour === "black" ? "white" : "black";
+        node.colour = colour;
+        node.text_colour = text_colour;
+        node.updateColour();
+        await delay(Graph.DELAY_TIME);
+    }
+
+    private async highlightEdge(edge: Edge) {
+        // Highlights an edge and sets a delay
+        // Should only be called from inside animation methods
+        edge.updateColour(Edge.HIGHLIGHT_COLOUR);
+        await delay(Graph.DELAY_TIME);
+    }
+
     private reset_colour(): void {
         // Initialize each node to white and egde to gray
         for (let node of this.nodes) {
-            node.colour = "white";
-            node.text_colour = "black";
-            node.updateColour();
-
+            this.setNodeColour(node, "white");
             for (let edge of node.out_edges) {
                 edge.updateColour(Edge.DEFAULT_COLOUR);
             }
