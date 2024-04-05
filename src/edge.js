@@ -12,16 +12,13 @@ class Edge {
             this.line_div.style.border = `1px solid ${this.colour}`;
             this.left_arrowhead_div.style.border = `1px solid ${this.colour}`;
             this.right_arrowhead_div.style.border = `1px solid ${this.colour}`;
+            // Thickness
+            const bg = this.colour === "black" ? this.colour : "transparent";
+            this.line_div.style.backgroundColor = this.colour;
+            this.left_arrowhead_div.style.backgroundColor = this.colour;
+            this.right_arrowhead_div.style.backgroundColor = this.colour;
         };
-        this.updatePos = () => {
-            // Updates all out_neighbour and in_neighbouring edges' position
-            const x2 = this.destination.x;
-            const y2 = this.destination.y;
-            const norm = GraphNode.RADIUS / Math.sqrt((x2 - this.source.x) ** 2 + (y2 - this.source.y) ** 2);
-            const edge = {
-                x: x2 + norm * (this.source.x - x2),
-                y: y2 + norm * (this.source.y - y2),
-            };
+        this.updatePos = (x2, y2) => {
             const get_line_styles = (x1, y1, x2, y2) => {
                 // Gets the styles needed to draw a line as a div
                 let width = x1 - x2;
@@ -42,30 +39,32 @@ class Edge {
                 return styles;
             };
             // Set edge position
-            const line_styles = get_line_styles(this.source.x, this.source.y, edge.x, edge.y);
+            const line_styles = get_line_styles(this.source.x, this.source.y, x2, y2);
             this.line_div.setAttribute("style", line_styles);
             // Compute arrowhead sides positions
-            const v_angle = Math.atan2(edge.y - this.source.y, edge.x - this.source.x);
+            const v_angle = Math.atan2(y2 - this.source.y, x2 - this.source.x);
             const arrow1 = {
-                x: edge.x - Edge.ARROWHEAD_LENGTH * Math.cos(v_angle - Edge.ARROHEAD_ANGLE),
-                y: edge.y - Edge.ARROWHEAD_LENGTH * Math.sin(v_angle - Edge.ARROHEAD_ANGLE),
+                x: x2 - Edge.ARROWHEAD_LENGTH * Math.cos(v_angle - Edge.ARROHEAD_ANGLE),
+                y: y2 - Edge.ARROWHEAD_LENGTH * Math.sin(v_angle - Edge.ARROHEAD_ANGLE),
             };
             const arrow2 = {
-                x: edge.x - Edge.ARROWHEAD_LENGTH * Math.cos(v_angle + Edge.ARROHEAD_ANGLE),
-                y: edge.y - Edge.ARROWHEAD_LENGTH * Math.sin(v_angle + Edge.ARROHEAD_ANGLE),
+                x: x2 - Edge.ARROWHEAD_LENGTH * Math.cos(v_angle + Edge.ARROHEAD_ANGLE),
+                y: y2 - Edge.ARROWHEAD_LENGTH * Math.sin(v_angle + Edge.ARROHEAD_ANGLE),
             };
             // Set arrowhead sides positions
-            this.left_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow1.x, arrow1.y));
-            this.right_arrowhead_div.setAttribute("style", get_line_styles(edge.x, edge.y, arrow2.x, arrow2.y));
+            this.left_arrowhead_div.setAttribute("style", get_line_styles(x2, y2, arrow1.x, arrow1.y));
+            this.right_arrowhead_div.setAttribute("style", get_line_styles(x2, y2, arrow2.x, arrow2.y));
             // Set hitbox
-            const hitbox_norm = Edge.HITBOX_RADIUS / Math.sqrt((edge.x - this.source.x) ** 2 + (edge.y - this.source.y) ** 2);
-            const hx = edge.x - Edge.HITBOX_RADIUS + hitbox_norm * (this.source.x - edge.x);
-            const hy = edge.y - Edge.HITBOX_RADIUS + hitbox_norm * (this.source.y - edge.y);
+            const hitbox_norm = Edge.HITBOX_RADIUS / Math.sqrt((x2 - this.source.x) ** 2 + (y2 - this.source.y) ** 2);
+            const hx = x2 - Edge.HITBOX_RADIUS + hitbox_norm * (this.source.x - x2);
+            const hy = y2 - Edge.HITBOX_RADIUS + hitbox_norm * (this.source.y - y2);
             const hitbox_style = `width: ${(Edge.HITBOX_RADIUS * 2).toString()}px;` +
                 `height: ${(Edge.HITBOX_RADIUS * 2).toString()}px;` +
                 `top: ${hy.toString()}px;` +
                 `left: ${hx.toString()}px;`;
             this.hitbox_div.setAttribute("style", hitbox_style);
+            // Update colour
+            this.updateColour(this.colour);
         };
         this.source = source;
         this.destination = destination;
@@ -82,35 +81,56 @@ class Edge {
         this.hitbox_div = document.createElement("div");
         this.hitbox_div.className = "hitbox";
         (_d = GRAPH.HTML_Container) === null || _d === void 0 ? void 0 : _d.appendChild(this.hitbox_div);
-        this.updateColour(Edge.DEFAULT_COLOUR);
+        // this.updateColour(Edge.DEFAULT_COLOUR);
         // Add mouse event listeners
         this.addMouseEventListeners();
     }
     addMouseEventListeners() {
         // Hover
         this.hitbox_div.addEventListener("mouseenter", (event) => {
-            this.updateColour(Edge.HOVER_COLOUR);
+            if (!GRAPH.traversing) {
+                this.updateColour(Edge.HOVER_COLOUR);
+                this.hovering = true;
+            }
         });
         this.hitbox_div.addEventListener("mouseleave", (event) => {
-            this.updateColour(Edge.DEFAULT_COLOUR);
+            if (!GRAPH.traversing) {
+                this.updateColour(Edge.DEFAULT_COLOUR);
+                this.hovering = false;
+            }
         });
         // Mouse down
         this.hitbox_div.addEventListener("mousedown", (event) => {
             if (this.hovering) {
+                GRAPH.initial_node = this.source;
                 this.moving = true;
             }
         });
         // Mouse up
-        this.hitbox_div.addEventListener("mouseup", (event) => {
-            if (this.hovering) {
+        document.addEventListener("mouseup", (event) => {
+            if (this.moving) {
+                this.delete();
                 this.moving = false;
             }
         });
         // Mouse drag
         document.addEventListener("mousemove", (event) => {
             if (this.moving) {
+                this.linkCursorPos(event);
             }
         });
+    }
+    linkNodePos() {
+        const x2 = this.destination.x;
+        const y2 = this.destination.y;
+        const norm = GraphNode.RADIUS / Math.sqrt((x2 - this.source.x) ** 2 + (y2 - this.source.y) ** 2);
+        this.updatePos(x2 + norm * (this.source.x - x2), y2 + norm * (this.source.y - y2));
+    }
+    linkCursorPos(event) {
+        const x2 = event.clientX;
+        const y2 = event.clientY;
+        const norm = Edge.HITBOX_RADIUS / Math.sqrt((x2 - this.source.x) ** 2 + (y2 - this.source.y) ** 2);
+        this.updatePos(x2 - norm * (this.source.x - x2), y2 - norm * (this.source.y - y2));
     }
     delete() {
         var _a, _b, _c, _d;
@@ -122,13 +142,13 @@ class Edge {
         // Remove edge from source's out_edges
         let i = this.source.out_edges.indexOf(this);
         if (i === -1)
-            throw Error("Edge does not exist in source's out_edges array");
+            throw Error("Edge does not exist in source's out_edges array, cannot delete");
         else
             this.source.out_edges.splice(i, 1);
         // Remove source from destination's in_neighbours
         let j = this.destination.in_neighbours.indexOf(this.source);
         if (j === -1)
-            throw Error("Source does not exist inside destination's in_neighbour's array");
+            throw Error("Source does not exist inside destination's in_neighbour's array, cannot delete");
         else
             this.destination.in_neighbours.splice(j, 1);
     }
@@ -139,5 +159,6 @@ Edge.ARROWHEAD_LENGTH = 15;
 Edge.ARROHEAD_ANGLE = Math.PI / 6;
 Edge.HITBOX_RADIUS = 10;
 Edge.HOVER_COLOUR = "blue";
-Edge.DEFAULT_COLOUR = "black";
+Edge.DEFAULT_COLOUR = "gray";
+Edge.HIGHLIGHT_COLOUR = "black";
 export default Edge;

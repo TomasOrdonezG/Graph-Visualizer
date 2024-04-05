@@ -4,8 +4,9 @@ class GraphNode {
     // #endregion
     // * INITIALIZATION
     constructor(x, y, value, div) {
-        this.background_colour = "white";
         this.border_colour = "black";
+        this.text_colour = "black";
+        this.colour = "white";
         this.out_edges = [];
         this.in_neighbours = [];
         this.selected = true;
@@ -30,7 +31,8 @@ class GraphNode {
             this.div.textContent = this.value.toString();
         };
         this.updateColour = () => {
-            this.div.style.backgroundColor = this.background_colour;
+            this.div.style.backgroundColor = this.colour;
+            this.div.style.color = this.text_colour;
             this.div.style.border = GraphNode.BORDER_WIDTH + "px" + " solid " + this.border_colour;
         };
         this.updateSize = () => {
@@ -40,13 +42,13 @@ class GraphNode {
         this.updateEdgesPos = () => {
             // Update each out_edge
             for (let out_edge of this.out_edges) {
-                out_edge.updatePos();
+                out_edge.linkNodePos();
             }
             // Update each in_neighbour
             for (let in_neighbour of this.in_neighbours) {
                 for (let out_edge_of_in_neighbour of in_neighbour.out_edges) {
                     if (out_edge_of_in_neighbour.destination == this) {
-                        out_edge_of_in_neighbour.updatePos();
+                        out_edge_of_in_neighbour.linkNodePos();
                     }
                 }
             }
@@ -113,14 +115,16 @@ class GraphNode {
         GRAPH.initial_node = null;
         // Don't connect if already connected
         if (this.out_edges.map((out_edge) => out_edge.destination).includes(destination_node))
-            return;
+            return null;
         // Select the final node
         GRAPH.deselect_all();
         destination_node.select();
         // Add neighbour and calculate position of arrow
-        this.out_edges.push(new Edge(this, destination_node));
+        const new_edge = new Edge(this, destination_node);
+        this.out_edges.push(new_edge);
         destination_node.in_neighbours.push(this);
         this.updateEdgesPos();
+        return new_edge;
     }
     // * PUBLIC METHODS
     delete() {
@@ -157,12 +161,6 @@ class GraphNode {
         this.border_colour = "black";
         this.updateColour();
         this.selected = false;
-    }
-    toggle_select() {
-        if (this.selected)
-            this.deselect();
-        else
-            this.select();
     }
 }
 // #region * ATTRIBUTES

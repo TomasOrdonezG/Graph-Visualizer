@@ -15,8 +15,9 @@ export default class GraphNode {
     public x: number;
     public div: HTMLElement;
 
-    private background_colour: string = "white";
     private border_colour: string = "black";
+    public text_colour: string = "black";
+    public colour: string = "white";
     public out_edges: Edge[] = [];
     public in_neighbours: GraphNode[] = [];
     public selected: boolean = true;
@@ -91,20 +92,23 @@ export default class GraphNode {
     }
 
     // Connection
-    private connect(destination_node: GraphNode): void {
+    private connect(destination_node: GraphNode): Edge | null {
         GRAPH.initial_node = null;
 
         // Don't connect if already connected
-        if (this.out_edges.map((out_edge) => out_edge.destination).includes(destination_node)) return;
+        if (this.out_edges.map((out_edge) => out_edge.destination).includes(destination_node)) return null;
 
         // Select the final node
         GRAPH.deselect_all();
         destination_node.select();
 
         // Add neighbour and calculate position of arrow
-        this.out_edges.push(new Edge(this, destination_node));
+        const new_edge = new Edge(this, destination_node);
+        this.out_edges.push(new_edge);
         destination_node.in_neighbours.push(this);
         this.updateEdgesPos();
+
+        return new_edge;
     }
 
     // * PUBLIC METHODS
@@ -145,10 +149,6 @@ export default class GraphNode {
         this.updateColour();
         this.selected = false;
     }
-    public toggle_select(): void {
-        if (this.selected) this.deselect();
-        else this.select();
-    }
 
     // Update Methods
     public updateAll = (): void => {
@@ -167,7 +167,8 @@ export default class GraphNode {
         this.div.textContent = this.value.toString();
     };
     public updateColour = (): void => {
-        this.div.style.backgroundColor = this.background_colour;
+        this.div.style.backgroundColor = this.colour;
+        this.div.style.color = this.text_colour;
         this.div.style.border = GraphNode.BORDER_WIDTH + "px" + " solid " + this.border_colour;
     };
     public updateSize = (): void => {
@@ -177,14 +178,14 @@ export default class GraphNode {
     public updateEdgesPos = (): void => {
         // Update each out_edge
         for (let out_edge of this.out_edges) {
-            out_edge.updatePos();
+            out_edge.linkNodePos();
         }
 
         // Update each in_neighbour
         for (let in_neighbour of this.in_neighbours) {
             for (let out_edge_of_in_neighbour of in_neighbour.out_edges) {
                 if (out_edge_of_in_neighbour.destination == this) {
-                    out_edge_of_in_neighbour.updatePos();
+                    out_edge_of_in_neighbour.linkNodePos();
                 }
             }
         }
