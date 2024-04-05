@@ -68,7 +68,7 @@ class GraphNode {
         // Mouse down
         this.div.addEventListener("mousedown", (event) => {
             event.preventDefault();
-            if (event.button === 0) {
+            if (event.button === 0 && !keyboardState.SHIFT) {
                 // * LEFT CLICK
                 // Select
                 if (!keyboardState.CTRL)
@@ -83,7 +83,7 @@ class GraphNode {
                     }
                 }
             }
-            else if (event.button === 2) {
+            else if (event.button === 2 || (event.button === 0 && keyboardState.SHIFT)) {
                 // * RIGHT CLICK
                 GRAPH.initial_node = this;
             }

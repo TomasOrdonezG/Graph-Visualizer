@@ -39,7 +39,7 @@ class Graph {
         this.DFS_Button = document.createElement("button");
         this.DFS_Button.textContent = "DFS";
         this.DFS_Button.className = "button";
-        this.BFS_Button.addEventListener("click", this.DFS.bind(this));
+        this.DFS_Button.addEventListener("click", this.DFS.bind(this));
         document.body.appendChild(this.DFS_Button);
     }
     addNode(event) {
@@ -121,14 +121,13 @@ class Graph {
                 node.updateColour();
                 yield delay(Graph.DELAY_TIME);
             }
-            yield waitForClick();
-            this.reset_colour();
+            yield this.displayTraversalTree();
             this.traversing = false;
         });
     }
     DFS() {
         return __awaiter(this, void 0, void 0, function* () {
-            // TODO: TEST
+            this.traversing = true;
             function DFS_Visit(root) {
                 return __awaiter(this, void 0, void 0, function* () {
                     // Visits one node and traverses through with DFS
@@ -143,7 +142,7 @@ class Graph {
                             out_edge.updateColour(Edge.HIGHLIGHT_COLOUR);
                             yield delay(Graph.DELAY_TIME);
                             // Recurse
-                            DFS_Visit(out_edge.destination);
+                            yield DFS_Visit(out_edge.destination);
                         }
                     }
                     // Mark root as searched
@@ -159,9 +158,26 @@ class Graph {
             // Main DFS loop
             for (let node of this.nodes) {
                 if (node.colour === "white") {
-                    DFS_Visit(node);
+                    yield DFS_Visit(node);
                 }
             }
+            yield this.displayTraversalTree();
+            this.traversing = false;
+        });
+    }
+    displayTraversalTree() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Shows only the edges that were traversed by the traversal method
+            for (let node of this.nodes) {
+                for (let out_edge of node.out_edges) {
+                    if (out_edge.colour !== Edge.HIGHLIGHT_COLOUR) {
+                        out_edge.updateColour("transparent");
+                    }
+                }
+            }
+            // Waits for click anywhere and the resets the colour of the graph
+            yield waitForClick();
+            this.reset_colour();
         });
     }
     reset_colour() {
@@ -195,13 +211,18 @@ window.addEventListener("contextmenu", (event) => {
 let keyboardState = {
     CTRL: false,
     A: false,
+    SHIFT: false,
 };
 document.addEventListener("keydown", (event) => {
+    // Update keyboard states
     if (event.key === "Control") {
         keyboardState.CTRL = true;
     }
     else if (event.key === "a" || event.key === "A") {
         keyboardState.A = true;
+    }
+    else if (event.key === "Shift") {
+        keyboardState.SHIFT = true;
     }
     // Don't allow shortcuts to happen while the graph is traversing/animating
     if (GRAPH.traversing)
@@ -225,11 +246,15 @@ document.addEventListener("keydown", (event) => {
     }
 });
 document.addEventListener("keyup", (event) => {
+    // Update keyboard states
     if (event.key === "Control") {
         keyboardState.CTRL = false;
     }
     else if (event.key === "a" || event.key === "A") {
         keyboardState.A = false;
+    }
+    else if (event.key === "Shift") {
+        keyboardState.SHIFT = false;
     }
 });
 export { GRAPH, keyboardState };
