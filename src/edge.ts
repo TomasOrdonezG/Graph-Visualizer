@@ -1,5 +1,5 @@
-import GraphNode from "./graphNode";
-import { GRAPH, keyboardState } from "./main";
+import GraphNode from "./graphNode.js";
+import { GRAPH, keyboardState } from "./main.js";
 
 export default class Edge {
     // #region ATTRIBUTES

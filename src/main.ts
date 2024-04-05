@@ -1,5 +1,5 @@
-import GraphNode from "./graphNode";
-import Edge from "./edge";
+import GraphNode from "./graphNode.js";
+import Edge from "./edge.js";
 
 // Graph global variable
 interface Graph {
