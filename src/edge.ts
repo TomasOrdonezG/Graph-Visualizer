@@ -14,8 +14,9 @@ export default class Edge {
 
     public source: GraphNode;
     public destination: GraphNode;
-
+    // public weight: number = 0;
     public colour: string = Edge.DEFAULT_COLOUR;
+
     public hovering: boolean = false;
     public moving: boolean = false;
 

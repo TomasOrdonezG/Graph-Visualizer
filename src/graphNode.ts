@@ -104,7 +104,7 @@ export default class GraphNode {
 
         // Add neighbour and calculate position of arrow
         const new_edge = new Edge(this, destination_node);
-        this.out_edges.push(new_edge);
+        this.out_edges.push(new_edge); // TODO: Push node in increasing order of destination_node.value
         destination_node.in_neighbours.push(this);
         this.updateEdgesPos();
 

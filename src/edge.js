@@ -4,6 +4,7 @@ class Edge {
     // #endregion
     constructor(source, destination) {
         var _a, _b, _c, _d;
+        // public weight: number = 0;
         this.colour = Edge.DEFAULT_COLOUR;
         this.hovering = false;
         this.moving = false;

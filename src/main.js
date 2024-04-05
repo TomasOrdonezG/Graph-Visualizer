@@ -9,29 +9,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import GraphNode from "./graphNode.js";
 import Edge from "./edge.js";
-import { waitForClick } from "./utils.js";
+import { waitForClick, delay } from "./utils.js";
 // Graph global variable
 class Graph {
-    // private DFS_Button: HTMLButtonElement;
+    // #endregion
     constructor() {
+        // Standardly initializable attributes
         this.nodes = [];
         this.initial_node = null;
         this.size = 0;
         this.next_node_val = 0;
         this.traversing = false;
-        // Create container
+        // * Create container
         const container = document.createElement("div");
         container.id = "graph";
         document.body.appendChild(container);
         this.HTML_Container = container;
+        // * Event Listeners
         // Add node on click
         document.addEventListener("mouseup", this.addNode.bind(this));
-        // Create buttons
+        // * Create buttons
+        // BFS Button
         this.BFS_Button = document.createElement("button");
         this.BFS_Button.textContent = "BFS";
-        this.BFS_Button.addEventListener("click", this.BFS.bind(this));
         this.BFS_Button.className = "button";
+        this.BFS_Button.addEventListener("click", this.BFS.bind(this));
         document.body.appendChild(this.BFS_Button);
+        // DFS Button
+        this.DFS_Button = document.createElement("button");
+        this.DFS_Button.textContent = "DFS";
+        this.DFS_Button.className = "button";
+        this.BFS_Button.addEventListener("click", this.DFS.bind(this));
+        document.body.appendChild(this.DFS_Button);
     }
     addNode(event) {
         var _a;
@@ -74,25 +83,8 @@ class Graph {
             let root = this.get_first_selected();
             if (!root)
                 return;
-            // Delays the code
-            function delay() {
-                return __awaiter(this, void 0, void 0, function* () {
-                    yield new Promise((resolve) => setTimeout(resolve, Graph.DELAY_TIME));
-                });
-            }
-            // Initialize each node to white and egde to gray
-            const reset_colour = () => {
-                for (let node of this.nodes) {
-                    node.colour = "white";
-                    node.text_colour = "black";
-                    node.updateColour();
-                    for (let edge of node.out_edges) {
-                        edge.updateColour(Edge.DEFAULT_COLOUR);
-                    }
-                }
-            };
-            reset_colour();
-            yield delay();
+            this.reset_colour();
+            yield delay(Graph.DELAY_TIME);
             // Create queue
             const Q = {
                 queue: [],
@@ -108,7 +100,7 @@ class Graph {
             };
             root.colour = "gray";
             root.updateColour();
-            yield delay();
+            yield delay(Graph.DELAY_TIME);
             Q.enqueue(root);
             // Main BFS loop
             while (!Q.is_empty()) {
@@ -117,25 +109,71 @@ class Graph {
                     const adj = out_edge.destination;
                     if (adj.colour === "white") {
                         out_edge.updateColour(Edge.HIGHLIGHT_COLOUR);
-                        yield delay();
+                        yield delay(Graph.DELAY_TIME);
                         adj.colour = "gray";
                         adj.updateColour();
-                        yield delay();
+                        yield delay(Graph.DELAY_TIME);
                         Q.enqueue(adj);
                     }
                 }
                 node.colour = "black";
                 node.text_colour = "white";
                 node.updateColour();
-                yield delay();
+                yield delay(Graph.DELAY_TIME);
             }
             yield waitForClick();
-            reset_colour();
+            this.reset_colour();
             this.traversing = false;
         });
     }
     DFS() {
-        // TODO: Implement
+        return __awaiter(this, void 0, void 0, function* () {
+            // TODO: TEST
+            function DFS_Visit(root) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    // Visits one node and traverses through with DFS
+                    // Mark root as discovered
+                    root.colour = "gray";
+                    root.updateColour();
+                    yield delay(Graph.DELAY_TIME);
+                    // Run DFS on each neighbour in order
+                    for (let out_edge of root.out_edges) {
+                        if (out_edge.destination.colour === "white") {
+                            // Highlight edge path
+                            out_edge.updateColour(Edge.HIGHLIGHT_COLOUR);
+                            yield delay(Graph.DELAY_TIME);
+                            // Recurse
+                            DFS_Visit(out_edge.destination);
+                        }
+                    }
+                    // Mark root as searched
+                    root.colour = "black";
+                    root.text_colour = "white";
+                    root.updateColour();
+                    yield delay(Graph.DELAY_TIME);
+                });
+            }
+            // Reset colour
+            this.reset_colour();
+            yield delay(Graph.DELAY_TIME);
+            // Main DFS loop
+            for (let node of this.nodes) {
+                if (node.colour === "white") {
+                    DFS_Visit(node);
+                }
+            }
+        });
+    }
+    reset_colour() {
+        // Initialize each node to white and egde to gray
+        for (let node of this.nodes) {
+            node.colour = "white";
+            node.text_colour = "black";
+            node.updateColour();
+            for (let edge of node.out_edges) {
+                edge.updateColour(Edge.DEFAULT_COLOUR);
+            }
+        }
     }
     get_first_selected() {
         for (let node of this.nodes) {
@@ -146,6 +184,8 @@ class Graph {
         return null;
     }
 }
+// #region ATTRIBUTES
+// Global class constants
 Graph.DELAY_TIME = 500;
 const GRAPH = new Graph();
 // Disable context menu

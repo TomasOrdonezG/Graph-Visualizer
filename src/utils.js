@@ -19,4 +19,10 @@ function waitForClick() {
         });
     });
 }
-export { waitForClick };
+function delay(time) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Delays the code
+        yield new Promise((resolve) => setTimeout(resolve, time));
+    });
+}
+export { waitForClick, delay };

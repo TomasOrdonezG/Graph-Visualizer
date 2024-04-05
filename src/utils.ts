@@ -9,4 +9,9 @@ async function waitForClick(): Promise<void> {
     });
 }
 
-export { waitForClick };
+async function delay(time: number) {
+    // Delays the code
+    await new Promise((resolve) => setTimeout(resolve, time));
+}
+
+export { waitForClick, delay };

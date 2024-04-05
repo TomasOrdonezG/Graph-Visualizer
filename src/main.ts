@@ -1,9 +1,15 @@
 import GraphNode from "./graphNode.js";
 import Edge from "./edge.js";
-import { waitForClick } from "./utils.js";
+import { waitForClick, delay } from "./utils.js";
 
 // Graph global variable
 class Graph {
+    // #region ATTRIBUTES
+
+    // Global class constants
+    static DELAY_TIME = 500;
+
+    // Standardly initializable attributes
     public nodes: GraphNode[] = [];
     public initial_node: GraphNode | null = null;
     public size: number = 0;
@@ -11,28 +17,36 @@ class Graph {
     public next_node_val: number = 0;
     public traversing: boolean = false;
 
-    static DELAY_TIME = 500;
-
     // Buttons
     private BFS_Button: HTMLButtonElement;
-    // private DFS_Button: HTMLButtonElement;
+    private DFS_Button: HTMLButtonElement;
+    // #endregion
 
     constructor() {
-        // Create container
+        // * Create container
         const container = document.createElement("div");
         container.id = "graph";
         document.body.appendChild(container);
         this.HTML_Container = container;
 
+        // * Event Listeners
         // Add node on click
         document.addEventListener("mouseup", this.addNode.bind(this));
 
-        // Create buttons
+        // * Create buttons
+        // BFS Button
         this.BFS_Button = document.createElement("button");
         this.BFS_Button.textContent = "BFS";
-        this.BFS_Button.addEventListener("click", this.BFS.bind(this));
         this.BFS_Button.className = "button";
+        this.BFS_Button.addEventListener("click", this.BFS.bind(this));
         document.body.appendChild(this.BFS_Button);
+
+        // DFS Button
+        this.DFS_Button = document.createElement("button");
+        this.DFS_Button.textContent = "DFS";
+        this.DFS_Button.className = "button";
+        this.BFS_Button.addEventListener("click", this.DFS.bind(this));
+        document.body.appendChild(this.DFS_Button);
     }
 
     public addNode(event: MouseEvent): void {
@@ -74,25 +88,8 @@ class Graph {
         let root = this.get_first_selected();
         if (!root) return;
 
-        // Delays the code
-        async function delay() {
-            await new Promise((resolve) => setTimeout(resolve, Graph.DELAY_TIME));
-        }
-
-        // Initialize each node to white and egde to gray
-        const reset_colour = (): void => {
-            for (let node of this.nodes) {
-                node.colour = "white";
-                node.text_colour = "black";
-                node.updateColour();
-
-                for (let edge of node.out_edges) {
-                    edge.updateColour(Edge.DEFAULT_COLOUR);
-                }
-            }
-        };
-        reset_colour();
-        await delay();
+        this.reset_colour();
+        await delay(Graph.DELAY_TIME);
 
         // Create queue
         const Q: {
@@ -114,7 +111,7 @@ class Graph {
         };
         root.colour = "gray";
         root.updateColour();
-        await delay();
+        await delay(Graph.DELAY_TIME);
         Q.enqueue(root);
 
         // Main BFS loop
@@ -124,11 +121,11 @@ class Graph {
                 const adj = out_edge.destination;
                 if (adj.colour === "white") {
                     out_edge.updateColour(Edge.HIGHLIGHT_COLOUR);
-                    await delay();
+                    await delay(Graph.DELAY_TIME);
 
                     adj.colour = "gray";
                     adj.updateColour();
-                    await delay();
+                    await delay(Graph.DELAY_TIME);
 
                     Q.enqueue(adj);
                 }
@@ -136,16 +133,66 @@ class Graph {
             node.colour = "black";
             node.text_colour = "white";
             node.updateColour();
-            await delay();
+            await delay(Graph.DELAY_TIME);
         }
 
         await waitForClick();
-        reset_colour();
+        this.reset_colour();
         this.traversing = false;
     }
 
-    public DFS(): void {
-        // TODO: Implement
+    public async DFS(): Promise<void> {
+        // TODO: TEST
+        async function DFS_Visit(root: GraphNode): Promise<void> {
+            // Visits one node and traverses through with DFS
+
+            // Mark root as discovered
+            root.colour = "gray";
+            root.updateColour();
+            await delay(Graph.DELAY_TIME);
+
+            // Run DFS on each neighbour in order
+            for (let out_edge of root.out_edges) {
+                if (out_edge.destination.colour === "white") {
+                    // Highlight edge path
+                    out_edge.updateColour(Edge.HIGHLIGHT_COLOUR);
+                    await delay(Graph.DELAY_TIME);
+
+                    // Recurse
+                    DFS_Visit(out_edge.destination);
+                }
+            }
+
+            // Mark root as searched
+            root.colour = "black";
+            root.text_colour = "white";
+            root.updateColour();
+            await delay(Graph.DELAY_TIME);
+        }
+
+        // Reset colour
+        this.reset_colour();
+        await delay(Graph.DELAY_TIME);
+
+        // Main DFS loop
+        for (let node of this.nodes) {
+            if (node.colour === "white") {
+                DFS_Visit(node);
+            }
+        }
+    }
+
+    private reset_colour(): void {
+        // Initialize each node to white and egde to gray
+        for (let node of this.nodes) {
+            node.colour = "white";
+            node.text_colour = "black";
+            node.updateColour();
+
+            for (let edge of node.out_edges) {
+                edge.updateColour(Edge.DEFAULT_COLOUR);
+            }
+        }
     }
 
     private get_first_selected(): GraphNode | null {
