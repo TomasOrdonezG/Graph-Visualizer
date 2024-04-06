@@ -1,7 +1,7 @@
 # Graph-Visualizer
 
 ## Description
-This is a simple directed graph creator. You're able to add and delete nodes and edges to a graph. The goal of this app is to visualize the way various graph algorithms work for better understanding.
+This is a simple directed graph creator. You're able to add and delete nodes and edges to a graph. The goal of this app is to visualize the way various graph algorithms work for better understanding. The current algorithms implemented are BFS and DFS.
 
 
 ## Usage
