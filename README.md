@@ -20,3 +20,22 @@
 ### Animating
 - Click `BFS` Button to run [Breadth First Search](https://en.wikipedia.org/wiki/Breadth-first_search) on the first selected node.
 - Click `DFS` Button to run [Depth First Search](https://en.wikipedia.org/wiki/Depth-first_search) on the graph.
+
+## Future Features
+### QoL
+- Add visual when adding an edge between two nodes using Right-Click drag.
+- Add a way to 
+
+### Features
+- Implement undirected graphs.
+- Implement [weighted graphs](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph).
+- Add a way to edit the value of a node (and weight of edges once weighted graphs are implemented).
+
+### Animations
+- Find [SCC](https://en.wikipedia.org/wiki/Strongly_connected_component)s of the graph.
+- Find a [Topological Order](https://en.wikipedia.org/wiki/Topological_sorting) of the graph using DFS.
+- Create a [Heap](https://en.wikipedia.org/wiki/Heap_(data_structure)).
+- Create a [BST](https://en.wikipedia.org/wiki/Binary_search_tree).
+  - Balance the BST using [AVL rotation](https://en.wikipedia.org/wiki/AVL_tree#Rebalancing).
+- Find a [Minimum Spanning Tree](https://en.wikipedia.org/wiki/Minimum_spanning_tree) using [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm) (after implementing weighted graphs).
+- Find a [Minimum Spanning Tree](https://en.wikipedia.org/wiki/Minimum_spanning_tree) using [Prim's Algorithm](https://en.wikipedia.org/wiki/Prim's_algorithm) (after implementing weighted graphs).
