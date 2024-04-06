@@ -30,6 +30,7 @@ This is a simple directed graph creator. You're able to add and delete nodes and
 -   Click `BFS` Button to run [Breadth First Search](https://en.wikipedia.org/wiki/Breadth-first_search) on the first selected node.
 -   Click `DFS` Button to run [Depth First Search](https://en.wikipedia.org/wiki/Depth-first_search) on the graph.
 
+
 ## Future Features
 
 ### Features
@@ -54,3 +55,4 @@ This is a simple directed graph creator. You're able to add and delete nodes and
 
 -   Add visual when adding an edge between two nodes using Right-Click drag.
 -   More keyboard shortcuts (need ideas for this one)
+
