@@ -1,5 +1,11 @@
 # Graph-Visualizer
+
+## Description
+This is a simple directed graph creator. You're able to add and delete nodes and edges to a graph. The goal of this app is to visualize the way various graph algorithms work for better understanding.
+
+
 ## Usage
+
 ### Graph Nodes
 - **Left-Click** anywhere in the blank page to **add a graph node**.
 - **Left-Click a node** to **move** it (and select it).
@@ -21,15 +27,15 @@
 - Click `BFS` Button to run [Breadth First Search](https://en.wikipedia.org/wiki/Breadth-first_search) on the first selected node.
 - Click `DFS` Button to run [Depth First Search](https://en.wikipedia.org/wiki/Depth-first_search) on the graph.
 
+
 ## Future Features
-### QoL
-- Add visual when adding an edge between two nodes using Right-Click drag.
-- Add a way to 
 
 ### Features
 - Implement undirected graphs.
 - Implement [weighted graphs](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph).
 - Add a way to edit the value of a node (and weight of edges once weighted graphs are implemented).
+- Add distance attribute to each node when running BSF.
+- Add discovery time and finish time of each node when running DFS.
 
 ### Animations
 - Find [SCC](https://en.wikipedia.org/wiki/Strongly_connected_component)s of the graph.
@@ -39,3 +45,7 @@
   - Balance the BST using [AVL rotation](https://en.wikipedia.org/wiki/AVL_tree#Rebalancing).
 - Find a [Minimum Spanning Tree](https://en.wikipedia.org/wiki/Minimum_spanning_tree) using [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm) (after implementing weighted graphs).
 - Find a [Minimum Spanning Tree](https://en.wikipedia.org/wiki/Minimum_spanning_tree) using [Prim's Algorithm](https://en.wikipedia.org/wiki/Prim's_algorithm) (after implementing weighted graphs).
+
+### QoL
+- Add visual when adding an edge between two nodes using Right-Click drag.
+- More keyboard shortcuts (need ideas for this one)
