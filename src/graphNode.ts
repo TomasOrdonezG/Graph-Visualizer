@@ -7,7 +7,6 @@ export default class GraphNode {
     // Constants
     static RADIUS = 25;
     static BORDER_WIDTH = 3;
-    // static SELECTED_BORDER_COLOUR = "green";
     static SELECTED_BORDER_COLOUR = "red";
 
     // Attributes
@@ -64,12 +63,11 @@ export default class GraphNode {
                     if (node == this) continue;
                     if (node.selected) {
                         node.connect(this);
-
-                        // Select only this as newly connected node destination
-                        GRAPH.deselect_all();
-                        this.select();
                     }
                 }
+                // Select only this as newly connected node destination
+                GRAPH.deselect_all();
+                this.select();
             } else if (event.button === 2) {
                 // * RIGHT CLICK: Set as source node for next connection
                 GRAPH.initial_node = this;
