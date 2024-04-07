@@ -43,7 +43,6 @@ class Graph {
         document.body.appendChild(this.DFS_Button);
     }
     addNode(event) {
-        var _a;
         // Prevent adding a node when mouse is on a node div, or edge div
         if (event.button !== 0 ||
             this.traversing ||
@@ -53,16 +52,8 @@ class Graph {
             event.target.closest(".button")) {
             return;
         }
-        // Create node
-        const circleDiv = document.createElement("div");
-        circleDiv.className = "circle";
-        // Value and position
-        circleDiv.style.left = event.clientX - GraphNode.RADIUS + "px";
-        circleDiv.style.top = event.clientY - GraphNode.RADIUS + "px";
-        // Append to graph HTML container and nodes array
-        (_a = this.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(circleDiv);
         // Create the new node object
-        const new_node = new GraphNode(event.clientX, event.clientY, this.next_node_val, circleDiv);
+        const new_node = new GraphNode(event.clientX, event.clientY, this.next_node_val);
         // Connect all selected nodes to the new node if SHIFT is down
         if (keyboardState.SHIFT && !keyboardState.CTRL) {
             for (let node of this.nodes) {
@@ -252,7 +243,7 @@ document.addEventListener("keydown", (event) => {
     else if (event.key === "Backspace") {
         // Delete selected nodes
         for (let i = GRAPH.nodes.length - 1; i >= 0; i--) {
-            if (GRAPH.nodes[i].selected) {
+            if (GRAPH.nodes[i].selected && GRAPH.nodes[i].div.getAttribute("contenteditable") === "false") {
                 GRAPH.nodes[i].delete();
             }
         }

@@ -3,7 +3,8 @@ import { GRAPH, keyboardState } from "./main.js";
 class GraphNode {
     // #endregion
     // * INITIALIZATION
-    constructor(x, y, value, div) {
+    constructor(x, y, value) {
+        var _a;
         this.border_colour = "black";
         this.text_colour = "black";
         this.colour = "white";
@@ -56,9 +57,14 @@ class GraphNode {
         this.value = value;
         this.x = x;
         this.y = y;
-        this.div = div;
+        // Create node Div
+        this.div = document.createElement("div");
+        this.div.className = "circle";
+        (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.div);
+        this.updatePos(this.x, this.y);
         this.updateAll();
         this.mouseEventListeners();
+        this.keyboardEventListeners();
     }
     mouseEventListeners() {
         // Mouse down
@@ -121,6 +127,39 @@ class GraphNode {
             else {
                 // Don't connect if there is no initial node or if initial node is itself
                 GRAPH.initial_node = null;
+            }
+        });
+    }
+    keyboardEventListeners() {
+        document.addEventListener("keydown", (event) => {
+            // Skip if this node is not selected or if the key pressed is not Enter
+            if (!this.selected || event.key !== "Enter")
+                return;
+            event.preventDefault();
+            // Check if this is the only selected node
+            for (let node of GRAPH.nodes) {
+                if (node !== this && node.selected)
+                    return;
+            }
+            if (this.div.getAttribute("contenteditable") !== "true") {
+                // Edit value
+                this.div.setAttribute("contenteditable", "true");
+                this.div.focus();
+                // Select content inside the div
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(this.div);
+                selection === null || selection === void 0 ? void 0 : selection.removeAllRanges();
+                selection === null || selection === void 0 ? void 0 : selection.addRange(range);
+            }
+            else {
+                // Save editing changes
+                this.div.setAttribute("contenteditable", "false");
+                // Validate input and update value
+                const new_val = parseInt(this.div.innerText);
+                if (new_val)
+                    this.value = new_val;
+                this.div.innerText = this.value.toString();
             }
         });
     }

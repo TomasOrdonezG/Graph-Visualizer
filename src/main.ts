@@ -62,19 +62,8 @@ class Graph {
             return;
         }
 
-        // Create node
-        const circleDiv = document.createElement("div");
-        circleDiv.className = "circle";
-
-        // Value and position
-        circleDiv.style.left = event.clientX - GraphNode.RADIUS + "px";
-        circleDiv.style.top = event.clientY - GraphNode.RADIUS + "px";
-
-        // Append to graph HTML container and nodes array
-        this.HTML_Container?.appendChild(circleDiv);
-
         // Create the new node object
-        const new_node = new GraphNode(event.clientX, event.clientY, this.next_node_val, circleDiv);
+        const new_node = new GraphNode(event.clientX, event.clientY, this.next_node_val);
 
         // Connect all selected nodes to the new node if SHIFT is down
         if (keyboardState.SHIFT && !keyboardState.CTRL) {
@@ -281,7 +270,7 @@ document.addEventListener("keydown", (event): void => {
     } else if (event.key === "Backspace") {
         // Delete selected nodes
         for (let i = GRAPH.nodes.length - 1; i >= 0; i--) {
-            if (GRAPH.nodes[i].selected) {
+            if (GRAPH.nodes[i].selected && GRAPH.nodes[i].div.getAttribute("contenteditable") === "false") {
                 GRAPH.nodes[i].delete();
             }
         }
