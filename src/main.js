@@ -70,6 +70,7 @@ class Graph {
         this.nodes.push(new_node);
         this.next_node_val++;
         this.size++;
+        this.sortNodes();
     }
     deselect_all() {
         for (let node of this.nodes) {
@@ -205,6 +206,9 @@ class Graph {
         }
         return null;
     }
+    sortNodes() {
+        this.nodes.sort((a, b) => a.value - b.value);
+    }
 }
 // #region ATTRIBUTES
 // Global class constants
@@ -249,6 +253,7 @@ document.addEventListener("keydown", (event) => {
         }
         if (GRAPH.size === 0)
             GRAPH.next_node_val = 0;
+        GRAPH.sortNodes();
     }
 });
 document.addEventListener("keyup", (event) => {
