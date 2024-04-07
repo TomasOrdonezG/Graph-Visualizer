@@ -29,11 +29,18 @@ export default class GraphNode {
     // #endregion
 
     // * INITIALIZATION
-    constructor(x: number, y: number, value: number, div: HTMLElement) {
+    constructor(x: number, y: number, value: number) {
         this.value = value;
         this.x = x;
         this.y = y;
-        this.div = div;
+
+        // * Create HTML Elements
+        // Create node
+        this.div = document.createElement("div");
+        this.div.className = "circle";
+        GRAPH.HTML_Container?.appendChild(this.div);
+
+        this.updatePos(this.x, this.y);
         this.updateAll();
         this.mouseEventListeners();
     }

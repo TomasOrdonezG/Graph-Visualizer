@@ -3,7 +3,8 @@ import { GRAPH, keyboardState } from "./main.js";
 class GraphNode {
     // #endregion
     // * INITIALIZATION
-    constructor(x, y, value, div) {
+    constructor(x, y, value) {
+        var _a;
         this.border_colour = "black";
         this.text_colour = "black";
         this.colour = "white";
@@ -56,7 +57,12 @@ class GraphNode {
         this.value = value;
         this.x = x;
         this.y = y;
-        this.div = div;
+        // * Create HTML Elements
+        // Create node
+        this.div = document.createElement("div");
+        this.div.className = "circle";
+        (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.div);
+        this.updatePos(this.x, this.y);
         this.updateAll();
         this.mouseEventListeners();
     }
