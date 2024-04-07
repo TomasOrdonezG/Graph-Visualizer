@@ -14,12 +14,17 @@ body {
     align-items: center; /* Center vertically */
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     transition: transform 0.1s ease-in-out, font-size 0.1s ease-in-out;
+    outline: none;
 }
 
 .circle:hover {
     /* box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); */
     transform: scale(1.05);
     font-size: 1.05em;
+}
+
+.node-input {
+    color: black;
 }
 
 .line {

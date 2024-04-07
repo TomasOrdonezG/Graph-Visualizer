@@ -13,7 +13,7 @@ export default class GraphNode {
     public value: number;
     public y: number;
     public x: number;
-    public div: HTMLElement;
+    public div: HTMLDivElement;
 
     private border_colour: string = "black";
     public text_colour: string = "black";
@@ -34,8 +34,7 @@ export default class GraphNode {
         this.x = x;
         this.y = y;
 
-        // * Create HTML Elements
-        // Create node
+        // Create node Div
         this.div = document.createElement("div");
         this.div.className = "circle";
         GRAPH.HTML_Container?.appendChild(this.div);
@@ -43,6 +42,7 @@ export default class GraphNode {
         this.updatePos(this.x, this.y);
         this.updateAll();
         this.mouseEventListeners();
+        this.keyboardEventListeners();
     }
 
     private mouseEventListeners(): void {
@@ -106,6 +106,40 @@ export default class GraphNode {
             } else {
                 // Don't connect if there is no initial node or if initial node is itself
                 GRAPH.initial_node = null;
+            }
+        });
+    }
+
+    private keyboardEventListeners(): void {
+        document.addEventListener("keydown", (event: KeyboardEvent) => {
+            // Skip if this node is not selected or if the key pressed is not Enter
+            if (!this.selected || event.key !== "Enter") return;
+            event.preventDefault();
+
+            // Check if this is the only selected node
+            for (let node of GRAPH.nodes) {
+                if (node !== this && node.selected) return;
+            }
+
+            if (this.div.getAttribute("contenteditable") !== "true") {
+                // Edit value
+                this.div.setAttribute("contenteditable", "true");
+                this.div.focus();
+
+                // Select content inside the div
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(this.div);
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+            } else {
+                // Save editing changes
+                this.div.setAttribute("contenteditable", "false");
+
+                // Validate input and update value
+                const new_val = parseInt(this.div.innerText);
+                if (new_val) this.value = new_val;
+                this.div.innerText = this.value.toString();
             }
         });
     }
