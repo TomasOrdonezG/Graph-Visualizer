@@ -82,6 +82,7 @@ class Graph {
         this.nodes.push(new_node);
         this.next_node_val++;
         this.size++;
+        this.sortNodes();
     }
 
     public deselect_all(): void {
@@ -229,6 +230,10 @@ class Graph {
         }
         return null;
     }
+
+    public sortNodes() {
+        this.nodes.sort((a, b) => a.value - b.value);
+    }
 }
 const GRAPH = new Graph();
 
@@ -275,6 +280,7 @@ document.addEventListener("keydown", (event): void => {
             }
         }
         if (GRAPH.size === 0) GRAPH.next_node_val = 0;
+        GRAPH.sortNodes();
     }
 });
 document.addEventListener("keyup", (event) => {

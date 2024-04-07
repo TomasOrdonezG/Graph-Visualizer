@@ -60,6 +60,7 @@ class GraphNode {
         // Create node Div
         this.div = document.createElement("div");
         this.div.className = "circle";
+        this.div.setAttribute("contenteditable", "false");
         (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.div);
         this.updatePos(this.x, this.y);
         this.updateAll();
@@ -86,7 +87,7 @@ class GraphNode {
                 }
             }
             else if (event.button === 0 && keyboardState.SHIFT) {
-                // * LEFT CLICK SHIFT: Connect from all selected nodes
+                // * LEFT CLICK + SHIFT: Connect from all selected nodes
                 for (let node of GRAPH.nodes) {
                     if (node == this)
                         continue;
@@ -157,8 +158,12 @@ class GraphNode {
                 this.div.setAttribute("contenteditable", "false");
                 // Validate input and update value
                 const new_val = parseInt(this.div.innerText);
-                if (new_val)
+                if (new_val) {
                     this.value = new_val;
+                    for (let adj of this.in_neighbours) {
+                        adj.sortNeighbours();
+                    }
+                }
                 this.div.innerText = this.value.toString();
             }
         });
@@ -173,9 +178,12 @@ class GraphNode {
             return null;
         // Add neighbour and calculate position of arrow
         const new_edge = new Edge(this, destination_node);
-        this.out_edges.push(new_edge); // TODO: Push node in increasing order of destination_node.value
+        this.out_edges.push(new_edge);
         destination_node.in_neighbours.push(this);
+        // Update attributes
         this.updateEdgesPos();
+        this.sortNeighbours();
+        destination_node.sortNeighbours();
         return new_edge;
     }
     delete() {
@@ -212,6 +220,10 @@ class GraphNode {
         this.border_colour = "black";
         this.updateColour();
         this.selected = false;
+    }
+    sortNeighbours() {
+        this.out_edges.sort((a, b) => a.destination.value - b.destination.value);
+        this.in_neighbours.sort((a, b) => a.value - b.value);
     }
 }
 // #region * ATTRIBUTES
