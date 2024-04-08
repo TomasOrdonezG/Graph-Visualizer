@@ -11,8 +11,11 @@ class Graph {
 
     // Standardly initializable attributes
     public nodes: GraphNode[] = [];
+
+    // Objects to keep track of
     public initial_node: GraphNode | null = null;
     public final_node: GraphNode | null = null;
+    public moving_edge: Edge | null = null;
 
     public size: number = 0;
     public HTML_Container: HTMLElement | null;
