@@ -17,6 +17,7 @@ class Graph {
         // Standardly initializable attributes
         this.nodes = [];
         this.initial_node = null;
+        this.final_node = null;
         this.size = 0;
         this.next_node_val = 0;
         this.traversing = false;
@@ -212,7 +213,7 @@ class Graph {
 }
 // #region ATTRIBUTES
 // Global class constants
-Graph.DELAY_TIME = 500;
+Graph.DELAY_TIME = 100;
 const GRAPH = new Graph();
 // Disable context menu
 window.addEventListener("contextmenu", (event) => {
