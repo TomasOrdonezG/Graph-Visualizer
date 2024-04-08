@@ -5,8 +5,8 @@ class GraphNode {
     // * INITIALIZATION
     constructor(x, y, value) {
         var _a;
-        this.border_colour = "black";
-        this.text_colour = "black";
+        this.border_colour = GraphNode.DEFAULT_BORDER_COLOUR;
+        this.text_colour = GraphNode.DEFAULT_BORDER_COLOUR;
         this.colour = "white";
         this.out_edges = [];
         this.in_neighbours = [];
@@ -68,6 +68,22 @@ class GraphNode {
         this.keyboardEventListeners();
     }
     mouseEventListeners() {
+        // Hover
+        this.div.addEventListener("mouseenter", (event) => {
+            this.div.style.transform = "scale(1.05)";
+            this.div.style.fontSize = "20px";
+            // Highlight when edge is begin dragged (and this is being hovered)
+            if (GRAPH.moving_edge && (this !== GRAPH.initial_node || this !== GRAPH.final_node)) {
+                GRAPH.moving_edge.updateColour(Edge.READY_COLOUR);
+                this.border_colour = GraphNode.READY_BORDER_COLOUR;
+                this.updateColour();
+            }
+        });
+        this.div.addEventListener("mouseleave", (event) => {
+            this.div.style.transform = "scale(1)";
+            this.border_colour = this.selected ? GraphNode.SELECTED_BORDER_COLOUR : GraphNode.DEFAULT_BORDER_COLOUR;
+            this.updateColour();
+        });
         // Mouse down
         this.div.addEventListener("mousedown", (event) => {
             event.preventDefault();
@@ -137,7 +153,7 @@ class GraphNode {
                 this.connect(GRAPH.final_node);
                 // Select only final node as the newly connected node destination
                 GRAPH.deselect_all();
-                GRAPH.final_node.select();
+                this.select();
                 GRAPH.final_node = null;
             }
             else {
@@ -232,7 +248,7 @@ class GraphNode {
         this.selected = true;
     }
     deselect() {
-        this.border_colour = "black";
+        this.border_colour = GraphNode.DEFAULT_BORDER_COLOUR;
         this.updateColour();
         this.selected = false;
     }
@@ -245,5 +261,7 @@ class GraphNode {
 // Constants
 GraphNode.RADIUS = 25;
 GraphNode.BORDER_WIDTH = 3;
-GraphNode.SELECTED_BORDER_COLOUR = "red";
+GraphNode.SELECTED_BORDER_COLOUR = "coral";
+GraphNode.DEFAULT_BORDER_COLOUR = "#444444";
+GraphNode.READY_BORDER_COLOUR = Edge.READY_COLOUR;
 export default GraphNode;

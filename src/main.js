@@ -16,8 +16,10 @@ class Graph {
     constructor() {
         // Standardly initializable attributes
         this.nodes = [];
+        // Objects to keep track of
         this.initial_node = null;
         this.final_node = null;
+        this.moving_edge = null;
         this.size = 0;
         this.next_node_val = 0;
         this.traversing = false;

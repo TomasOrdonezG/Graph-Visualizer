@@ -4,7 +4,6 @@ class Edge {
     // #endregion
     constructor(source, destination) {
         var _a, _b, _c, _d, _e;
-        // public weight: number = 0;
         this.colour = Edge.DEFAULT_COLOUR;
         this.hovering = false;
         this.moving_head = false;
@@ -128,12 +127,14 @@ class Edge {
             if (this.hovering) {
                 GRAPH.initial_node = this.source;
                 this.moving_head = true;
+                GRAPH.moving_edge = this;
             }
         });
         this.hitbox_div_tail.addEventListener("mousedown", (event) => {
             if (this.hovering) {
                 GRAPH.final_node = this.destination;
                 this.moving_tail = true;
+                GRAPH.moving_edge = this;
             }
         });
         // Mouse up
@@ -142,6 +143,7 @@ class Edge {
                 this.moving_head = false;
                 this.moving_tail = false;
                 this.delete();
+                GRAPH.moving_edge = null;
             }
         });
         // Mouse drag
@@ -174,15 +176,16 @@ class Edge {
         this.updatePos(x1, y1, x2, y2);
     }
     linkCursorToTailPos(event) {
-        // TODO: TEST
+        // Arrow tail pos
         const hb_rnorm = Edge.HITBOX_RADIUS /
             Math.sqrt((this.destination.x - event.clientX) ** 2 + (this.destination.y - event.clientY) ** 2);
-        // Arrow tail pos
         const x1 = event.clientX - hb_rnorm * (this.destination.x - event.clientX);
         const y1 = event.clientY - hb_rnorm * (this.destination.y - event.clientY);
         // Arrow head pos
-        const x2 = this.destination.x - hb_rnorm * (this.destination.x - event.clientX);
-        const y2 = this.destination.y - hb_rnorm * (this.destination.y - event.clientY);
+        const node_rnorm = GraphNode.RADIUS /
+            Math.sqrt((this.destination.x - event.clientX) ** 2 + (this.destination.y - event.clientY) ** 2);
+        const x2 = this.destination.x - node_rnorm * (this.destination.x - event.clientX);
+        const y2 = this.destination.y - node_rnorm * (this.destination.y - event.clientY);
         this.updatePos(x1, y1, x2, y2);
     }
     delete() {
@@ -212,7 +215,8 @@ class Edge {
 Edge.ARROWHEAD_LENGTH = 15;
 Edge.ARROHEAD_ANGLE = Math.PI / 6;
 Edge.HITBOX_RADIUS = 10;
-Edge.HOVER_COLOUR = "blue";
+Edge.HOVER_COLOUR = "lightsalmon";
 Edge.DEFAULT_COLOUR = "gray";
 Edge.HIGHLIGHT_COLOUR = "black";
+Edge.READY_COLOUR = "lightseagreen";
 export default Edge;

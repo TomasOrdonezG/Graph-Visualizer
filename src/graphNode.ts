@@ -7,7 +7,9 @@ export default class GraphNode {
     // Constants
     static RADIUS = 25;
     static BORDER_WIDTH = 3;
-    static SELECTED_BORDER_COLOUR = "red";
+    static SELECTED_BORDER_COLOUR = "coral";
+    static DEFAULT_BORDER_COLOUR = "#444444";
+    static READY_BORDER_COLOUR = Edge.READY_COLOUR;
 
     // Attributes
     public value: number;
@@ -15,8 +17,8 @@ export default class GraphNode {
     public x: number;
     public div: HTMLDivElement;
 
-    private border_colour: string = "black";
-    public text_colour: string = "black";
+    private border_colour: string = GraphNode.DEFAULT_BORDER_COLOUR;
+    public text_colour: string = GraphNode.DEFAULT_BORDER_COLOUR;
     public colour: string = "white";
     public out_edges: Edge[] = [];
     public in_neighbours: GraphNode[] = [];
@@ -47,6 +49,24 @@ export default class GraphNode {
     }
 
     private mouseEventListeners(): void {
+        // Hover
+        this.div.addEventListener("mouseenter", (event: MouseEvent) => {
+            this.div.style.transform = "scale(1.05)";
+            this.div.style.fontSize = "20px";
+
+            // Highlight when edge is begin dragged (and this is being hovered)
+            if (GRAPH.moving_edge && (this !== GRAPH.initial_node || this !== GRAPH.final_node)) {
+                GRAPH.moving_edge.updateColour(Edge.READY_COLOUR);
+                this.border_colour = GraphNode.READY_BORDER_COLOUR;
+                this.updateColour();
+            }
+        });
+        this.div.addEventListener("mouseleave", (event: MouseEvent) => {
+            this.div.style.transform = "scale(1)";
+            this.border_colour = this.selected ? GraphNode.SELECTED_BORDER_COLOUR : GraphNode.DEFAULT_BORDER_COLOUR;
+            this.updateColour();
+        });
+
         // Mouse down
         this.div.addEventListener("mousedown", (event: MouseEvent): void => {
             event.preventDefault();
@@ -120,7 +140,7 @@ export default class GraphNode {
 
                 // Select only final node as the newly connected node destination
                 GRAPH.deselect_all();
-                GRAPH.final_node.select();
+                this.select();
 
                 GRAPH.final_node = null;
             } else {
@@ -223,7 +243,7 @@ export default class GraphNode {
         this.selected = true;
     }
     public deselect(): void {
-        this.border_colour = "black";
+        this.border_colour = GraphNode.DEFAULT_BORDER_COLOUR;
         this.updateColour();
         this.selected = false;
     }

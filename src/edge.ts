@@ -1,5 +1,5 @@
 import GraphNode from "./graphNode.js";
-import { GRAPH, keyboardState } from "./main.js";
+import { GRAPH } from "./main.js";
 
 export default class Edge {
     // #region ATTRIBUTES
@@ -8,13 +8,13 @@ export default class Edge {
     static ARROWHEAD_LENGTH = 15;
     static ARROHEAD_ANGLE = Math.PI / 6;
     static HITBOX_RADIUS = 10;
-    static HOVER_COLOUR = "blue";
+    static HOVER_COLOUR = "lightsalmon";
     static DEFAULT_COLOUR = "gray";
     static HIGHLIGHT_COLOUR = "black";
+    static READY_COLOUR = "lightseagreen";
 
     public source: GraphNode;
     public destination: GraphNode;
-    // public weight: number = 0;
     public colour: string = Edge.DEFAULT_COLOUR;
 
     public hovering: boolean = false;
@@ -86,12 +86,14 @@ export default class Edge {
             if (this.hovering) {
                 GRAPH.initial_node = this.source;
                 this.moving_head = true;
+                GRAPH.moving_edge = this;
             }
         });
         this.hitbox_div_tail.addEventListener("mousedown", (event: MouseEvent) => {
             if (this.hovering) {
                 GRAPH.final_node = this.destination;
                 this.moving_tail = true;
+                GRAPH.moving_edge = this;
             }
         });
 
@@ -101,6 +103,7 @@ export default class Edge {
                 this.moving_head = false;
                 this.moving_tail = false;
                 this.delete();
+                GRAPH.moving_edge = null;
             }
         });
 
@@ -227,18 +230,19 @@ export default class Edge {
         this.updatePos(x1, y1, x2, y2);
     }
     public linkCursorToTailPos(event: MouseEvent) {
-        // TODO: TEST
+        // Arrow tail pos
         const hb_rnorm =
             Edge.HITBOX_RADIUS /
             Math.sqrt((this.destination.x - event.clientX) ** 2 + (this.destination.y - event.clientY) ** 2);
-
-        // Arrow tail pos
         const x1 = event.clientX - hb_rnorm * (this.destination.x - event.clientX);
         const y1 = event.clientY - hb_rnorm * (this.destination.y - event.clientY);
 
         // Arrow head pos
-        const x2 = this.destination.x - hb_rnorm * (this.destination.x - event.clientX);
-        const y2 = this.destination.y - hb_rnorm * (this.destination.y - event.clientY);
+        const node_rnorm =
+            GraphNode.RADIUS /
+            Math.sqrt((this.destination.x - event.clientX) ** 2 + (this.destination.y - event.clientY) ** 2);
+        const x2 = this.destination.x - node_rnorm * (this.destination.x - event.clientX);
+        const y2 = this.destination.y - node_rnorm * (this.destination.y - event.clientY);
 
         this.updatePos(x1, y1, x2, y2);
     }
