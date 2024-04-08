@@ -7,11 +7,13 @@ class Graph {
     // #region ATTRIBUTES
 
     // Global class constants
-    static DELAY_TIME = 500;
+    static DELAY_TIME = 100;
 
     // Standardly initializable attributes
     public nodes: GraphNode[] = [];
     public initial_node: GraphNode | null = null;
+    public final_node: GraphNode | null = null;
+
     public size: number = 0;
     public HTML_Container: HTMLElement | null;
     public next_node_val: number = 0;

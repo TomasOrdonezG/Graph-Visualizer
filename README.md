@@ -9,19 +9,20 @@ This is a simple directed graph creator. You're able to add and delete nodes and
 ### Graph Nodes
 
 -   **Left-Click** anywhere in the blank page to **add a graph node**.
--   **Left-Click a node** to **move** it (and select it).
+-   **Left-Click and drage** a node to **move** it (and select it).
 -   **Hold `Shift` + Left-Click** anywhere in the blank page to **add a node and an edge** that connects all selected nodes to the newly created node.
 -   **Hold `Ctrl` + Left-Click** to **select multiple nodes**.
 -   **Hold `Ctrl` + Left-Click drag** to **move all selected nodes**.
 -   **`Ctrl` + `A`** to **select all** nodes.
 -   **`Backspace`** to **delete all selected nodes**.
+-   **`Enter`** to **edit the value** of a selected node (one at a time).
 
 ### Graph Edges/Arrows
 
 -   **Right-Click** and drag from one node to another to **add an edge** to connect them.
--   **Left-Click and drag** the tip of an arrow/edge to either
-    -   **Reconnect** the edge by letting go at a different destination node.
-    -   **delete** by letting go of the arrow anywhere else
+-   **Left-Click and drag** the head of an arrow/edge to another node to **reconnect** to set that node as the new destination node.
+-   **Left-Click and drag** the tail of an arrow/edge to another node to **reconnect** to set that node as the new source node.
+-   **Left-Click and drag** the head or tail and let go on an empty spot to remove the edge.
 -   **Hold `Shift` + Right-Click** on a node to **add an edge** that connects all selected nodes to the clicked node.
 -   **Hold `Shift` + Left-Click** anywhere in the blank page to **add a node and an edge** that connects all selected nodes to the newly created node.
 
@@ -36,7 +37,7 @@ This is a simple directed graph creator. You're able to add and delete nodes and
 
 -   Implement undirected graphs.
 -   Implement [weighted graphs](<https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph>).
--   Add a way to edit the value of a node (and weight of edges once weighted graphs are implemented).
+-   Add a way to edit weight of edges once weighted graphs are implemented.
 -   Add distance attribute to each node when running BSF.
 -   Add discovery time and finish time of each node when running DFS.
 

@@ -43,13 +43,13 @@ class GraphNode {
         this.updateEdgesPos = () => {
             // Update each out_edge
             for (let out_edge of this.out_edges) {
-                out_edge.linkNodePos();
+                out_edge.linkNodesPos();
             }
             // Update each in_neighbour
             for (let in_neighbour of this.in_neighbours) {
                 for (let out_edge_of_in_neighbour of in_neighbour.out_edges) {
                     if (out_edge_of_in_neighbour.destination == this) {
-                        out_edge_of_in_neighbour.linkNodePos();
+                        out_edge_of_in_neighbour.linkNodesPos();
                     }
                 }
             }
@@ -118,16 +118,31 @@ class GraphNode {
             GRAPH.initial_node = null;
         });
         this.div.addEventListener("mouseup", (event) => {
-            if (GRAPH.initial_node && GRAPH.initial_node !== this) {
-                // Connect to the initial node previously determined by right click drag
+            // * Connect TO this node
+            if (GRAPH.final_node === null && GRAPH.initial_node && GRAPH.initial_node !== this) {
+                // Connect to the initial node
                 GRAPH.initial_node.connect(this);
                 // Select only this node as the newly connected node destination
                 GRAPH.deselect_all();
                 this.select();
+                GRAPH.initial_node = null;
             }
             else {
                 // Don't connect if there is no initial node or if initial node is itself
                 GRAPH.initial_node = null;
+            }
+            // * Connect FROM this node
+            if (GRAPH.final_node && GRAPH.initial_node === null && GRAPH.final_node !== this) {
+                // Connect final node to this node
+                this.connect(GRAPH.final_node);
+                // Select only final node as the newly connected node destination
+                GRAPH.deselect_all();
+                GRAPH.final_node.select();
+                GRAPH.final_node = null;
+            }
+            else {
+                // Don't connect if there is no final node or if final node is itself
+                GRAPH.final_node = null;
             }
         });
     }
