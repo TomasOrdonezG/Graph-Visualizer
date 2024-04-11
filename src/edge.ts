@@ -27,6 +27,14 @@ export default class Edge {
     public right_arrowhead_div: HTMLDivElement;
     public hitbox_div_head: HTMLDivElement;
     public hitbox_div_tail: HTMLDivElement;
+    private bound_mouse_handlers = {
+        leave: this.handle_mouse_leave.bind(this),
+        enter: this.handle_mouse_enter.bind(this),
+        down_head_hitbox: this.handle_mouse_down_head_hitbox.bind(this),
+        down_tail_hitbox: this.handle_mouse_down_tail_hitbox.bind(this),
+        up: this.handle_mouse_up.bind(this),
+        move: this.handle_mouse_move.bind(this),
+    };
     // #endregion
 
     constructor(source: GraphNode, destination: GraphNode) {
@@ -63,73 +71,105 @@ export default class Edge {
         this.addMouseEventListeners();
     }
 
-    private addMouseEventListeners() {
-        // Hover
-        const handle_mouse_enter = (event: MouseEvent) => {
-            if (!GRAPH.traversing) {
-                this.updateColour(Edge.HOVER_COLOUR);
-                this.hovering = true;
-            }
-        };
-        const handle_mouse_leave = (event: MouseEvent) => {
-            if (!GRAPH.traversing) {
-                this.updateColour(Edge.DEFAULT_COLOUR);
-                this.hovering = false;
-            }
-        };
-        this.hitbox_div_head.addEventListener("mouseenter", handle_mouse_enter);
-        this.hitbox_div_head.addEventListener("mouseleave", handle_mouse_leave);
-        this.hitbox_div_tail.addEventListener("mouseenter", handle_mouse_enter);
-        this.hitbox_div_tail.addEventListener("mouseleave", handle_mouse_leave);
+    // Event listeners and handlers
+    private handle_mouse_enter(): void {
+        // Hover starts
+        if (!GRAPH.traversing) {
+            this.updateColour(Edge.HOVER_COLOUR);
+            this.hovering = true;
+        }
+    }
+    private handle_mouse_leave(): void {
+        // Hover ends
+        if (!GRAPH.traversing) {
+            this.updateColour(Edge.DEFAULT_COLOUR);
+            this.hovering = false;
+        }
+    }
+    private handle_mouse_down_head_hitbox(): void {
+        // Start moving the tip of the arrow
+        if (this.hovering) {
+            GRAPH.initial_node = this.source;
+            this.moving_head = true;
+            GRAPH.moving_edge = this;
+        }
+    }
+    private handle_mouse_down_tail_hitbox(): void {
+        // Start moving the end of the arrow
+        if (this.hovering) {
+            GRAPH.final_node = this.destination;
+            this.moving_tail = true;
+            GRAPH.moving_edge = this;
+        }
+    }
+    private handle_mouse_up(): void {
+        // Connection failed, reset attributes
+        if (this.moving_head || this.moving_tail) {
+            this.delete();
+            GRAPH.moving_edge = null;
+            GRAPH.initial_node = null;
+            GRAPH.final_node = null;
+        }
+    }
+    private handle_mouse_move(event: MouseEvent): void {
+        // When the tail or head is moving, link them to the cursor positio
+        if (this.moving_head) {
+            this.linkCursorToHeadPos(event);
+        }
+        if (this.moving_tail) {
+            this.linkCursorToTailPos(event);
+        }
+    }
+    private addMouseEventListeners(): void {
+        // Add hover ELs for head and tail hitboxes
+        this.hitbox_div_head.addEventListener("mouseenter", this.bound_mouse_handlers.enter);
+        this.hitbox_div_head.addEventListener("mouseleave", this.bound_mouse_handlers.leave);
+        this.hitbox_div_tail.addEventListener("mouseenter", this.bound_mouse_handlers.enter);
+        this.hitbox_div_tail.addEventListener("mouseleave", this.bound_mouse_handlers.leave);
 
-        // Mouse down
-        this.hitbox_div_head.addEventListener("mousedown", (event: MouseEvent): void => {
-            if (this.hovering) {
-                GRAPH.initial_node = this.source;
-                this.moving_head = true;
-                GRAPH.moving_edge = this;
-            }
-        });
-        this.hitbox_div_tail.addEventListener("mousedown", (event: MouseEvent) => {
-            if (this.hovering) {
-                GRAPH.final_node = this.destination;
-                this.moving_tail = true;
-                GRAPH.moving_edge = this;
-            }
-        });
+        // Add mouse down ELs for head and tail hitboxes
+        this.hitbox_div_head.addEventListener("mousedown", this.bound_mouse_handlers.down_head_hitbox);
+        this.hitbox_div_tail.addEventListener("mousedown", this.bound_mouse_handlers.down_tail_hitbox);
 
-        // Mouse up
-        document.addEventListener("mouseup", (event: MouseEvent): void => {
-            if (this.moving_head || this.moving_tail) {
-                this.moving_head = false;
-                this.moving_tail = false;
-                this.delete();
-                GRAPH.moving_edge = null;
-            }
-        });
+        // Add document-wide ELs
+        document.addEventListener("mouseup", this.bound_mouse_handlers.up);
+        document.addEventListener("mousemove", this.bound_mouse_handlers.move);
+    }
+    private removeMouseEventListeners(): void {
+        // Remove hover ELs for head and tail hitboxes
+        this.hitbox_div_head.removeEventListener("mouseenter", this.bound_mouse_handlers.enter);
+        this.hitbox_div_head.removeEventListener("mouseleave", this.bound_mouse_handlers.leave);
+        this.hitbox_div_tail.removeEventListener("mouseenter", this.bound_mouse_handlers.enter);
+        this.hitbox_div_tail.removeEventListener("mouseleave", this.bound_mouse_handlers.leave);
 
-        // Mouse drag
-        document.addEventListener("mousemove", (event: MouseEvent): void => {
-            if (this.moving_head) {
-                this.linkCursorToHeadPos(event);
-            }
-            if (this.moving_tail) {
-                this.linkCursorToTailPos(event);
-            }
-        });
+        // Remove mouse down ELs for head and tail hitboxes
+        this.hitbox_div_head.removeEventListener("mousedown", this.bound_mouse_handlers.down_head_hitbox);
+        this.hitbox_div_tail.removeEventListener("mousedown", this.bound_mouse_handlers.down_tail_hitbox);
+
+        // Remove document-wide ELs
+        document.removeEventListener("mouseup", this.bound_mouse_handlers.up);
+        document.removeEventListener("mousemove", this.bound_mouse_handlers.move);
     }
 
     public updateColour = (colour: string): void => {
         this.colour = colour;
+
+        // border
         this.line_div.style.border = `1px solid ${this.colour}`;
         this.left_arrowhead_div.style.border = `1px solid ${this.colour}`;
         this.right_arrowhead_div.style.border = `1px solid ${this.colour}`;
 
         // Thickness
         const bg = this.colour === "black" ? this.colour : "transparent";
-        this.line_div.style.backgroundColor = this.colour;
-        this.left_arrowhead_div.style.backgroundColor = this.colour;
-        this.right_arrowhead_div.style.backgroundColor = this.colour;
+        this.line_div.style.backgroundColor = bg;
+        this.left_arrowhead_div.style.backgroundColor = bg;
+        this.right_arrowhead_div.style.backgroundColor = bg;
+
+        // Z-Index
+        const zi = this.colour === "black" ? "1" : "-1";
+        this.line_div.style.zIndex = zi;
+        this.left_arrowhead_div.style.zIndex = zi;
+        this.right_arrowhead_div.style.zIndex = zi;
     };
 
     public updatePos = (x1: number, y1: number, x2: number, y2: number): void => {
@@ -163,21 +203,26 @@ export default class Edge {
         const line_styles = get_line_styles(x1, y1, x2, y2);
         this.line_div.setAttribute("style", line_styles);
 
-        // * ARROWHEAD
-        // Compute arrowhead sides positions
-        const v_angle = Math.atan2(y2 - y1, x2 - x1);
-        const arrow1: { x: number; y: number } = {
-            x: x2 - Edge.ARROWHEAD_LENGTH * Math.cos(v_angle - Edge.ARROHEAD_ANGLE),
-            y: y2 - Edge.ARROWHEAD_LENGTH * Math.sin(v_angle - Edge.ARROHEAD_ANGLE),
-        };
-        const arrow2: { x: number; y: number } = {
-            x: x2 - Edge.ARROWHEAD_LENGTH * Math.cos(v_angle + Edge.ARROHEAD_ANGLE),
-            y: y2 - Edge.ARROWHEAD_LENGTH * Math.sin(v_angle + Edge.ARROHEAD_ANGLE),
-        };
+        // * ARROWHEAD (if the graph is directed)
+        if (GRAPH.directed) {
+            // Compute arrowhead sides positions
+            const v_angle = Math.atan2(y2 - y1, x2 - x1);
+            const arrow1: { x: number; y: number } = {
+                x: x2 - Edge.ARROWHEAD_LENGTH * Math.cos(v_angle - Edge.ARROHEAD_ANGLE),
+                y: y2 - Edge.ARROWHEAD_LENGTH * Math.sin(v_angle - Edge.ARROHEAD_ANGLE),
+            };
+            const arrow2: { x: number; y: number } = {
+                x: x2 - Edge.ARROWHEAD_LENGTH * Math.cos(v_angle + Edge.ARROHEAD_ANGLE),
+                y: y2 - Edge.ARROWHEAD_LENGTH * Math.sin(v_angle + Edge.ARROHEAD_ANGLE),
+            };
 
-        // Set arrowhead sides positions
-        this.left_arrowhead_div.setAttribute("style", get_line_styles(x2, y2, arrow1.x, arrow1.y));
-        this.right_arrowhead_div.setAttribute("style", get_line_styles(x2, y2, arrow2.x, arrow2.y));
+            // Set arrowhead sides positions
+            this.left_arrowhead_div.setAttribute("style", get_line_styles(x2, y2, arrow1.x, arrow1.y));
+            this.right_arrowhead_div.setAttribute("style", get_line_styles(x2, y2, arrow2.x, arrow2.y));
+        } else {
+            this.left_arrowhead_div.style.visibility = "hidden";
+            this.right_arrowhead_div.style.visibility = "hidden";
+        }
 
         // * HITBOXES
         const hb_rnorm = Edge.HITBOX_RADIUS / Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
@@ -216,7 +261,7 @@ export default class Edge {
 
         this.updatePos(x1, y1, x2, y2);
     }
-    public linkCursorToHeadPos(event: MouseEvent) {
+    public linkCursorToHeadPos(event: MouseEvent): void {
         const hb_rnorm =
             Edge.HITBOX_RADIUS / Math.sqrt((event.clientX - this.source.x) ** 2 + (event.clientY - this.source.y) ** 2);
 
@@ -230,7 +275,7 @@ export default class Edge {
 
         this.updatePos(x1, y1, x2, y2);
     }
-    public linkCursorToTailPos(event: MouseEvent) {
+    public linkCursorToTailPos(event: MouseEvent): void {
         // Arrow tail pos
         const hb_rnorm =
             Edge.HITBOX_RADIUS /
@@ -249,12 +294,13 @@ export default class Edge {
     }
 
     public delete(): void {
-        // Remove divs
+        // Remove divs and event listeners
         GRAPH.HTML_Container?.removeChild(this.line_div);
         GRAPH.HTML_Container?.removeChild(this.left_arrowhead_div);
         GRAPH.HTML_Container?.removeChild(this.right_arrowhead_div);
         GRAPH.HTML_Container?.removeChild(this.hitbox_div_head);
         GRAPH.HTML_Container?.removeChild(this.hitbox_div_tail);
+        this.removeMouseEventListeners();
 
         // Remove edge from source's out_edges
         let i = this.source.out_edges.indexOf(this);

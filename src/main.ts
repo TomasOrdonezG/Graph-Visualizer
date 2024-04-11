@@ -23,9 +23,10 @@ class Graph {
     public next_node_val: number = 0;
     public traversing: boolean = false;
 
-    // Buttons
+    // Buttons and toggles
     private BFS_Button: HTMLButtonElement;
     private DFS_Button: HTMLButtonElement;
+    private HTML_directed_toggle: HTMLInputElement;
     // #endregion
 
     constructor() {
@@ -53,6 +54,13 @@ class Graph {
         this.DFS_Button.className = "button";
         this.DFS_Button.addEventListener("click", this.DFS.bind(this));
         document.body.appendChild(this.DFS_Button);
+
+        // * Create toggles
+        this.HTML_directed_toggle = document.createElement("input");
+        this.HTML_directed_toggle.type = "checkbox";
+        this.HTML_directed_toggle.className = "toggle";
+        this.HTML_directed_toggle.addEventListener("click", this.toggle_directed.bind(this));
+        document.body.appendChild(this.HTML_directed_toggle);
     }
 
     public addNode(event: MouseEvent): void {
@@ -63,6 +71,7 @@ class Graph {
             (event.target as HTMLElement).closest(".circle") ||
             (event.target as HTMLElement).closest(".hitbox") ||
             (event.target as HTMLElement).closest(".line") ||
+            (event.target as HTMLElement).closest(".toggle") ||
             (event.target as HTMLElement).closest(".button")
         ) {
             return;
@@ -134,12 +143,36 @@ class Graph {
         // Main BFS loop
         while (!Q.is_empty()) {
             let node = Q.dequeue();
-            for (let out_edge of node.out_edges) {
-                const adj_node = out_edge.destination;
-                if (adj_node.colour === "white") {
-                    await this.highlightEdge(out_edge);
-                    await this.setNodeColour(adj_node, "gray");
-                    Q.enqueue(adj_node);
+            if (this.directed) {
+                // * DIRECTED GRAPH TRAVERSAL
+                for (let out_edge of node.out_edges) {
+                    const adj_node = out_edge.destination;
+                    if (adj_node.colour === "white") {
+                        // Explore node if it's white
+                        await this.highlightEdge(out_edge);
+                        await this.setNodeColour(adj_node, "gray");
+                        Q.enqueue(adj_node);
+                    }
+                }
+            } else {
+                // * UNDIRECTED GRAPH TRAVERSAL
+                for (let adj of node.neighbours) {
+                    // Explore node if it's white
+                    if (adj.colour === "white") {
+                        // Find edge
+                        let edge: Edge | null = null;
+                        for (let adj_edge of node.out_edges.concat(node.in_edges)) {
+                            if (adj_edge.source === adj || adj_edge.destination === adj) {
+                                edge = adj_edge;
+                            }
+                        }
+
+                        // Highligh and enqueue
+                        if (edge) await this.highlightEdge(edge);
+                        else throw Error("Node is in neighbours array but edge is not in out_edges nor in_edges.");
+                        await this.setNodeColour(adj, "gray");
+                        Q.enqueue(adj);
+                    }
                 }
             }
             await this.setNodeColour(node, "black");
@@ -159,12 +192,35 @@ class Graph {
             // Mark root as discovered
             await this.setNodeColour(root, "gray");
 
-            // Run DFS on each neighbour in order
-            for (let out_edge of root.out_edges) {
-                const adj_node = out_edge.destination;
-                if (adj_node.colour === "white") {
-                    await this.highlightEdge(out_edge);
-                    await DFS_Visit(adj_node);
+            if (this.directed) {
+                // * DIRECTED GRAPH TRAVERSAL
+                // Run DFS on each neighbour in order
+                for (let out_edge of root.out_edges) {
+                    const adj_node = out_edge.destination;
+                    if (adj_node.colour === "white") {
+                        // Explore node if it's white
+                        await this.highlightEdge(out_edge);
+                        await DFS_Visit(adj_node);
+                    }
+                }
+            } else {
+                // * UNDIRECTED GRAPH TRAVERSAL
+                for (let adj of root.neighbours) {
+                    // Explore node if its white
+                    if (adj.colour === "white") {
+                        // Find edge
+                        let edge: Edge | null = null;
+                        for (let adj_edge of root.out_edges.concat(root.in_edges)) {
+                            if (adj_edge.source === adj || adj_edge.destination === adj) {
+                                edge = adj_edge;
+                            }
+                        }
+
+                        // Highligh and recurse
+                        if (edge) await this.highlightEdge(edge);
+                        else throw Error("Node is in neighbours array but edge is not in out_edges nor in_edges.");
+                        await DFS_Visit(adj);
+                    }
                 }
             }
 
@@ -216,6 +272,23 @@ class Graph {
         // Should only be called from inside animation methods
         edge.updateColour(Edge.HIGHLIGHT_COLOUR);
         await delay(Graph.DELAY_TIME);
+    }
+
+    // Update
+    public toggle_directed(event: MouseEvent): void {
+        // Prevent from changing graph type while traversing
+        if (this.traversing) {
+            event.preventDefault();
+            return;
+        }
+
+        // Update each edge to have its arrowhead to invisible
+        this.directed = !this.directed;
+        for (let node of this.nodes) {
+            for (let out_edge of node.out_edges) {
+                out_edge.linkNodesPos();
+            }
+        }
     }
 
     private reset_colour(): void {
