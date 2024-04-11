@@ -45,6 +45,12 @@ class Graph {
         this.DFS_Button.className = "button";
         this.DFS_Button.addEventListener("click", this.DFS.bind(this));
         document.body.appendChild(this.DFS_Button);
+        // * Create toggles
+        this.HTML_directed_toggle = document.createElement("input");
+        this.HTML_directed_toggle.type = "checkbox";
+        this.HTML_directed_toggle.className = "toggle";
+        this.HTML_directed_toggle.addEventListener("click", this.toggle_directed.bind(this));
+        document.body.appendChild(this.HTML_directed_toggle);
     }
     addNode(event) {
         // Prevent adding a node when mouse is on a node div, or edge div
@@ -53,6 +59,7 @@ class Graph {
             event.target.closest(".circle") ||
             event.target.closest(".hitbox") ||
             event.target.closest(".line") ||
+            event.target.closest(".toggle") ||
             event.target.closest(".button")) {
             return;
         }
@@ -112,12 +119,38 @@ class Graph {
             // Main BFS loop
             while (!Q.is_empty()) {
                 let node = Q.dequeue();
-                for (let out_edge of node.out_edges) {
-                    const adj_node = out_edge.destination;
-                    if (adj_node.colour === "white") {
-                        yield this.highlightEdge(out_edge);
-                        yield this.setNodeColour(adj_node, "gray");
-                        Q.enqueue(adj_node);
+                if (this.directed) {
+                    // * DIRECTED GRAPH TRAVERSAL
+                    for (let out_edge of node.out_edges) {
+                        const adj_node = out_edge.destination;
+                        if (adj_node.colour === "white") {
+                            // Explore node if it's white
+                            yield this.highlightEdge(out_edge);
+                            yield this.setNodeColour(adj_node, "gray");
+                            Q.enqueue(adj_node);
+                        }
+                    }
+                }
+                else {
+                    // * UNDIRECTED GRAPH TRAVERSAL
+                    for (let adj of node.neighbours) {
+                        // Explore node if it's white
+                        if (adj.colour === "white") {
+                            // Find edge
+                            let edge = null;
+                            for (let adj_edge of node.out_edges.concat(node.in_edges)) {
+                                if (adj_edge.source === adj || adj_edge.destination === adj) {
+                                    edge = adj_edge;
+                                }
+                            }
+                            // Highligh and enqueue
+                            if (edge)
+                                yield this.highlightEdge(edge);
+                            else
+                                throw Error("Node is in neighbours array but edge is not in out_edges nor in_edges.");
+                            yield this.setNodeColour(adj, "gray");
+                            Q.enqueue(adj);
+                        }
                     }
                 }
                 yield this.setNodeColour(node, "black");
@@ -136,12 +169,37 @@ class Graph {
             const DFS_Visit = (root) => __awaiter(this, void 0, void 0, function* () {
                 // Mark root as discovered
                 yield this.setNodeColour(root, "gray");
-                // Run DFS on each neighbour in order
-                for (let out_edge of root.out_edges) {
-                    const adj_node = out_edge.destination;
-                    if (adj_node.colour === "white") {
-                        yield this.highlightEdge(out_edge);
-                        yield DFS_Visit(adj_node);
+                if (this.directed) {
+                    // * DIRECTED GRAPH TRAVERSAL
+                    // Run DFS on each neighbour in order
+                    for (let out_edge of root.out_edges) {
+                        const adj_node = out_edge.destination;
+                        if (adj_node.colour === "white") {
+                            // Explore node if it's white
+                            yield this.highlightEdge(out_edge);
+                            yield DFS_Visit(adj_node);
+                        }
+                    }
+                }
+                else {
+                    // * UNDIRECTED GRAPH TRAVERSAL
+                    for (let adj of root.neighbours) {
+                        // Explore node if its white
+                        if (adj.colour === "white") {
+                            // Find edge
+                            let edge = null;
+                            for (let adj_edge of root.out_edges.concat(root.in_edges)) {
+                                if (adj_edge.source === adj || adj_edge.destination === adj) {
+                                    edge = adj_edge;
+                                }
+                            }
+                            // Highligh and recurse
+                            if (edge)
+                                yield this.highlightEdge(edge);
+                            else
+                                throw Error("Node is in neighbours array but edge is not in out_edges nor in_edges.");
+                            yield DFS_Visit(adj);
+                        }
                     }
                 }
                 // Mark root as searched
@@ -192,6 +250,21 @@ class Graph {
             edge.updateColour(Edge.HIGHLIGHT_COLOUR);
             yield delay(Graph.DELAY_TIME);
         });
+    }
+    // Update
+    toggle_directed(event) {
+        // Prevent from changing graph type while traversing
+        if (this.traversing) {
+            event.preventDefault();
+            return;
+        }
+        // Update each edge to have its arrowhead to invisible
+        this.directed = !this.directed;
+        for (let node of this.nodes) {
+            for (let out_edge of node.out_edges) {
+                out_edge.linkNodesPos();
+            }
+        }
     }
     reset_colour() {
         // Initialize each node to white and egde to gray
