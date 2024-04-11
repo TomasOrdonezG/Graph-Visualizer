@@ -16,6 +16,7 @@ class Graph {
     constructor() {
         // Standardly initializable attributes
         this.nodes = [];
+        this.directed = false;
         // Objects to keep track of
         this.initial_node = null;
         this.final_node = null;

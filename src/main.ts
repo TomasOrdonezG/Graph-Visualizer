@@ -11,6 +11,7 @@ class Graph {
 
     // Standardly initializable attributes
     public nodes: GraphNode[] = [];
+    public directed: boolean = false;
 
     // Objects to keep track of
     public initial_node: GraphNode | null = null;

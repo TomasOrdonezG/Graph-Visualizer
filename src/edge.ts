@@ -16,6 +16,7 @@ export default class Edge {
     public source: GraphNode;
     public destination: GraphNode;
     public colour: string = Edge.DEFAULT_COLOUR;
+    public weight: number = 1;
 
     public hovering: boolean = false;
     public moving_head: boolean = false;
@@ -260,9 +261,9 @@ export default class Edge {
         if (i === -1) throw Error("Edge does not exist in source's out_edges array, cannot delete");
         else this.source.out_edges.splice(i, 1);
 
-        // Remove source from destination's in_neighbours
-        let j = this.destination.in_neighbours.indexOf(this.source);
-        if (j === -1) throw Error("Source does not exist inside destination's in_neighbour's array, cannot delete");
-        else this.destination.in_neighbours.splice(j, 1);
+        // Remove edge from destination's in_edges
+        let j = this.destination.in_edges.indexOf(this);
+        if (j === -1) throw Error("Edge does not exist inside destination's in_edges's array, cannot delete");
+        else this.destination.in_edges.splice(j, 1);
     }
 }

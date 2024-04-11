@@ -16,12 +16,13 @@ export default class GraphNode {
     public y: number;
     public x: number;
     public div: HTMLDivElement;
+    public out_edges: Edge[] = [];
+    public in_edges: Edge[] = [];
+    public neighbours: GraphNode[] = [];
 
     private border_colour: string = GraphNode.DEFAULT_BORDER_COLOUR;
     public text_colour: string = GraphNode.DEFAULT_BORDER_COLOUR;
     public colour: string = "white";
-    public out_edges: Edge[] = [];
-    public in_neighbours: GraphNode[] = [];
     public selected: boolean = true;
 
     // Dragging attributes
@@ -180,8 +181,8 @@ export default class GraphNode {
                 const new_val = parseInt(this.div.innerText);
                 if (new_val) {
                     this.value = new_val;
-                    for (let adj of this.in_neighbours) {
-                        adj.sortNeighbours();
+                    for (let adj of this.in_edges) {
+                        adj.source.sortNeighbours();
                     }
                 }
                 this.div.innerText = this.value.toString();
@@ -200,7 +201,7 @@ export default class GraphNode {
         // Add neighbour and calculate position of arrow
         const new_edge = new Edge(this, destination_node);
         this.out_edges.push(new_edge);
-        destination_node.in_neighbours.push(this);
+        destination_node.in_edges.push(new_edge);
 
         // Update attributes
         this.updateEdgesPos();
@@ -219,18 +220,12 @@ export default class GraphNode {
         // Delete node HTML element
         GRAPH.HTML_Container?.removeChild(this.div);
 
-        // Delete out_edges
+        // Delete all edges
         for (let j = this.out_edges.length - 1; j >= 0; j--) {
             this.out_edges[j].delete();
         }
-
-        // Delete in_edges
-        for (let l = this.in_neighbours.length - 1; l >= 0; l--) {
-            for (let out_edge_of_in_neighbour of this.in_neighbours[l].out_edges) {
-                if (out_edge_of_in_neighbour.destination === this) {
-                    out_edge_of_in_neighbour.delete();
-                }
-            }
+        for (let k = this.in_edges.length - 1; k >= 0; k--) {
+            this.in_edges[k].delete();
         }
 
         GRAPH.size--;
@@ -274,23 +269,20 @@ export default class GraphNode {
         this.div.style.height = 2 * GraphNode.RADIUS + "px";
     };
     public updateEdgesPos = (): void => {
-        // Update each out_edge
+        // Update each out edge
         for (let out_edge of this.out_edges) {
             out_edge.linkNodesPos();
         }
 
-        // Update each in_neighbour
-        for (let in_neighbour of this.in_neighbours) {
-            for (let out_edge_of_in_neighbour of in_neighbour.out_edges) {
-                if (out_edge_of_in_neighbour.destination == this) {
-                    out_edge_of_in_neighbour.linkNodesPos();
-                }
-            }
+        // Update each in edge
+        for (let in_edge of this.in_edges) {
+            in_edge.linkNodesPos();
         }
     };
 
     private sortNeighbours() {
         this.out_edges.sort((a, b) => a.destination.value - b.destination.value);
-        this.in_neighbours.sort((a, b) => a.value - b.value);
+        this.in_edges.sort((a, b) => a.source.value - b.source.value);
+        this.neighbours.sort((a, b) => a.value - b.value);
     }
 }
