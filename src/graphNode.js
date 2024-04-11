@@ -5,11 +5,12 @@ class GraphNode {
     // * INITIALIZATION
     constructor(x, y, value) {
         var _a;
+        this.out_edges = [];
+        this.in_edges = [];
+        this.neighbours = [];
         this.border_colour = GraphNode.DEFAULT_BORDER_COLOUR;
         this.text_colour = GraphNode.DEFAULT_BORDER_COLOUR;
         this.colour = "white";
-        this.out_edges = [];
-        this.in_neighbours = [];
         this.selected = true;
         // Dragging attributes
         this.dragging = false;
@@ -41,17 +42,13 @@ class GraphNode {
             this.div.style.height = 2 * GraphNode.RADIUS + "px";
         };
         this.updateEdgesPos = () => {
-            // Update each out_edge
+            // Update each out edge
             for (let out_edge of this.out_edges) {
                 out_edge.linkNodesPos();
             }
-            // Update each in_neighbour
-            for (let in_neighbour of this.in_neighbours) {
-                for (let out_edge_of_in_neighbour of in_neighbour.out_edges) {
-                    if (out_edge_of_in_neighbour.destination == this) {
-                        out_edge_of_in_neighbour.linkNodesPos();
-                    }
-                }
+            // Update each in edge
+            for (let in_edge of this.in_edges) {
+                in_edge.linkNodesPos();
             }
         };
         this.value = value;
@@ -191,8 +188,8 @@ class GraphNode {
                 const new_val = parseInt(this.div.innerText);
                 if (new_val) {
                     this.value = new_val;
-                    for (let adj of this.in_neighbours) {
-                        adj.sortNeighbours();
+                    for (let adj of this.in_edges) {
+                        adj.source.sortNeighbours();
                     }
                 }
                 this.div.innerText = this.value.toString();
@@ -210,7 +207,7 @@ class GraphNode {
         // Add neighbour and calculate position of arrow
         const new_edge = new Edge(this, destination_node);
         this.out_edges.push(new_edge);
-        destination_node.in_neighbours.push(this);
+        destination_node.in_edges.push(new_edge);
         // Update attributes
         this.updateEdgesPos();
         this.sortNeighbours();
@@ -227,17 +224,12 @@ class GraphNode {
             GRAPH.nodes.splice(i, 1);
         // Delete node HTML element
         (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.removeChild(this.div);
-        // Delete out_edges
+        // Delete all edges
         for (let j = this.out_edges.length - 1; j >= 0; j--) {
             this.out_edges[j].delete();
         }
-        // Delete in_edges
-        for (let l = this.in_neighbours.length - 1; l >= 0; l--) {
-            for (let out_edge_of_in_neighbour of this.in_neighbours[l].out_edges) {
-                if (out_edge_of_in_neighbour.destination === this) {
-                    out_edge_of_in_neighbour.delete();
-                }
-            }
+        for (let k = this.in_edges.length - 1; k >= 0; k--) {
+            this.in_edges[k].delete();
         }
         GRAPH.size--;
     }
@@ -254,7 +246,8 @@ class GraphNode {
     }
     sortNeighbours() {
         this.out_edges.sort((a, b) => a.destination.value - b.destination.value);
-        this.in_neighbours.sort((a, b) => a.value - b.value);
+        this.in_edges.sort((a, b) => a.source.value - b.source.value);
+        this.neighbours.sort((a, b) => a.value - b.value);
     }
 }
 // #region * ATTRIBUTES

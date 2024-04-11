@@ -5,6 +5,7 @@ class Edge {
     constructor(source, destination) {
         var _a, _b, _c, _d, _e;
         this.colour = Edge.DEFAULT_COLOUR;
+        this.weight = 1;
         this.hovering = false;
         this.moving_head = false;
         this.moving_tail = false;
@@ -202,12 +203,12 @@ class Edge {
             throw Error("Edge does not exist in source's out_edges array, cannot delete");
         else
             this.source.out_edges.splice(i, 1);
-        // Remove source from destination's in_neighbours
-        let j = this.destination.in_neighbours.indexOf(this.source);
+        // Remove edge from destination's in_edges
+        let j = this.destination.in_edges.indexOf(this);
         if (j === -1)
-            throw Error("Source does not exist inside destination's in_neighbour's array, cannot delete");
+            throw Error("Edge does not exist inside destination's in_edges's array, cannot delete");
         else
-            this.destination.in_neighbours.splice(j, 1);
+            this.destination.in_edges.splice(j, 1);
     }
 }
 // #region ATTRIBUTES
