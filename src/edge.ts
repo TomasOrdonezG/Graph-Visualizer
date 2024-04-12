@@ -44,25 +44,25 @@ export default class Edge {
         // * Create Divs
         // Line
         this.line_div = document.createElement("div");
-        this.line_div.className = "line";
+        this.line_div.classList.add("line", "pan");
         GRAPH.HTML_Container?.appendChild(this.line_div);
 
         // Arrowheads
         this.left_arrowhead_div = document.createElement("div");
-        this.left_arrowhead_div.className = "line";
+        this.left_arrowhead_div.classList.add("line", "pan");
         GRAPH.HTML_Container?.appendChild(this.left_arrowhead_div);
 
         this.right_arrowhead_div = document.createElement("div");
-        this.right_arrowhead_div.className = "line";
+        this.right_arrowhead_div.classList.add("line", "pan");
         GRAPH.HTML_Container?.appendChild(this.right_arrowhead_div);
 
         // Hitboxes
         this.hitbox_div_head = document.createElement("div");
-        this.hitbox_div_head.className = "hitbox";
+        this.hitbox_div_head.classList.add("hitbox", "pan");
         GRAPH.HTML_Container?.appendChild(this.hitbox_div_head);
 
         this.hitbox_div_tail = document.createElement("div");
-        this.hitbox_div_tail.className = "hitbox";
+        this.hitbox_div_tail.classList.add("hitbox", "pan");
         GRAPH.HTML_Container?.appendChild(this.hitbox_div_tail);
 
         this.updateColour(Edge.DEFAULT_COLOUR);

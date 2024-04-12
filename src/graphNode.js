@@ -65,7 +65,7 @@ class GraphNode {
         this.y = y;
         // Create node Div
         this.div = document.createElement("div");
-        this.div.className = "circle";
+        this.div.classList.add("circle", "pan");
         this.div.setAttribute("contenteditable", "false");
         (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.div);
         this.updatePos(this.x, this.y);

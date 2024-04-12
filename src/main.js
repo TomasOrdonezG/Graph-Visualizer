@@ -32,35 +32,47 @@ class Graph {
         // * Event Listeners
         // Add node on click
         document.addEventListener("mouseup", this.addNode.bind(this));
-        // * Create buttons
-        // BFS Button
+        this.sidenav = document.createElement("div");
         this.BFS_Button = document.createElement("button");
-        this.BFS_Button.textContent = "BFS";
-        this.BFS_Button.className = "button";
-        this.BFS_Button.addEventListener("click", this.BFS.bind(this));
-        document.body.appendChild(this.BFS_Button);
-        // DFS Button
         this.DFS_Button = document.createElement("button");
-        this.DFS_Button.textContent = "DFS";
-        this.DFS_Button.className = "button";
-        this.DFS_Button.addEventListener("click", this.DFS.bind(this));
-        document.body.appendChild(this.DFS_Button);
-        // * Create toggles
         this.HTML_directed_toggle = document.createElement("input");
+        this.createHTML();
+    }
+    createHTML() {
+        // Navigation menu
+        const open_area = document.createElement("div");
+        open_area.classList.add("open-sidenav", "pan");
+        open_area.addEventListener("mouseenter", this.openNav.bind(this));
+        document.body.appendChild(open_area);
+        this.sidenav.classList.add("graph-sidenav", "pan");
+        this.sidenav.addEventListener("mouseleave", this.closeNav.bind(this));
+        document.body.append(this.sidenav);
+        // BFS Button
+        this.BFS_Button.textContent = "BFS";
+        this.BFS_Button.classList.add("button", "pan");
+        this.BFS_Button.addEventListener("click", this.BFS.bind(this));
+        this.sidenav.appendChild(this.BFS_Button);
+        // DFS Button
+        this.DFS_Button.textContent = "DFS";
+        this.DFS_Button.classList.add("button", "pan");
+        this.DFS_Button.addEventListener("click", this.DFS.bind(this));
+        this.sidenav.appendChild(this.DFS_Button);
+        // Directed toggle & label
+        const toggle_div = document.createElement("div");
         this.HTML_directed_toggle.type = "checkbox";
-        this.HTML_directed_toggle.className = "toggle";
+        this.HTML_directed_toggle.classList.add("toggle", "pan");
+        this.HTML_directed_toggle.id = "directed-checkbox";
         this.HTML_directed_toggle.addEventListener("click", this.toggle_directed.bind(this));
-        document.body.appendChild(this.HTML_directed_toggle);
+        const label = document.createElement("label");
+        label.setAttribute("for", "directed-checkbox");
+        label.innerText = "Directed";
+        toggle_div.appendChild(this.HTML_directed_toggle);
+        toggle_div.appendChild(label);
+        this.sidenav.appendChild(toggle_div);
     }
     addNode(event) {
         // Prevent adding a node when mouse is on a node div, or edge div
-        if (event.button !== 0 ||
-            this.traversing ||
-            event.target.closest(".circle") ||
-            event.target.closest(".hitbox") ||
-            event.target.closest(".line") ||
-            event.target.closest(".toggle") ||
-            event.target.closest(".button")) {
+        if (event.button !== 0 || this.traversing || event.target.closest(".pan")) {
             return;
         }
         // Create the new node object
@@ -87,6 +99,13 @@ class Graph {
         for (let node of this.nodes) {
             node.deselect();
         }
+    }
+    // Navigation menu
+    openNav() {
+        this.sidenav.style.width = "150px";
+    }
+    closeNav() {
+        this.sidenav.style.width = "0";
     }
     // TRAVERSAL
     BFS() {
@@ -289,7 +308,7 @@ class Graph {
 }
 // #region ATTRIBUTES
 // Global class constants
-Graph.DELAY_TIME = 100;
+Graph.DELAY_TIME = 200;
 const GRAPH = new Graph();
 // Disable context menu
 window.addEventListener("contextmenu", (event) => {

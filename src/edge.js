@@ -105,21 +105,21 @@ class Edge {
         // * Create Divs
         // Line
         this.line_div = document.createElement("div");
-        this.line_div.className = "line";
+        this.line_div.classList.add("line", "pan");
         (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.line_div);
         // Arrowheads
         this.left_arrowhead_div = document.createElement("div");
-        this.left_arrowhead_div.className = "line";
+        this.left_arrowhead_div.classList.add("line", "pan");
         (_b = GRAPH.HTML_Container) === null || _b === void 0 ? void 0 : _b.appendChild(this.left_arrowhead_div);
         this.right_arrowhead_div = document.createElement("div");
-        this.right_arrowhead_div.className = "line";
+        this.right_arrowhead_div.classList.add("line", "pan");
         (_c = GRAPH.HTML_Container) === null || _c === void 0 ? void 0 : _c.appendChild(this.right_arrowhead_div);
         // Hitboxes
         this.hitbox_div_head = document.createElement("div");
-        this.hitbox_div_head.className = "hitbox";
+        this.hitbox_div_head.classList.add("hitbox", "pan");
         (_d = GRAPH.HTML_Container) === null || _d === void 0 ? void 0 : _d.appendChild(this.hitbox_div_head);
         this.hitbox_div_tail = document.createElement("div");
-        this.hitbox_div_tail.className = "hitbox";
+        this.hitbox_div_tail.classList.add("hitbox", "pan");
         (_e = GRAPH.HTML_Container) === null || _e === void 0 ? void 0 : _e.appendChild(this.hitbox_div_tail);
         this.updateColour(Edge.DEFAULT_COLOUR);
         // Add mouse event listeners
