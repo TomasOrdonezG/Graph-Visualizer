@@ -7,6 +7,43 @@ body {
     background-color: whitesmoke;
 }
 
+.graph-sidenav {
+    height: 100%; /* 100% Full-height */
+    width: 0; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 100; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+    background-color: #aaa; /* Black*/
+    border: 2px solid #555;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 60px; /* Place content 60px from the top */
+    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.graph-sidenav button {
+    margin: 3%;
+    padding: 7px 20px;
+    text-decoration: none;
+    font-size: 20px;
+    color: #2b2b2b;
+    transition: 0.3s;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.open-sidenav {
+    position: absolute;
+    width: 3%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+}
+
 .circle {
     border-radius: 50%; /* Ensures circular shape */
     position: absolute; /* Position relative to the container */
@@ -18,10 +55,6 @@ body {
     transition: transform 0.1s ease-in-out, font-size 0.1s ease-in-out;
     outline: none;
     z-index: 100;
-}
-
-.node-input {
-    color: black;
 }
 
 .line {
