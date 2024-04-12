@@ -2,11 +2,17 @@
 
 ## Description
 
-This is a simple directed graph creator. You're able to add and delete nodes and edges to a graph. The goal of this app is to visualize the way various graph algorithms work for better understanding. The current algorithms implemented are BFS and DFS.
+This is a simple directed and undirected graph creator. You're able to add and delete nodes and edges to a graph. The goal of this app is to visualize the way various graph algorithms work for better understanding. The current algorithms implemented are BFS and DFS.
 
 ## Usage
 
-### Graph Nodes
+Place cursor near the left side of the screen to open the sidebar.
+
+### Graph
+
+-   Toggle `Directed` in the sidebar to switch between a directed and an undirected graph.
+
+### Nodes/Vertices
 
 -   **Left-Click** anywhere in the blank page to **add a graph node**.
 -   **Left-Click and drage** a node to **move** it (and select it).
@@ -17,7 +23,7 @@ This is a simple directed graph creator. You're able to add and delete nodes and
 -   **`Backspace`** to **delete all selected nodes**.
 -   **`Enter`** to **edit the value** of a selected node (one at a time).
 
-### Graph Edges/Arrows
+### Edges/Arrows
 
 -   **Right-Click** and drag from one node to another to **add an edge** to connect them.
 -   **Left-Click and drag** the head of an arrow/edge to another node to **reconnect** to set that node as the new destination node.
@@ -31,13 +37,12 @@ This is a simple directed graph creator. You're able to add and delete nodes and
 -   Click `BFS` Button to run [Breadth First Search](https://en.wikipedia.org/wiki/Breadth-first_search) on the first selected node.
 -   Click `DFS` Button to run [Depth First Search](https://en.wikipedia.org/wiki/Depth-first_search) on the graph.
 
-## Future Features
+## Future Plans
 
 ### Features
 
--   Implement undirected graphs.
 -   Implement [weighted graphs](<https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph>).
--   Add a way to edit weight of edges once weighted graphs are implemented.
+    -   Add a way to edit weight of edges.
 -   Add distance attribute to each node when running BSF.
 -   Add discovery time and finish time of each node when running DFS.
 
@@ -48,10 +53,14 @@ This is a simple directed graph creator. You're able to add and delete nodes and
 -   Create a [Heap](<https://en.wikipedia.org/wiki/Heap_(data_structure)>).
 -   Create a [BST](https://en.wikipedia.org/wiki/Binary_search_tree).
     -   Balance the BST using [AVL rotation](https://en.wikipedia.org/wiki/AVL_tree#Rebalancing).
--   Find a [Minimum Spanning Tree](https://en.wikipedia.org/wiki/Minimum_spanning_tree) using [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm) (after implementing weighted graphs).
--   Find a [Minimum Spanning Tree](https://en.wikipedia.org/wiki/Minimum_spanning_tree) using [Prim's Algorithm](https://en.wikipedia.org/wiki/Prim's_algorithm) (after implementing weighted graphs).
+-   Once weighted graphs are implemented:
+    -   [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm).
+    -   [Prim's Algorithm](https://en.wikipedia.org/wiki/Prim's_algorithm).
+    -   [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm).
 
 ### QoL
 
 -   Add visual when adding an edge between two nodes using Right-Click drag.
--   More keyboard shortcuts (need ideas for this one)
+-   More keyboard shortcuts (need ideas for this one).
+-   Play/Pause and frame skipping while in an animation.
+-   Add a slider for animation speed.
