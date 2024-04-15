@@ -13,6 +13,7 @@ class GraphNode {
         this.colour = "white";
         // State
         this.selected = true;
+        this.search_status = null;
         this.dragging = false;
         this.initialX_drag = 0;
         this.initialY_drag = 0;
