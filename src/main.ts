@@ -4,11 +4,7 @@ import Menu from "./menu.js";
 // Global variables
 const GRAPH = new Graph();
 const MENU = new Menu();
-let keyboardState: {
-    CTRL: boolean;
-    A: boolean;
-    SHIFT: boolean;
-} = {
+let keyboardState: { CTRL: boolean; A: boolean; SHIFT: boolean } = {
     CTRL: false,
     A: false,
     SHIFT: false,
