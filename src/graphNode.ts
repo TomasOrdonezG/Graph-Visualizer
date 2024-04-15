@@ -1,5 +1,5 @@
 import Edge from "./edge.js";
-import { GRAPH, keyboardState } from "./main.js";
+import { GRAPH, keyboardState, MENU } from "./main.js";
 
 export default class GraphNode {
     // #region * ATTRIBUTES
@@ -27,6 +27,7 @@ export default class GraphNode {
 
     // State
     public selected: boolean = true;
+    public search_status: null | "new" | "discovered" | "searched" = null;
     private dragging: boolean = false;
     private initialX_drag: number = 0;
     private initialY_drag: number = 0;
