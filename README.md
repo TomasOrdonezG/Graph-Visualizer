@@ -34,8 +34,8 @@ Place cursor near the left side of the screen to open the sidebar.
 
 ### Animating
 
--   Click `BFS` Button to run [Breadth First Search](https://en.wikipedia.org/wiki/Breadth-first_search) on the first selected node.
--   Click `DFS` Button to run [Depth First Search](https://en.wikipedia.org/wiki/Depth-first_search) on the graph.
+-   Click `BFS` Button to run [Breadth First Search (BFS)](https://en.wikipedia.org/wiki/Breadth-first_search) on the first selected node.
+-   Click `DFS` Button to run [Depth First Search (DFS)](https://en.wikipedia.org/wiki/Depth-first_search) on the graph.
 
 ## Future Plans
 
@@ -48,15 +48,17 @@ Place cursor near the left side of the screen to open the sidebar.
 
 ### Animations
 
--   Find [SCC](https://en.wikipedia.org/wiki/Strongly_connected_component)s of the graph.
+-   Check if the graph is a [Directed Acyclic Graph (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph) using DFS.
+-   Find [Strongly Connected Components (SCC)](https://en.wikipedia.org/wiki/Strongly_connected_component) of the graph.
 -   Find a [Topological Order](https://en.wikipedia.org/wiki/Topological_sorting) of the graph using DFS.
 -   Create a [Heap](<https://en.wikipedia.org/wiki/Heap_(data_structure)>).
--   Create a [BST](https://en.wikipedia.org/wiki/Binary_search_tree).
+-   Create a [Binary Search Tree (BST)](https://en.wikipedia.org/wiki/Binary_search_tree).
     -   Balance the BST using [AVL rotation](https://en.wikipedia.org/wiki/AVL_tree#Rebalancing).
 -   Once weighted graphs are implemented:
     -   [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm).
     -   [Prim's Algorithm](https://en.wikipedia.org/wiki/Prim's_algorithm).
     -   [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm).
+    -   Dijkstra's Algorithm on a DAG using topological ordering.
 
 ### QoL
 
@@ -64,3 +66,11 @@ Place cursor near the left side of the screen to open the sidebar.
 -   More keyboard shortcuts (need ideas for this one).
 -   Play/Pause and frame skipping while in an animation.
 -   Add a slider for animation speed.
+-   Add area selecting with cursor drag.
+-   Colour customization.
+
+### Known Bugs
+
+-   Unlinking an already exisiting edge will be deleted when attempting to reconnect to the previously linked node.
+-   First click adds invisible node.
+-   When reconnecting an edge, if the user attempts to reconnect to the node which the edge is already connected to, it will be highlighted as if connection is ready. However, one cannot connect a node to itself.
