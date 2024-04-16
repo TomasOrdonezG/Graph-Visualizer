@@ -1,5 +1,5 @@
 import { GRAPH } from "./main.js";
-class Menu {
+export default class Menu {
     // #endregion
     constructor() {
         this.sidenav = document.createElement("div");
@@ -10,13 +10,7 @@ class Menu {
     }
     createHTML() {
         // Navigation menu
-        const open_area = document.createElement("div");
-        open_area.classList.add("open-sidenav", "pan");
-        open_area.addEventListener("mouseenter", this.openNav.bind(this));
-        open_area.style.width = Menu.width + "px";
-        document.body.appendChild(open_area);
         this.sidenav.classList.add("graph-sidenav", "pan");
-        this.sidenav.addEventListener("mouseleave", this.closeNav.bind(this));
         document.body.append(this.sidenav);
         // BFS Button
         this.BFS_Button.textContent = "BFS";
@@ -41,14 +35,4 @@ class Menu {
         toggle_div.appendChild(label);
         this.sidenav.appendChild(toggle_div);
     }
-    // Navigation menu
-    openNav() {
-        this.sidenav.style.width = Menu.width + "px";
-    }
-    closeNav() {
-        this.sidenav.style.width = "0";
-    }
 }
-// #region ATTRIBUTES
-Menu.width = 150;
-export default Menu;
