@@ -1,7 +1,6 @@
 import GraphNode from "./graphNode.js";
 import Edge from "./edge.js";
 import { keyboardState } from "./main.js";
-// import { waitForClick, delay } from "./utils.js";
 // Graph global variable
 class Graph {
     // #endregion
