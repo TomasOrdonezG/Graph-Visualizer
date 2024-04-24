@@ -1,5 +1,6 @@
+import Graph from "./graph.js";
 import Edge from "./edge.js";
-import { GRAPH, keyboardState, MENU } from "./main.js";
+import { keyboardState } from "./main.js";
 
 export default class GraphNode {
     // #region * ATTRIBUTES
@@ -12,6 +13,7 @@ export default class GraphNode {
     static READY_BORDER_COLOUR = Edge.READY_COLOUR;
 
     // Graph attributes
+    private graph: Graph;
     public value: number;
     public out_edges: Edge[] = [];
     public in_edges: Edge[] = [];
@@ -44,7 +46,8 @@ export default class GraphNode {
     // #endregion
 
     // * INITIALIZATION
-    constructor(x: number, y: number, value: number) {
+    constructor(x: number, y: number, value: number, graph: Graph) {
+        this.graph = graph;
         this.value = value;
         this.x = x;
         this.y = y;
@@ -53,7 +56,7 @@ export default class GraphNode {
         this.div = document.createElement("div");
         this.div.classList.add("circle", "pan");
         this.div.setAttribute("contenteditable", "false");
-        GRAPH.HTML_Container?.appendChild(this.div);
+        this.graph.HTML_Container?.appendChild(this.div);
 
         this.updatePos(this.x, this.y);
         this.updateAll();
@@ -66,16 +69,14 @@ export default class GraphNode {
         this.div.style.fontSize = "20px";
 
         // Highlight when edge is begin dragged (and this is being hovered)
-        if (GRAPH.moving_edge && (this !== GRAPH.initial_node || this !== GRAPH.final_node)) {
-            GRAPH.moving_edge.updateColour(Edge.READY_COLOUR);
-            this.border_colour = GraphNode.READY_BORDER_COLOUR;
-            this.updateColour();
+        if (this.graph.moving_edge && (this !== this.graph.initial_node || this !== this.graph.final_node)) {
+            this.graph.moving_edge.updateColour(Edge.READY_COLOUR);
+            this.updateBorderColour(GraphNode.READY_BORDER_COLOUR);
         }
     }
     private handle_mouse_leave_div(): void {
         this.div.style.transform = "scale(1)";
-        this.border_colour = this.selected ? GraphNode.SELECTED_BORDER_COLOUR : GraphNode.DEFAULT_BORDER_COLOUR;
-        this.updateColour();
+        this.updateBorderColour(this.selected ? GraphNode.SELECTED_BORDER_COLOUR : GraphNode.DEFAULT_BORDER_COLOUR);
     }
     private handle_mouse_down_div(event: MouseEvent): void {
         event.preventDefault();
@@ -83,20 +84,20 @@ export default class GraphNode {
             // * LEFT CLICK NO SHIFT: Select node and initialize drag for all selected nodes
 
             // Select
-            if (!keyboardState.CTRL) GRAPH.deselect_all();
+            if (!keyboardState.CTRL) this.graph.deselect_all();
             this.select();
 
             // Set dragging to true on ALL selected nodes. Compute the initial position of the cursor
-            for (let node of GRAPH.nodes) {
+            for (let node of this.graph.nodes) {
                 if (node.selected) {
                     node.dragging = true;
                     node.initialX_drag = event.clientX - node.x;
                     node.initialY_drag = event.clientY - node.y;
                 }
             }
-        } else if (event.button === 0 && keyboardState.SHIFT && !GRAPH.traversing) {
+        } else if (event.button === 0 && keyboardState.SHIFT && !this.graph.traversing) {
             // * LEFT CLICK + SHIFT: Connect from all selected nodes
-            for (let node of GRAPH.nodes) {
+            for (let node of this.graph.nodes) {
                 if (node == this) continue;
                 if (node.selected) {
                     node.connect(this);
@@ -104,47 +105,47 @@ export default class GraphNode {
             }
 
             // Select only this as newly connected node destination
-            GRAPH.deselect_all();
+            this.graph.deselect_all();
             this.select();
-        } else if (event.button === 2 && !GRAPH.traversing) {
+        } else if (event.button === 2 && !this.graph.traversing) {
             // * RIGHT CLICK: Set as source node for next connection
-            GRAPH.initial_node = this;
+            this.graph.initial_node = this;
         }
     }
     private handle_mouse_up_doc(event: MouseEvent): void {
         event.preventDefault();
         this.dragging = false;
-        GRAPH.initial_node = null;
+        this.graph.initial_node = null;
     }
     private handle_mouse_up_div(): void {
         // * Connect TO this node
-        if (GRAPH.final_node === null && GRAPH.initial_node && GRAPH.initial_node !== this) {
+        if (this.graph.final_node === null && this.graph.initial_node && this.graph.initial_node !== this) {
             // Connect to the initial node
-            GRAPH.initial_node.connect(this);
+            this.graph.initial_node.connect(this);
 
             // Select only this node as the newly connected node destination
-            GRAPH.deselect_all();
+            this.graph.deselect_all();
             this.select();
 
-            GRAPH.initial_node = null;
+            this.graph.initial_node = null;
         } else {
             // Don't connect if there is no initial node or if initial node is itself
-            GRAPH.initial_node = null;
+            this.graph.initial_node = null;
         }
 
         // * Connect FROM this node
-        if (GRAPH.final_node && GRAPH.initial_node === null && GRAPH.final_node !== this) {
+        if (this.graph.final_node && this.graph.initial_node === null && this.graph.final_node !== this) {
             // Connect final node to this node
-            this.connect(GRAPH.final_node);
+            this.connect(this.graph.final_node);
 
             // Select only final node as the newly connected node destination
-            GRAPH.deselect_all();
+            this.graph.deselect_all();
             this.select();
 
-            GRAPH.final_node = null;
+            this.graph.final_node = null;
         } else {
             // Don't connect if there is no final node or if final node is itself
-            GRAPH.final_node = null;
+            this.graph.final_node = null;
         }
     }
     private handle_mouse_move(event: MouseEvent): void {
@@ -159,7 +160,7 @@ export default class GraphNode {
         event.preventDefault();
 
         // Check if this is the only selected node
-        for (let node of GRAPH.nodes) {
+        for (let node of this.graph.nodes) {
             if (node !== this && node.selected) return;
         }
 
@@ -220,14 +221,14 @@ export default class GraphNode {
 
     // Connection
     public connect(destination_node: GraphNode): Edge | null {
-        GRAPH.initial_node = null;
+        this.graph.initial_node = null;
 
         // Don't connect if already connected or if connected to itself
         if (destination_node === this) return null;
         if (this.out_edges.map((out_edge) => out_edge.destination).includes(destination_node)) return null;
 
         // Add edges and neighbours
-        const new_edge = new Edge(this, destination_node);
+        const new_edge = new Edge(this, destination_node, this.graph);
 
         this.out_edges.push(new_edge);
         this.neighbours.push(destination_node);
@@ -244,11 +245,11 @@ export default class GraphNode {
     }
 
     public delete(): void {
-        // Remove from nodes array in GRAPH
-        let i = GRAPH.nodes.indexOf(this);
-        if (i === -1) throw Error("Error: Attempting to delete node that isn't a part of GRAPH.nodes");
-        else GRAPH.nodes.splice(i, 1);
-        GRAPH.size--;
+        // Remove from nodes array in this.graph
+        let i = this.graph.nodes.indexOf(this);
+        if (i === -1) throw Error("Error: Attempting to delete node that isn't a part of this.graph.nodes");
+        else this.graph.nodes.splice(i, 1);
+        this.graph.size--;
 
         // Remove from neighbours neighbours array
         for (let n of this.neighbours) {
@@ -261,7 +262,7 @@ export default class GraphNode {
         }
 
         // Delete node HTML element and event listeners
-        GRAPH.HTML_Container?.removeChild(this.div);
+        this.graph.HTML_Container?.removeChild(this.div);
         this.removeAllEventListeners();
 
         // Delete all edges
@@ -275,20 +276,18 @@ export default class GraphNode {
 
     // Selection
     public select(): void {
-        this.border_colour = GraphNode.SELECTED_BORDER_COLOUR;
-        this.updateColour();
+        this.updateBorderColour(GraphNode.SELECTED_BORDER_COLOUR);
         this.selected = true;
     }
     public deselect(): void {
-        this.border_colour = GraphNode.DEFAULT_BORDER_COLOUR;
-        this.updateColour();
+        this.updateBorderColour(GraphNode.DEFAULT_BORDER_COLOUR);
         this.selected = false;
     }
 
     // Update Methods
     public updateAll = (): void => {
         this.updateValue();
-        this.updateColour();
+        this.updateColour(this.colour);
         this.updateSize();
     };
     public updatePos = (x: number, y: number): void => {
@@ -301,11 +300,17 @@ export default class GraphNode {
     public updateValue = (): void => {
         this.div.textContent = this.value.toString();
     };
-    public updateColour = (): void => {
+    public updateColour = (colour: string): void => {
+        this.colour = colour;
         this.div.style.backgroundColor = this.colour;
+
+        this.text_colour = colour === "black" ? "white" : "black";
         this.div.style.color = this.text_colour;
-        this.div.style.border = GraphNode.BORDER_WIDTH + "px" + " solid " + this.border_colour;
     };
+    public updateBorderColour(colour: string): void {
+        this.border_colour = colour;
+        this.div.style.border = GraphNode.BORDER_WIDTH + "px" + " solid " + this.border_colour;
+    }
     public updateSize = (): void => {
         this.div.style.width = 2 * GraphNode.RADIUS + "px";
         this.div.style.height = 2 * GraphNode.RADIUS + "px";

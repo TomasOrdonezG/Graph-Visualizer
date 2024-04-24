@@ -3,7 +3,7 @@ import Menu from "./menu.js";
 
 // Global variables
 const GRAPH = new Graph();
-const MENU = new Menu();
+const MENU = new Menu(GRAPH);
 let keyboardState: { CTRL: boolean; A: boolean; SHIFT: boolean } = {
     CTRL: false,
     A: false,
@@ -60,4 +60,4 @@ function main(): void {
 }
 main();
 
-export { GRAPH, MENU, keyboardState };
+export { keyboardState };

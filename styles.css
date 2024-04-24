@@ -55,6 +55,12 @@ body {
     border: 1px solid black;
 }
 
+.speed-slider {
+    position: relative;
+    top: 10px;
+    width: 70%;
+}
+
 .hitbox {
     position: absolute;
     border-radius: 50%;

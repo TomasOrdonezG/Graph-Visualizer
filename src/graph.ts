@@ -1,7 +1,7 @@
 import GraphNode from "./graphNode.js";
 import Edge from "./edge.js";
 import { keyboardState } from "./main.js";
-import { waitForClick, delay } from "./utils.js";
+// import { waitForClick, delay } from "./utils.js";
 
 // Graph global variable
 export default class Graph {
@@ -12,7 +12,7 @@ export default class Graph {
 
     // Standardly initializable attributes
     public nodes: GraphNode[] = [];
-    public directed: boolean = false;
+    public directed: boolean = true;
 
     // Objects to keep track of
     public initial_node: GraphNode | null = null;
@@ -44,7 +44,7 @@ export default class Graph {
         }
 
         // Create the new node object
-        const new_node = new GraphNode(event.clientX, event.clientY, this.next_node_val);
+        const new_node = new GraphNode(event.clientX, event.clientY, this.next_node_val, this);
 
         // Connect all selected nodes to the new node if SHIFT is down
         if (keyboardState.SHIFT && !keyboardState.CTRL) {
@@ -72,175 +72,27 @@ export default class Graph {
         }
     }
 
-    // TRAVERSAL
-    public async BFS(): Promise<void> {
-        if (this.traversing || this.size === 0) return;
-        this.traversing = true;
-
-        // Reset the colour of all nodes and edges in the graph
-        this.reset_colour();
-        await delay(Graph.DELAY_TIME);
-
-        // Get root as the first selected node then mark as discovered
-        let root = this.get_first_selected();
-        if (!root) root = this.nodes[0];
-        await this.setNodeColour(root, "gray");
-
-        // Create queue and enqueue root
-        const Q: {
-            queue: GraphNode[];
-            is_empty(): boolean;
-            enqueue(node: GraphNode): void;
-            dequeue(): GraphNode;
-        } = {
-            queue: [],
-            is_empty() {
-                return this.queue.length == 0;
-            },
-            enqueue(node) {
-                this.queue.push(node);
-            },
-            dequeue() {
-                return this.queue.splice(0, 1)[0];
-            },
-        };
-        Q.enqueue(root);
-
-        // Main BFS loop
-        while (!Q.is_empty()) {
-            let node = Q.dequeue();
-            if (this.directed) {
-                // * DIRECTED GRAPH TRAVERSAL
-                for (let out_edge of node.out_edges) {
-                    const adj_node = out_edge.destination;
-                    if (adj_node.colour === "white") {
-                        // Explore node if it's white
-                        await this.highlightEdge(out_edge);
-                        await this.setNodeColour(adj_node, "gray");
-                        Q.enqueue(adj_node);
-                    }
-                }
-            } else {
-                // * UNDIRECTED GRAPH TRAVERSAL
-                for (let adj of node.neighbours) {
-                    // Explore node if it's white
-                    if (adj.colour === "white") {
-                        // Find edge
-                        let edge: Edge | null = null;
-                        for (let adj_edge of node.out_edges.concat(node.in_edges)) {
-                            if (adj_edge.source === adj || adj_edge.destination === adj) {
-                                edge = adj_edge;
-                            }
-                        }
-
-                        // Highligh and enqueue
-                        if (edge) await this.highlightEdge(edge);
-                        else throw Error("Node is in neighbours array but edge is not in out_edges nor in_edges.");
-                        await this.setNodeColour(adj, "gray");
-                        Q.enqueue(adj);
-                    }
-                }
-            }
-            await this.setNodeColour(node, "black");
-        }
-
-        await this.displayTraversalTree();
-        this.traversing = false;
-    }
-
-    public async DFS(): Promise<void> {
-        if (this.traversing || this.size === 0) return;
-        this.traversing = true;
-        this.deselect_all();
-
-        // Visits one node and traverses through with DFS
-        const DFS_Visit = async (root: GraphNode): Promise<void> => {
-            // Mark root as discovered
-            await this.setNodeColour(root, "gray");
-
-            if (this.directed) {
-                // * DIRECTED GRAPH TRAVERSAL
-                // Run DFS on each neighbour in order
-                for (let out_edge of root.out_edges) {
-                    const adj_node = out_edge.destination;
-                    if (adj_node.colour === "white") {
-                        // Explore node if it's white
-                        await this.highlightEdge(out_edge);
-                        await DFS_Visit(adj_node);
-                    }
-                }
-            } else {
-                // * UNDIRECTED GRAPH TRAVERSAL
-                for (let adj of root.neighbours) {
-                    // Explore node if its white
-                    if (adj.colour === "white") {
-                        // Find edge
-                        let edge: Edge | null = null;
-                        for (let adj_edge of root.out_edges.concat(root.in_edges)) {
-                            if (adj_edge.source === adj || adj_edge.destination === adj) {
-                                edge = adj_edge;
-                            }
-                        }
-
-                        // Highligh and recurse
-                        if (edge) await this.highlightEdge(edge);
-                        else throw Error("Node is in neighbours array but edge is not in out_edges nor in_edges.");
-                        await DFS_Visit(adj);
-                    }
-                }
-            }
-
-            // Mark root as searched
-            await this.setNodeColour(root, "black");
-        };
-
-        this.reset_colour();
-        await delay(Graph.DELAY_TIME);
-
-        // Main DFS loop
+    public reset_colour(): void {
+        // Initialize each node to white and egde to gray
         for (let node of this.nodes) {
-            if (node.colour === "white") {
-                await DFS_Visit(node);
+            // this.setNodeColour(node, "white");
+            node.updateColour("white");
+            node.updateBorderColour(GraphNode.DEFAULT_BORDER_COLOUR);
+            for (let edge of node.out_edges) {
+                edge.updateColour(Edge.DEFAULT_COLOUR);
             }
         }
-
-        await this.displayTraversalTree();
-        this.traversing = false;
     }
 
-    private async displayTraversalTree() {
-        // Shows only the edges that were traversed by the traversal method
+    public get_first_selected(): GraphNode | null {
         for (let node of this.nodes) {
-            for (let out_edge of node.out_edges) {
-                if (out_edge.colour !== Edge.HIGHLIGHT_COLOUR) {
-                    out_edge.updateColour("transparent");
-                }
+            if (node.selected) {
+                return node;
             }
         }
-
-        // Waits for click anywhere and the resets the colour of the graph
-        await waitForClick();
-        this.reset_colour();
+        return null;
     }
 
-    private async setNodeColour(node: GraphNode, colour: string): Promise<void> {
-        // Updates the node and text colour of a node and sets a delay
-        // Should only be called from inside animation methods or reset_colour method
-        const text_colour = colour === "black" ? "white" : "black";
-        node.colour = colour;
-        node.text_colour = text_colour;
-        node.updateColour();
-        await delay(Graph.DELAY_TIME);
-    }
-
-    private async highlightEdge(edge: Edge) {
-        // Highlights an edge and sets a delay
-        // Should only be called from inside animation methods
-        edge.updateColour(Edge.HIGHLIGHT_COLOUR);
-        await delay(Graph.DELAY_TIME);
-    }
-
-    // Update
     public toggle_directed(event: MouseEvent): void {
         // Prevent from changing graph type while traversing
         if (this.traversing) {
@@ -255,25 +107,6 @@ export default class Graph {
                 out_edge.linkNodesPos();
             }
         }
-    }
-
-    public reset_colour(): void {
-        // Initialize each node to white and egde to gray
-        for (let node of this.nodes) {
-            this.setNodeColour(node, "white");
-            for (let edge of node.out_edges) {
-                edge.updateColour(Edge.DEFAULT_COLOUR);
-            }
-        }
-    }
-
-    private get_first_selected(): GraphNode | null {
-        for (let node of this.nodes) {
-            if (node.selected) {
-                return node;
-            }
-        }
-        return null;
     }
 
     public sortNodes() {
