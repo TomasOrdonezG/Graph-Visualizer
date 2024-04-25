@@ -58,6 +58,11 @@ export default class GraphNode {
         this.div.setAttribute("contenteditable", "false");
         this.graph.HTML_Container?.appendChild(this.div);
 
+        // Log node creation and styles
+        console.log("Node created at", this.x, this.y);
+        console.log("Node element:", this.div);
+        console.log("Computed styles:", window.getComputedStyle(this.div));
+
         this.updatePos(this.x, this.y);
         this.updateAll();
         this.addAllEventListeners();

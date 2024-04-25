@@ -17,23 +17,21 @@ export default class Menu {
     private play_pause_animation_button: HTMLButtonElement;
     private stop_animation_button: HTMLButtonElement;
     private reset_animation_button: HTMLButtonElement;
-    private animation_speed_slider: HTMLInputElement;
 
     public currentAnimation: Animation | null = null;
     // #endregion
 
     constructor(graph: Graph) {
         this.graph = graph;
-        this.algorithms = new Algorithms(this.graph);
+        this.algorithms = new Algorithms(this.graph, document.querySelector(".frame-slider") as HTMLInputElement);
 
         // Animation Menu
-        this.animationSideNav = document.createElement("div");
-        this.prev_frame_button = document.createElement("button");
-        this.next_frame_button = document.createElement("button");
-        this.play_pause_animation_button = document.createElement("button");
-        this.stop_animation_button = document.createElement("button");
-        this.animation_speed_slider = document.createElement("input");
-        this.reset_animation_button = document.createElement("button");
+        this.animationSideNav = document.querySelector(".animation-menu") as HTMLDivElement;
+        this.prev_frame_button = document.querySelector(".prev-frame") as HTMLButtonElement;
+        this.play_pause_animation_button = document.querySelector(".play-pause") as HTMLButtonElement;
+        this.next_frame_button = document.querySelector(".next-frame") as HTMLButtonElement;
+        this.stop_animation_button = document.querySelector(".stop") as HTMLButtonElement;
+        this.reset_animation_button = document.querySelector(".reset") as HTMLButtonElement;
         this.buildAnimationMenu();
 
         // Main Menu
@@ -92,35 +90,30 @@ export default class Menu {
     }
 
     private buildAnimationMenu() {
-        // Navigation menu
-        this.animationSideNav.classList.add("graph-sidenav", "pan");
-        document.body.append(this.animationSideNav);
-
         // Buttons
-        this.prev_frame_button.textContent = "<";
         this.prev_frame_button.addEventListener("click", () => {
             if (this.currentAnimation) this.currentAnimation.prev_frame();
         });
-
-        this.next_frame_button.textContent = ">";
         this.next_frame_button.addEventListener("click", () => {
             if (this.currentAnimation) this.currentAnimation.next_frame();
         });
-
-        this.play_pause_animation_button.textContent = "Play";
         this.play_pause_animation_button.addEventListener("click", async () => {
             // Toggle playing attribute of the current animation
             if (!this.currentAnimation) return;
-            if (this.play_pause_animation_button.textContent === "Play") {
-                this.play_pause_animation_button.textContent = "Pause";
+            if (this.play_pause_animation_button.textContent === "▶") {
+                if (this.currentAnimation.curr_index === this.currentAnimation.length) {
+                    this.currentAnimation.curr_index = 0;
+                    this.graph.reset_colour();
+                    this.currentAnimation.updateSlider();
+                }
+                this.play_pause_animation_button.textContent = "⏸";
                 await this.currentAnimation.play();
+                this.play_pause_animation_button.textContent = "▶";
             } else {
-                this.play_pause_animation_button.textContent = "Play";
+                this.play_pause_animation_button.textContent = "▶";
                 this.currentAnimation.pause();
             }
         });
-
-        this.stop_animation_button.textContent = "Stop";
         this.stop_animation_button.addEventListener("click", () => {
             // Removes the current animation and resets all nodes
             this.focusMainMenu();
@@ -128,49 +121,21 @@ export default class Menu {
             this.graph.reset_colour();
             this.graph.traversing = false;
         });
-
-        this.reset_animation_button.textContent = "Reset";
         this.reset_animation_button.addEventListener("click", () => {
             // Resets animation
             if (this.currentAnimation) {
                 this.currentAnimation.curr_index = 0;
                 this.graph.reset_colour();
+                this.currentAnimation.updateSlider();
 
-                this.play_pause_animation_button.textContent = "Play";
+                this.play_pause_animation_button.textContent = "▶";
                 this.currentAnimation.playing = false;
             }
         });
-
-        // Add classlists to buttons and append the, to nav
-        const buttons: HTMLButtonElement[] = [
-            this.prev_frame_button,
-            this.play_pause_animation_button,
-            this.next_frame_button,
-            this.stop_animation_button,
-            this.reset_animation_button,
-        ];
-        for (let button of buttons) {
-            button.classList.add("button", "pan");
-            this.animationSideNav.appendChild(button);
-        }
-
-        // Speed slider
-        this.animation_speed_slider.type = "number";
-        this.animation_speed_slider.min = Animation.min_fps.toString();
-        this.animation_speed_slider.max = Animation.max_fps.toString();
-        this.animation_speed_slider.setAttribute("orient", "vertical");
-        this.animation_speed_slider.classList.add("speed-slider", "pan");
-        this.animationSideNav.appendChild(this.animation_speed_slider);
-        this.animation_speed_slider.oninput = () => {
-            if (this.currentAnimation) {
-                this.currentAnimation.fps = parseInt(this.animation_speed_slider.value);
-            }
-        };
     }
     private focusAnimationMenu() {
         if (!this.currentAnimation) return;
         this.animationSideNav.style.display = "";
-        this.animation_speed_slider.value = this.currentAnimation.fps.toString() + " fps";
         this.hideMainMenu();
     }
     private hideAnimationMenu() {

@@ -71,6 +71,10 @@ class GraphNode {
         this.div.classList.add("circle", "pan");
         this.div.setAttribute("contenteditable", "false");
         (_a = this.graph.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.div);
+        // Log node creation and styles
+        console.log("Node created at", this.x, this.y);
+        console.log("Node element:", this.div);
+        console.log("Computed styles:", window.getComputedStyle(this.div));
         this.updatePos(this.x, this.y);
         this.updateAll();
         this.addAllEventListeners();

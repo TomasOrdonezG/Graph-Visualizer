@@ -83,13 +83,13 @@ export default class Graph {
         }
     }
 
-    public get_first_selected(): GraphNode | null {
+    public get_first_selected(): GraphNode {
         for (let node of this.nodes) {
             if (node.selected) {
                 return node;
             }
         }
-        return null;
+        return this.nodes[0];
     }
 
     public toggle_directed(event: MouseEvent): void {

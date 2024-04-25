@@ -71,7 +71,7 @@ class Graph {
                 return node;
             }
         }
-        return null;
+        return this.nodes[0];
     }
     toggle_directed(event) {
         // Prevent from changing graph type while traversing
