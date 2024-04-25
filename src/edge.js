@@ -1,8 +1,7 @@
 import GraphNode from "./graphNode.js";
-import { GRAPH } from "./main.js";
 class Edge {
     // #endregion
-    constructor(source, destination) {
+    constructor(source, destination, graph) {
         var _a, _b, _c, _d, _e;
         this.colour = Edge.DEFAULT_COLOUR;
         this.weight = 1;
@@ -16,23 +15,6 @@ class Edge {
             down_tail_hitbox: this.handle_mouse_down_tail_hitbox.bind(this),
             up: this.handle_mouse_up.bind(this),
             move: this.handle_mouse_move.bind(this),
-        };
-        this.updateColour = (colour) => {
-            this.colour = colour;
-            // border
-            this.line_div.style.border = `1px solid ${this.colour}`;
-            this.left_arrowhead_div.style.border = `1px solid ${this.colour}`;
-            this.right_arrowhead_div.style.border = `1px solid ${this.colour}`;
-            // Thickness
-            const bg = this.colour === "black" ? this.colour : "transparent";
-            this.line_div.style.backgroundColor = bg;
-            this.left_arrowhead_div.style.backgroundColor = bg;
-            this.right_arrowhead_div.style.backgroundColor = bg;
-            // Z-Index
-            const zi = this.colour === "black" ? "1" : "-1";
-            this.line_div.style.zIndex = zi;
-            this.left_arrowhead_div.style.zIndex = zi;
-            this.right_arrowhead_div.style.zIndex = zi;
         };
         this.updatePos = (x1, y1, x2, y2) => {
             const get_line_styles = (x1, y1, x2, y2) => {
@@ -59,7 +41,7 @@ class Edge {
             const line_styles = get_line_styles(x1, y1, x2, y2);
             this.line_div.setAttribute("style", line_styles);
             // * ARROWHEAD (if the graph is directed)
-            if (GRAPH.directed) {
+            if (this.graph.directed) {
                 // Compute arrowhead sides positions
                 const v_angle = Math.atan2(y2 - y1, x2 - x1);
                 const arrow1 = {
@@ -100,27 +82,28 @@ class Edge {
             // * Update colour
             this.updateColour(this.colour);
         };
+        this.graph = graph;
         this.source = source;
         this.destination = destination;
         // * Create Divs
         // Line
         this.line_div = document.createElement("div");
         this.line_div.classList.add("line", "pan");
-        (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.line_div);
+        (_a = this.graph.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.line_div);
         // Arrowheads
         this.left_arrowhead_div = document.createElement("div");
         this.left_arrowhead_div.classList.add("line", "pan");
-        (_b = GRAPH.HTML_Container) === null || _b === void 0 ? void 0 : _b.appendChild(this.left_arrowhead_div);
+        (_b = this.graph.HTML_Container) === null || _b === void 0 ? void 0 : _b.appendChild(this.left_arrowhead_div);
         this.right_arrowhead_div = document.createElement("div");
         this.right_arrowhead_div.classList.add("line", "pan");
-        (_c = GRAPH.HTML_Container) === null || _c === void 0 ? void 0 : _c.appendChild(this.right_arrowhead_div);
+        (_c = this.graph.HTML_Container) === null || _c === void 0 ? void 0 : _c.appendChild(this.right_arrowhead_div);
         // Hitboxes
         this.hitbox_div_head = document.createElement("div");
         this.hitbox_div_head.classList.add("hitbox", "pan");
-        (_d = GRAPH.HTML_Container) === null || _d === void 0 ? void 0 : _d.appendChild(this.hitbox_div_head);
+        (_d = this.graph.HTML_Container) === null || _d === void 0 ? void 0 : _d.appendChild(this.hitbox_div_head);
         this.hitbox_div_tail = document.createElement("div");
         this.hitbox_div_tail.classList.add("hitbox", "pan");
-        (_e = GRAPH.HTML_Container) === null || _e === void 0 ? void 0 : _e.appendChild(this.hitbox_div_tail);
+        (_e = this.graph.HTML_Container) === null || _e === void 0 ? void 0 : _e.appendChild(this.hitbox_div_tail);
         this.updateColour(Edge.DEFAULT_COLOUR);
         // Add mouse event listeners
         this.addMouseEventListeners();
@@ -128,14 +111,14 @@ class Edge {
     // Event listeners and handlers
     handle_mouse_enter() {
         // Hover starts
-        if (!GRAPH.traversing) {
+        if (!this.graph.traversing) {
             this.updateColour(Edge.HOVER_COLOUR);
             this.hovering = true;
         }
     }
     handle_mouse_leave() {
         // Hover ends
-        if (!GRAPH.traversing) {
+        if (!this.graph.traversing) {
             this.updateColour(Edge.DEFAULT_COLOUR);
             this.hovering = false;
         }
@@ -143,26 +126,26 @@ class Edge {
     handle_mouse_down_head_hitbox() {
         // Start moving the tip of the arrow
         if (this.hovering) {
-            GRAPH.initial_node = this.source;
+            this.graph.initial_node = this.source;
             this.moving_head = true;
-            GRAPH.moving_edge = this;
+            this.graph.moving_edge = this;
         }
     }
     handle_mouse_down_tail_hitbox() {
         // Start moving the end of the arrow
         if (this.hovering) {
-            GRAPH.final_node = this.destination;
+            this.graph.final_node = this.destination;
             this.moving_tail = true;
-            GRAPH.moving_edge = this;
+            this.graph.moving_edge = this;
         }
     }
     handle_mouse_up() {
         // Connection failed, reset attributes
         if (this.moving_head || this.moving_tail) {
             this.delete();
-            GRAPH.moving_edge = null;
-            GRAPH.initial_node = null;
-            GRAPH.final_node = null;
+            this.graph.moving_edge = null;
+            this.graph.initial_node = null;
+            this.graph.final_node = null;
         }
     }
     handle_mouse_move(event) {
@@ -200,6 +183,23 @@ class Edge {
         document.removeEventListener("mouseup", this.bound_mouse_handlers.up);
         document.removeEventListener("mousemove", this.bound_mouse_handlers.move);
     }
+    updateColour(colour) {
+        this.colour = colour;
+        // border
+        this.line_div.style.border = `1px solid ${this.colour}`;
+        this.left_arrowhead_div.style.border = `1px solid ${this.colour}`;
+        this.right_arrowhead_div.style.border = `1px solid ${this.colour}`;
+        // Thickness
+        const bg = this.colour === "black" ? this.colour : "transparent";
+        this.line_div.style.backgroundColor = bg;
+        this.left_arrowhead_div.style.backgroundColor = bg;
+        this.right_arrowhead_div.style.backgroundColor = bg;
+        // Z-Index
+        const zi = this.colour === "black" ? "1" : "-1";
+        this.line_div.style.zIndex = zi;
+        this.left_arrowhead_div.style.zIndex = zi;
+        this.right_arrowhead_div.style.zIndex = zi;
+    }
     linkNodesPos() {
         const rnorm = GraphNode.RADIUS /
             Math.sqrt((this.destination.x - this.source.x) ** 2 + (this.destination.y - this.source.y) ** 2);
@@ -235,11 +235,11 @@ class Edge {
     delete() {
         var _a, _b, _c, _d, _e;
         // Remove divs and event listeners
-        (_a = GRAPH.HTML_Container) === null || _a === void 0 ? void 0 : _a.removeChild(this.line_div);
-        (_b = GRAPH.HTML_Container) === null || _b === void 0 ? void 0 : _b.removeChild(this.left_arrowhead_div);
-        (_c = GRAPH.HTML_Container) === null || _c === void 0 ? void 0 : _c.removeChild(this.right_arrowhead_div);
-        (_d = GRAPH.HTML_Container) === null || _d === void 0 ? void 0 : _d.removeChild(this.hitbox_div_head);
-        (_e = GRAPH.HTML_Container) === null || _e === void 0 ? void 0 : _e.removeChild(this.hitbox_div_tail);
+        (_a = this.graph.HTML_Container) === null || _a === void 0 ? void 0 : _a.removeChild(this.line_div);
+        (_b = this.graph.HTML_Container) === null || _b === void 0 ? void 0 : _b.removeChild(this.left_arrowhead_div);
+        (_c = this.graph.HTML_Container) === null || _c === void 0 ? void 0 : _c.removeChild(this.right_arrowhead_div);
+        (_d = this.graph.HTML_Container) === null || _d === void 0 ? void 0 : _d.removeChild(this.hitbox_div_head);
+        (_e = this.graph.HTML_Container) === null || _e === void 0 ? void 0 : _e.removeChild(this.hitbox_div_tail);
         this.removeMouseEventListeners();
         // Remove edge from source's out_edges
         let i = this.source.out_edges.indexOf(this);

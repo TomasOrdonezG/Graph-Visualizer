@@ -1,5 +1,5 @@
+import Graph from "./graph.js";
 import GraphNode from "./graphNode.js";
-import { GRAPH } from "./main.js";
 
 export default class Edge {
     // #region ATTRIBUTES
@@ -13,6 +13,7 @@ export default class Edge {
     static HIGHLIGHT_COLOUR = "black";
     static READY_COLOUR = "lightseagreen";
 
+    private graph: Graph;
     public source: GraphNode;
     public destination: GraphNode;
     public colour: string = Edge.DEFAULT_COLOUR;
@@ -37,7 +38,8 @@ export default class Edge {
     };
     // #endregion
 
-    constructor(source: GraphNode, destination: GraphNode) {
+    constructor(source: GraphNode, destination: GraphNode, graph: Graph) {
+        this.graph = graph;
         this.source = source;
         this.destination = destination;
 
@@ -45,25 +47,25 @@ export default class Edge {
         // Line
         this.line_div = document.createElement("div");
         this.line_div.classList.add("line", "pan");
-        GRAPH.HTML_Container?.appendChild(this.line_div);
+        this.graph.HTML_Container?.appendChild(this.line_div);
 
         // Arrowheads
         this.left_arrowhead_div = document.createElement("div");
         this.left_arrowhead_div.classList.add("line", "pan");
-        GRAPH.HTML_Container?.appendChild(this.left_arrowhead_div);
+        this.graph.HTML_Container?.appendChild(this.left_arrowhead_div);
 
         this.right_arrowhead_div = document.createElement("div");
         this.right_arrowhead_div.classList.add("line", "pan");
-        GRAPH.HTML_Container?.appendChild(this.right_arrowhead_div);
+        this.graph.HTML_Container?.appendChild(this.right_arrowhead_div);
 
         // Hitboxes
         this.hitbox_div_head = document.createElement("div");
         this.hitbox_div_head.classList.add("hitbox", "pan");
-        GRAPH.HTML_Container?.appendChild(this.hitbox_div_head);
+        this.graph.HTML_Container?.appendChild(this.hitbox_div_head);
 
         this.hitbox_div_tail = document.createElement("div");
         this.hitbox_div_tail.classList.add("hitbox", "pan");
-        GRAPH.HTML_Container?.appendChild(this.hitbox_div_tail);
+        this.graph.HTML_Container?.appendChild(this.hitbox_div_tail);
 
         this.updateColour(Edge.DEFAULT_COLOUR);
 
@@ -74,14 +76,14 @@ export default class Edge {
     // Event listeners and handlers
     private handle_mouse_enter(): void {
         // Hover starts
-        if (!GRAPH.traversing) {
+        if (!this.graph.traversing) {
             this.updateColour(Edge.HOVER_COLOUR);
             this.hovering = true;
         }
     }
     private handle_mouse_leave(): void {
         // Hover ends
-        if (!GRAPH.traversing) {
+        if (!this.graph.traversing) {
             this.updateColour(Edge.DEFAULT_COLOUR);
             this.hovering = false;
         }
@@ -89,26 +91,26 @@ export default class Edge {
     private handle_mouse_down_head_hitbox(): void {
         // Start moving the tip of the arrow
         if (this.hovering) {
-            GRAPH.initial_node = this.source;
+            this.graph.initial_node = this.source;
             this.moving_head = true;
-            GRAPH.moving_edge = this;
+            this.graph.moving_edge = this;
         }
     }
     private handle_mouse_down_tail_hitbox(): void {
         // Start moving the end of the arrow
         if (this.hovering) {
-            GRAPH.final_node = this.destination;
+            this.graph.final_node = this.destination;
             this.moving_tail = true;
-            GRAPH.moving_edge = this;
+            this.graph.moving_edge = this;
         }
     }
     private handle_mouse_up(): void {
         // Connection failed, reset attributes
         if (this.moving_head || this.moving_tail) {
             this.delete();
-            GRAPH.moving_edge = null;
-            GRAPH.initial_node = null;
-            GRAPH.final_node = null;
+            this.graph.moving_edge = null;
+            this.graph.initial_node = null;
+            this.graph.final_node = null;
         }
     }
     private handle_mouse_move(event: MouseEvent): void {
@@ -151,7 +153,7 @@ export default class Edge {
         document.removeEventListener("mousemove", this.bound_mouse_handlers.move);
     }
 
-    public updateColour = (colour: string): void => {
+    public updateColour(colour: string): void {
         this.colour = colour;
 
         // border
@@ -170,7 +172,7 @@ export default class Edge {
         this.line_div.style.zIndex = zi;
         this.left_arrowhead_div.style.zIndex = zi;
         this.right_arrowhead_div.style.zIndex = zi;
-    };
+    }
 
     public updatePos = (x1: number, y1: number, x2: number, y2: number): void => {
         const get_line_styles = (x1: number, y1: number, x2: number, y2: number): string => {
@@ -204,7 +206,7 @@ export default class Edge {
         this.line_div.setAttribute("style", line_styles);
 
         // * ARROWHEAD (if the graph is directed)
-        if (GRAPH.directed) {
+        if (this.graph.directed) {
             // Compute arrowhead sides positions
             const v_angle = Math.atan2(y2 - y1, x2 - x1);
             const arrow1: { x: number; y: number } = {
@@ -295,11 +297,11 @@ export default class Edge {
 
     public delete(): void {
         // Remove divs and event listeners
-        GRAPH.HTML_Container?.removeChild(this.line_div);
-        GRAPH.HTML_Container?.removeChild(this.left_arrowhead_div);
-        GRAPH.HTML_Container?.removeChild(this.right_arrowhead_div);
-        GRAPH.HTML_Container?.removeChild(this.hitbox_div_head);
-        GRAPH.HTML_Container?.removeChild(this.hitbox_div_tail);
+        this.graph.HTML_Container?.removeChild(this.line_div);
+        this.graph.HTML_Container?.removeChild(this.left_arrowhead_div);
+        this.graph.HTML_Container?.removeChild(this.right_arrowhead_div);
+        this.graph.HTML_Container?.removeChild(this.hitbox_div_head);
+        this.graph.HTML_Container?.removeChild(this.hitbox_div_tail);
         this.removeMouseEventListeners();
 
         // Remove edge from source's out_edges
