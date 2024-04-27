@@ -1,0 +1,170 @@
+/* Graph Elements */
+.graph-container {
+  background-color: #ecedf8;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  top: 0;
+  left: 0;
+  z-index: 0; }
+
+.circle {
+  border-radius: 50%;
+  /* Ensures circular shape */
+  position: absolute;
+  /* Position relative to the container */
+  display: flex;
+  /* Use flexbox layout */
+  justify-content: center;
+  /* Center horizontally */
+  align-items: center;
+  /* Center vertically */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 500;
+  transition: transform 0.1s ease-in-out, font-size 0.1s ease-in-out;
+  outline: none;
+  z-index: 100; }
+
+.line {
+  position: absolute;
+  height: 0;
+  border: 1px solid black; }
+
+.hitbox {
+  position: absolute;
+  border-radius: 59%; }
+
+.graph-sidenav {
+  padding-bottom: 8px;
+  padding-top: 8px;
+  position: absolute;
+  height: 95vh;
+  width: 15%;
+  z-index: 100;
+  top: 50%;
+  left: 1vh;
+  transform: translateY(-50%);
+  background-color: #f4f4fa;
+  color: #0e0d1b;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.4);
+  font-size: 16px; }
+  .graph-sidenav .sidenav-item {
+    flex: 1;
+    font-size: inherit;
+    color: inherit;
+    margin: 2px 15px;
+    padding: 7px 15px;
+    text-decoration: none;
+    transition: 0.3s;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: transparent; }
+    .graph-sidenav .sidenav-item:hover {
+      background-color: #dfdee2; }
+  .graph-sidenav .switch-container {
+    background-color: #dfdee2;
+    flex: 1;
+    margin: 2px 15px;
+    align-items: center;
+    padding: 7px 15px;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 4px;
+    transition: 0.3s; }
+    .graph-sidenav .switch-container p {
+      padding: 0;
+      margin: 0; }
+    .graph-sidenav .switch-container .switch {
+      margin: 0;
+      position: relative;
+      display: inline-block;
+      width: 35px;
+      height: 20.5px; }
+      .graph-sidenav .switch-container .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0; }
+        .graph-sidenav .switch-container .switch input:checked + .slider {
+          background-color: #685cfe; }
+        .graph-sidenav .switch-container .switch input:checked + .slider:before {
+          -webkit-transform: translateX(14.5px);
+          -ms-transform: translateX(14.5px);
+          transform: translateX(14.5px); }
+      .graph-sidenav .switch-container .switch .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: 0.4s;
+        transition: 0.4s;
+        border-radius: 34px; }
+        .graph-sidenav .switch-container .switch .slider:before {
+          position: absolute;
+          content: "";
+          height: 14.5px;
+          width: 14.5px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          -webkit-transition: 0.4s;
+          border-radius: 50%;
+          transition: 0.4s; }
+
+.animation-menu {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 98.2%;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom-left-radius: 10px; }
+  .animation-menu .button {
+    background-color: #8466fc;
+    color: #f4f4fa;
+    border: none;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s; }
+    .animation-menu .button:hover {
+      background-color: #6f56d4; }
+
+.frame-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  outline: none;
+  border-radius: 15px;
+  height: 6px;
+  background: lightgray; }
+  .frame-slider::-webkit-slider-runnable-track, .frame-slider::-moz-range-progress {
+    background-color: #8466fc;
+    height: 4px; }
+  .frame-slider::-webkit-slider-thumb, .frame-slider::-moz-range-thumb {
+    opacity: 0; }
+
+body {
+  /* Prevent text highlighting for the entire document */
+  -webkit-user-select: none;
+  /* Safari */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer */
+  user-select: none; }

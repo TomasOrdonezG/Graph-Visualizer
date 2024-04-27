@@ -5,9 +5,8 @@ import { keyboardState } from "./main.js";
 class Graph {
     // #endregion
     constructor() {
-        // Standardly initializable attributes
         this.nodes = [];
-        this.directed = true;
+        this.directed = false;
         // Objects to keep track of
         this.initial_node = null;
         this.final_node = null;
@@ -15,14 +14,8 @@ class Graph {
         this.size = 0;
         this.next_node_val = 0;
         this.traversing = false;
-        // * Create container
-        const container = document.createElement("div");
-        container.id = "graph";
-        document.body.appendChild(container);
-        this.HTML_Container = container;
-        // * Event Listeners
-        // Add node on click
-        document.addEventListener("mouseup", this.addNode.bind(this));
+        this.HTML_Container = document.querySelector(".graph-container");
+        this.HTML_Container.addEventListener("mouseup", this.addNode.bind(this));
     }
     addNode(event) {
         // Prevent adding a node when mouse is on a node div, or edge div
