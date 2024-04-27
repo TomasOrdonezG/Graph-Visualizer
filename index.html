@@ -4,17 +4,45 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Graph</title>
-        <link rel="stylesheet" href="styles.css" />
+        <link rel="stylesheet" href="dist/main.css" />
     </head>
     <body>
-        <div class="animation-menu pan">
-            <button class="pan button prev-frame">⏮</button>
-            <button class="pan button play-pause">▶</button>
-            <button class="pan button next-frame">⏭</button>
-            <input type="range" class="pan frame-slider" disabled />
-            <button class="pan button stop">◼</button>
-            <button class="pan button reset">↩</button>
+        <!-- Graph Container -->
+        <div class="graph-container"></div>
+
+        <!-- Main sidenav menu -->
+        <div class="graph-sidenav">
+            <!-- Buttons -->
+            <button class="sidenav-item BFS-button">BFS</button>
+            <button class="sidenav-item DFS-button">DFS</button>
+            <button class="sidenav-item"></button>
+            <button class="sidenav-item"></button>
+            <button class="sidenav-item"></button>
+            <button class="sidenav-item"></button>
+            <button class="sidenav-item"></button>
+            <button class="sidenav-item"></button>
+            <button class="sidenav-item"></button>
+
+            <!-- Switches -->
+            <div class="sidenav-item switch-container">
+                <p>Directed</p>
+                <label class="switch">
+                    <input type="checkbox" class="directed-switch" />
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
+
+        <!-- Animation menu -->
+        <div class="animation-menu">
+            <button class="button prev-frame">⏮</button>
+            <button class="button play-pause">▶</button>
+            <button class="button next-frame">⏭</button>
+            <input type="range" class="frame-slider" disabled />
+            <button class="button stop">◼</button>
+            <button class="button reset">↩</button>
+        </div>
+
         <script src="src/main.js" type="module"></script>
     </body>
 </html>
