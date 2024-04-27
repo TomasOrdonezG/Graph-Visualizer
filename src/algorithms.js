@@ -30,7 +30,6 @@ class Animation {
         return __awaiter(this, void 0, void 0, function* () {
             this.playing = true;
             while (this.playing && this.next_frame()) {
-                console.log("frame");
                 yield new Promise((resolve) => setTimeout(resolve, 1000 / this.fps));
             }
         });

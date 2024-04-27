@@ -12,55 +12,33 @@ export default class Menu {
     // #endregion
     constructor(graph) {
         this.currentAnimation = null;
-        this.graph = graph;
-        this.algorithms = new Algorithms(this.graph, document.querySelector(".frame-slider"));
-        // Animation Menu
+        // Main menu HTML elements
+        this.mainSideNav = document.querySelector(".graph-sidenav");
+        this.BFS_Button = document.querySelector(".BFS-button");
+        this.DFS_Button = document.querySelector(".DFS-button");
+        this.HTML_directed_toggle = document.querySelector(".directed-switch");
+        // Animation menu HTML elements
         this.animationSideNav = document.querySelector(".animation-menu");
         this.prev_frame_button = document.querySelector(".prev-frame");
         this.play_pause_animation_button = document.querySelector(".play-pause");
         this.next_frame_button = document.querySelector(".next-frame");
         this.stop_animation_button = document.querySelector(".stop");
         this.reset_animation_button = document.querySelector(".reset");
-        this.buildAnimationMenu();
-        // Main Menu
-        this.mainSideNav = document.createElement("div");
-        this.BFS_Button = document.createElement("button");
-        this.DFS_Button = document.createElement("button");
-        this.HTML_directed_toggle = document.createElement("input");
-        this.buildMainMenu();
+        this.graph = graph;
+        this.algorithms = new Algorithms(this.graph, document.querySelector(".frame-slider"));
+        // Add menu event listeners and focus on main menu
+        this.animationMenuEventListeners();
+        this.mainMenuEventListeners();
         this.focusMainMenu();
     }
-    buildMainMenu() {
-        // Navigation menu
-        this.mainSideNav.classList.add("graph-sidenav", "pan");
-        document.body.append(this.mainSideNav);
-        // BFS Button
-        this.BFS_Button.textContent = "BFS";
-        this.BFS_Button.classList.add("button", "pan");
+    mainMenuEventListeners() {
         this.BFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.BFS.bind(this.algorithms));
         });
-        this.mainSideNav.appendChild(this.BFS_Button);
-        // DFS Button
-        this.DFS_Button.textContent = "DFS";
-        this.DFS_Button.classList.add("button", "pan");
         this.DFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.DFS.bind(this.algorithms));
         });
-        this.mainSideNav.appendChild(this.DFS_Button);
-        // Directed toggle & label
-        const toggle_div = document.createElement("div");
-        this.HTML_directed_toggle.type = "checkbox";
-        this.HTML_directed_toggle.classList.add("toggle", "pan");
-        this.HTML_directed_toggle.id = "directed-checkbox";
         this.HTML_directed_toggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
-        this.HTML_directed_toggle.setAttribute("checked", String(this.graph.directed));
-        const label = document.createElement("label");
-        label.setAttribute("for", "directed-checkbox");
-        label.innerText = "Directed";
-        toggle_div.appendChild(this.HTML_directed_toggle);
-        toggle_div.appendChild(label);
-        this.mainSideNav.appendChild(toggle_div);
     }
     focusMainMenu() {
         this.mainSideNav.style.display = "";
@@ -69,8 +47,7 @@ export default class Menu {
     hideMainMenu() {
         this.mainSideNav.style.display = "none";
     }
-    buildAnimationMenu() {
-        // Buttons
+    animationMenuEventListeners() {
         this.prev_frame_button.addEventListener("click", () => {
             if (this.currentAnimation)
                 this.currentAnimation.prev_frame();
@@ -129,7 +106,6 @@ export default class Menu {
         // Get animation object and focus on the animation menu
         this.currentAnimation = algorithm();
         this.graph.traversing = true;
-        console.log("Created animation of " + this.currentAnimation.length + " frames");
         this.focusAnimationMenu();
     }
 }

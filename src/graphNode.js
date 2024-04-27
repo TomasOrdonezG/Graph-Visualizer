@@ -43,7 +43,12 @@ class GraphNode {
             this.div.textContent = this.value.toString();
         };
         this.updateColour = (colour) => {
+            this.updateBorderColour(GraphNode.DEFAULT_BORDER_COLOUR);
             this.colour = colour;
+            if (colour === "black") {
+                this.colour = GraphNode.SEARCHED_COLOUR;
+                this.updateBorderColour("black");
+            }
             this.div.style.backgroundColor = this.colour;
             this.text_colour = colour === "black" ? "white" : "black";
             this.div.style.color = this.text_colour;
@@ -71,10 +76,6 @@ class GraphNode {
         this.div.classList.add("circle", "pan");
         this.div.setAttribute("contenteditable", "false");
         (_a = this.graph.HTML_Container) === null || _a === void 0 ? void 0 : _a.appendChild(this.div);
-        // Log node creation and styles
-        console.log("Node created at", this.x, this.y);
-        console.log("Node element:", this.div);
-        console.log("Computed styles:", window.getComputedStyle(this.div));
         this.updatePos(this.x, this.y);
         this.updateAll();
         this.addAllEventListeners();
@@ -298,5 +299,6 @@ GraphNode.RADIUS = 25;
 GraphNode.BORDER_WIDTH = 3;
 GraphNode.SELECTED_BORDER_COLOUR = "coral";
 GraphNode.DEFAULT_BORDER_COLOUR = "#444444";
+GraphNode.SEARCHED_COLOUR = "#353535";
 GraphNode.READY_BORDER_COLOUR = Edge.READY_COLOUR;
 export default GraphNode;

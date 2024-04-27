@@ -9,9 +9,8 @@ export default class Graph {
     // Global class constants
     static DELAY_TIME = 200;
 
-    // Standardly initializable attributes
     public nodes: GraphNode[] = [];
-    public directed: boolean = true;
+    public directed: boolean = false;
 
     // Objects to keep track of
     public initial_node: GraphNode | null = null;
@@ -19,21 +18,13 @@ export default class Graph {
     public moving_edge: Edge | null = null;
 
     public size: number = 0;
-    public HTML_Container: HTMLElement | null;
     public next_node_val: number = 0;
     public traversing: boolean = false;
+    public HTML_Container: HTMLDivElement = document.querySelector(".graph-container") as HTMLDivElement;
     // #endregion
 
     constructor() {
-        // * Create container
-        const container = document.createElement("div");
-        container.id = "graph";
-        document.body.appendChild(container);
-        this.HTML_Container = container;
-
-        // * Event Listeners
-        // Add node on click
-        document.addEventListener("mouseup", this.addNode.bind(this));
+        this.HTML_Container.addEventListener("mouseup", this.addNode.bind(this));
     }
 
     public addNode(event: MouseEvent): void {
