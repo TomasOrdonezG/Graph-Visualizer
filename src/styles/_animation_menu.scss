@@ -1,0 +1,52 @@
+@import "_variables";
+
+.animation-menu {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 98.2%;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom-left-radius: 10px;
+
+    .button {
+        background-color: #8466fc;
+        color: $background-colour;
+        border: none;
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+
+        &:hover {
+            background-color: #6f56d4;
+        }
+    }
+}
+
+.frame-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    outline: none;
+    border-radius: 15px;
+    height: 6px;
+    background: lightgray;
+
+    &::-webkit-slider-runnable-track,
+    &::-moz-range-progress {
+        background-color: #8466fc;
+        height: 4px;
+    }
+    &::-webkit-slider-thumb,
+    &::-moz-range-thumb {
+        opacity: 0;
+    }
+}

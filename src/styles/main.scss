@@ -1,0 +1,12 @@
+@import "_graph";
+@import "_graph_sidenav";
+@import "_animation_menu";
+@import "_variables";
+
+body {
+    /* Prevent text highlighting for the entire document */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer */
+    user-select: none;
+}
