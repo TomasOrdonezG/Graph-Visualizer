@@ -76,9 +76,17 @@ export default class Menu {
         this.stop_animation_button.addEventListener("click", () => {
             // Removes the current animation and resets all nodes
             this.focusMainMenu();
+            this.currentAnimation?.pause();
             this.currentAnimation = null;
             this.graph.reset_colour();
             this.graph.traversing = false;
+            this.play_pause_animation_button.textContent = "▶";
+
+            // Turn off text
+            for (let node of this.graph.nodes) {
+                node.show_time_interval = false;
+                node.updateText();
+            }
         });
         this.reset_animation_button.addEventListener("click", () => {
             // Resets animation

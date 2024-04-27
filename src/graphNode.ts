@@ -18,7 +18,6 @@ export default class GraphNode {
     public value: number;
     public out_edges: Edge[] = [];
     public in_edges: Edge[] = [];
-    public neighbours: GraphNode[] = [];
 
     // Appearance
     public div: HTMLDivElement;
@@ -44,6 +43,14 @@ export default class GraphNode {
         mouse_move: this.handle_mouse_move.bind(this),
     };
 
+    // Algorithm specific attributes
+    public time_interval_text: HTMLParagraphElement;
+    // public distance_text: HTMLParagraphElement;
+    public show_time_interval: boolean = false;
+    public DFS_dtime: String = "_";
+    public DFS_ftime: String = "_";
+    public distance: number = 0;
+
     // #endregion
 
     // * INITIALIZATION
@@ -56,8 +63,15 @@ export default class GraphNode {
         // Create node Div
         this.div = document.createElement("div");
         this.div.classList.add("circle", "pan");
-        this.div.setAttribute("contenteditable", "false");
-        this.graph.HTML_Container?.appendChild(this.div);
+        // this.div.setAttribute("contenteditable", "false");
+        this.graph.HTML_Container.appendChild(this.div);
+
+        // Create text elements
+        this.time_interval_text = document.createElement("p");
+        this.time_interval_text.classList.add("node-text", "pan");
+        this.time_interval_text.textContent = `[${this.DFS_dtime}, ${this.DFS_ftime}]`;
+        this.graph.HTML_Container.appendChild(this.time_interval_text);
+        // this.time_interval_text.style.display = "none";
 
         this.updatePos(this.x, this.y);
         this.updateAll();
@@ -232,10 +246,8 @@ export default class GraphNode {
         const new_edge = new Edge(this, destination_node, this.graph);
 
         this.out_edges.push(new_edge);
-        this.neighbours.push(destination_node);
 
         destination_node.in_edges.push(new_edge);
-        destination_node.neighbours.push(this);
 
         // Update attributes
         destination_node.sortNeighbours();
@@ -251,16 +263,6 @@ export default class GraphNode {
         if (i === -1) throw Error("Error: Attempting to delete node that isn't a part of this.graph.nodes");
         else this.graph.nodes.splice(i, 1);
         this.graph.size--;
-
-        // Remove from neighbours neighbours array
-        for (let n of this.neighbours) {
-            const i = n.neighbours.indexOf(this);
-            if (i === -1)
-                throw Error(
-                    "Error: Attempting to delete node from neighbour's list that is not part of neighbour's list"
-                );
-            n.neighbours.splice(i, 1);
-        }
 
         // Delete node HTML element and event listeners
         this.graph.HTML_Container?.removeChild(this.div);
@@ -287,15 +289,27 @@ export default class GraphNode {
 
     // Update Methods
     public updateAll = (): void => {
+        this.updateText();
         this.updateValue();
         this.updateColour(this.colour);
         this.updateSize();
     };
+    public updateText = (): void => {
+        this.time_interval_text.textContent = `[${this.DFS_dtime}, ${this.DFS_ftime}]`;
+        this.time_interval_text.style.display = this.show_time_interval ? "" : "none";
+    };
     public updatePos = (x: number, y: number): void => {
+        // Node pos
         this.x = x;
         this.y = y;
         this.div.style.left = this.x - GraphNode.RADIUS + "px";
         this.div.style.top = this.y - GraphNode.RADIUS + "px";
+
+        // Text pos
+        this.time_interval_text.style.left = this.x + "px";
+        this.time_interval_text.style.top = this.y - 2.5 * GraphNode.RADIUS + "px";
+
+        // Edges pos
         this.updateEdgesPos();
     };
     public updateValue = (): void => {
@@ -336,6 +350,5 @@ export default class GraphNode {
     private sortNeighbours() {
         this.out_edges.sort((a, b) => a.destination.value - b.destination.value);
         this.in_edges.sort((a, b) => a.source.value - b.source.value);
-        this.neighbours.sort((a, b) => a.value - b.value);
     }
 }

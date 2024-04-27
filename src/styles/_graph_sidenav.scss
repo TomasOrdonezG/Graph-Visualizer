@@ -1,11 +1,12 @@
 @import "_variables";
 
 .graph-sidenav {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     padding-bottom: 8px;
     padding-top: 8px;
     position: absolute;
     height: 95vh;
-    width: 15%;
+    width: 18%;
     z-index: 100;
     top: 50%;
     left: 1vh;

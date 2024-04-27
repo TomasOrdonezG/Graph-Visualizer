@@ -27,6 +27,10 @@
   outline: none;
   z-index: 100; }
 
+.node-text {
+  position: absolute;
+  transform: translateX(-100%); }
+
 .line {
   position: absolute;
   height: 0;
@@ -37,11 +41,12 @@
   border-radius: 59%; }
 
 .graph-sidenav {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   padding-bottom: 8px;
   padding-top: 8px;
   position: absolute;
   height: 95vh;
-  width: 15%;
+  width: 18%;
   z-index: 100;
   top: 50%;
   left: 1vh;
