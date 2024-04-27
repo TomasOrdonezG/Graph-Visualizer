@@ -84,9 +84,17 @@ class Algorithms {
     public DFS(): Animation {
         this.graph.reset_colour();
         const DFS_Animation: Animation = new Animation(this.slider);
+        let time = 0;
+        for (let node of this.graph.nodes) {
+            node.show_time_interval = true;
+            node.updateText();
+        }
 
         const DFS_Visit = (node: GraphNode) => {
+            time++;
             DFS_Animation.addFrame(node, "gray");
+            node.DFS_dtime = String(time);
+            node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
             for (let out_edge of node.out_edges) {
                 const adj = out_edge.destination;
                 if (adj.colour === "white") {
@@ -94,6 +102,9 @@ class Algorithms {
                     DFS_Visit(adj);
                 }
             }
+            time++;
+            node.DFS_ftime = String(time);
+            node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
             DFS_Animation.addFrame(node, "black");
         };
 
