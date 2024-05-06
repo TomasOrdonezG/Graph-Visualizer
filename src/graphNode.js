@@ -87,14 +87,12 @@ class GraphNode {
         // Create node Div
         this.div = document.createElement("div");
         this.div.classList.add("circle", "pan");
-        // this.div.setAttribute("contenteditable", "false");
         this.graph.HTML_Container.appendChild(this.div);
         // Create text elements
         this.time_interval_text = document.createElement("p");
         this.time_interval_text.classList.add("node-text", "pan");
         this.time_interval_text.textContent = `[${this.DFS_dtime}, ${this.DFS_ftime}]`;
         this.graph.HTML_Container.appendChild(this.time_interval_text);
-        // this.time_interval_text.style.display = "none";
         this.updatePos(this.x, this.y);
         this.updateAll();
         this.addAllEventListeners();
@@ -111,7 +109,6 @@ class GraphNode {
     }
     handle_mouse_leave_div() {
         this.div.style.transform = "scale(1)";
-        this.updateBorderColour(this.selected ? GraphNode.SELECTED_BORDER_COLOUR : GraphNode.DEFAULT_BORDER_COLOUR);
     }
     handle_mouse_down_div(event) {
         event.preventDefault();
@@ -290,7 +287,7 @@ class GraphNode {
         this.selected = true;
     }
     deselect() {
-        this.updateBorderColour(GraphNode.DEFAULT_BORDER_COLOUR);
+        this.updateBorderColour(this.colour === GraphNode.SEARCHED_COLOUR ? "black" : GraphNode.DEFAULT_BORDER_COLOUR);
         this.selected = false;
     }
     updateBorderColour(colour) {

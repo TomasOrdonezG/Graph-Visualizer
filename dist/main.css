@@ -35,7 +35,8 @@
     padding: 0.5%;
     font-size: small;
     transform: translate(-50%, -50%);
-    border-radius: 50%; }
+    border-radius: 50%;
+    z-index: 2; }
   .graph-container .hitbox {
     position: absolute;
     border-radius: 59%; }
