@@ -17,17 +17,19 @@ export default class Edge {
     public source: GraphNode;
     public destination: GraphNode;
     public colour: string = Edge.DEFAULT_COLOUR;
-    public weight: number = 1;
+    public weight: number = 99;
 
     public hovering: boolean = false;
     public moving_head: boolean = false;
     public moving_tail: boolean = false;
 
-    public line_div: HTMLDivElement;
+    public lineDiv: HTMLDivElement;
     public left_arrowhead_div: HTMLDivElement;
     public right_arrowhead_div: HTMLDivElement;
     public hitbox_div_head: HTMLDivElement;
     public hitbox_div_tail: HTMLDivElement;
+    public weightDiv: HTMLDivElement;
+    public HTMLElementDependencies: HTMLElement[];
     private bound_mouse_handlers = {
         leave: this.handle_mouse_leave.bind(this),
         enter: this.handle_mouse_enter.bind(this),
@@ -45,29 +47,43 @@ export default class Edge {
 
         // * Create Divs
         // Line
-        this.line_div = document.createElement("div");
-        this.line_div.classList.add("line", "pan");
-        this.graph.HTML_Container?.appendChild(this.line_div);
+        this.lineDiv = document.createElement("div");
+        this.lineDiv.classList.add("line", "pan");
+        this.graph.HTML_Container.appendChild(this.lineDiv);
 
         // Arrowheads
         this.left_arrowhead_div = document.createElement("div");
         this.left_arrowhead_div.classList.add("line", "pan");
-        this.graph.HTML_Container?.appendChild(this.left_arrowhead_div);
+        this.graph.HTML_Container.appendChild(this.left_arrowhead_div);
 
         this.right_arrowhead_div = document.createElement("div");
         this.right_arrowhead_div.classList.add("line", "pan");
-        this.graph.HTML_Container?.appendChild(this.right_arrowhead_div);
+        this.graph.HTML_Container.appendChild(this.right_arrowhead_div);
 
         // Hitboxes
         this.hitbox_div_head = document.createElement("div");
         this.hitbox_div_head.classList.add("hitbox", "pan");
-        this.graph.HTML_Container?.appendChild(this.hitbox_div_head);
+        this.graph.HTML_Container.appendChild(this.hitbox_div_head);
 
         this.hitbox_div_tail = document.createElement("div");
         this.hitbox_div_tail.classList.add("hitbox", "pan");
-        this.graph.HTML_Container?.appendChild(this.hitbox_div_tail);
+        this.graph.HTML_Container.appendChild(this.hitbox_div_tail);
 
         this.updateColour(Edge.DEFAULT_COLOUR);
+
+        // Weight
+        this.weightDiv = document.createElement("div");
+        this.weightDiv.classList.add("weight", "pan");
+        this.graph.HTML_Container.appendChild(this.weightDiv);
+        this.updateWeight(this.weight);
+        this.HTMLElementDependencies = [
+            this.lineDiv,
+            this.left_arrowhead_div,
+            this.right_arrowhead_div,
+            this.hitbox_div_head,
+            this.hitbox_div_tail,
+            this.weightDiv,
+        ];
 
         // Add mouse event listeners
         this.addMouseEventListeners();
@@ -157,23 +173,26 @@ export default class Edge {
         this.colour = colour;
 
         // border
-        this.line_div.style.border = `1px solid ${this.colour}`;
+        this.lineDiv.style.border = `1px solid ${this.colour}`;
         this.left_arrowhead_div.style.border = `1px solid ${this.colour}`;
         this.right_arrowhead_div.style.border = `1px solid ${this.colour}`;
 
         // Thickness
         const bg = this.colour === "black" ? this.colour : "transparent";
-        this.line_div.style.backgroundColor = bg;
+        this.lineDiv.style.backgroundColor = bg;
         this.left_arrowhead_div.style.backgroundColor = bg;
         this.right_arrowhead_div.style.backgroundColor = bg;
 
         // Z-Index
         const zi = this.colour === "black" ? "1" : "-1";
-        this.line_div.style.zIndex = zi;
+        this.lineDiv.style.zIndex = zi;
         this.left_arrowhead_div.style.zIndex = zi;
         this.right_arrowhead_div.style.zIndex = zi;
     }
-
+    public updateWeight(weight: number): void {
+        this.weight = weight;
+        this.weightDiv.textContent = this.weight.toString();
+    }
     public updatePos = (x1: number, y1: number, x2: number, y2: number): void => {
         const get_line_styles = (x1: number, y1: number, x2: number, y2: number): string => {
             // Gets the styles needed to draw a line as a div
@@ -190,20 +209,20 @@ export default class Edge {
             let angle = Math.PI - Math.atan2(-height, width);
 
             let styles =
-                `width: ${length.toString()}px; ` +
-                `-moz-transform: rotate(${angle.toString()}rad); ` +
-                `-webkit-transform: rotate(${angle.toString()}rad); ` +
-                `-o-transform: rotate(${angle.toString()}rad); ` +
-                `-ms-transform: rotate(${angle.toString()}rad); ` +
-                `top: ${y.toString()}px; ` +
-                `left: ${x.toString()}px; `;
+                `width: ${length}px; ` +
+                `-moz-transform: rotate(${angle}rad); ` +
+                `-webkit-transform: rotate(${angle}rad); ` +
+                `-o-transform: rotate(${angle}rad); ` +
+                `-ms-transform: rotate(${angle}rad); ` +
+                `top: ${y}px; ` +
+                `left: ${x}px; `;
             return styles;
         };
 
         // * LINE
         // Set edge position
         const line_styles = get_line_styles(x1, y1, x2, y2);
-        this.line_div.setAttribute("style", line_styles);
+        this.lineDiv.setAttribute("style", line_styles);
 
         // * ARROWHEAD (if the graph is directed)
         if (this.graph.directed) {
@@ -232,8 +251,8 @@ export default class Edge {
             const hitbox_style =
                 `width: ${(Edge.HITBOX_RADIUS * 2).toString()}px;` +
                 `height: ${(Edge.HITBOX_RADIUS * 2).toString()}px;` +
-                `top: ${y.toString()}px;` +
-                `left: ${x.toString()}px;`;
+                `top: ${y}px;` +
+                `left: ${x}px;`;
             return hitbox_style;
         };
 
@@ -249,9 +268,14 @@ export default class Edge {
         const hitbox_style_tail = get_hitbox_style(hb_xt, hb_yt);
         this.hitbox_div_tail.setAttribute("style", hitbox_style_tail);
 
+        // * Weight
+        this.weightDiv.style.left = `${(x2 + x1) / 2}px`;
+        this.weightDiv.style.top = `${(y2 + y1) / 2}px`;
+
         // * Update colour
         this.updateColour(this.colour);
     };
+
     public linkNodesPos(): void {
         const rnorm =
             GraphNode.RADIUS /
@@ -297,11 +321,9 @@ export default class Edge {
 
     public delete(): void {
         // Remove divs and event listeners
-        this.graph.HTML_Container?.removeChild(this.line_div);
-        this.graph.HTML_Container?.removeChild(this.left_arrowhead_div);
-        this.graph.HTML_Container?.removeChild(this.right_arrowhead_div);
-        this.graph.HTML_Container?.removeChild(this.hitbox_div_head);
-        this.graph.HTML_Container?.removeChild(this.hitbox_div_tail);
+        this.HTMLElementDependencies.forEach((el: HTMLElement) => {
+            this.graph.HTML_Container.removeChild(el);
+        });
         this.removeMouseEventListeners();
 
         // Remove edge from source's out_edges
