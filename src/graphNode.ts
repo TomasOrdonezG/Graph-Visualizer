@@ -62,6 +62,7 @@ export default class GraphNode {
 
         // Create node Div
         this.div = document.createElement("div");
+        this.div.setAttribute("contenteditable", "false");
         this.div.classList.add("circle", "pan");
         this.graph.HTML_Container.appendChild(this.div);
 
