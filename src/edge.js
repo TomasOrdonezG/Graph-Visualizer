@@ -3,7 +3,7 @@ class Edge {
     // #endregion
     constructor(source, destination, graph) {
         this.colour = Edge.DEFAULT_COLOUR;
-        this.weight = 99;
+        this.weight = 1;
         this.hovering = false;
         this.moving_head = false;
         this.moving_tail = false;
@@ -14,7 +14,9 @@ class Edge {
             down_tail_hitbox: this.handle_mouse_down_tail_hitbox.bind(this),
             up: this.handle_mouse_up.bind(this),
             move: this.handle_mouse_move.bind(this),
+            double_click: this.handle_double_click.bind(this),
         };
+        this.bound_set_edited_weight = this.set_edited_weight.bind(this);
         this.updatePos = (x1, y1, x2, y2) => {
             const get_line_styles = (x1, y1, x2, y2) => {
                 // Gets the styles needed to draw a line as a div
@@ -121,7 +123,7 @@ class Edge {
             this.weightDiv,
         ];
         // Add mouse event listeners
-        this.addMouseEventListeners();
+        this.addAllEventListeners();
     }
     // Event listeners and handlers
     handle_mouse_enter() {
@@ -172,7 +174,30 @@ class Edge {
             this.linkCursorToTailPos(event);
         }
     }
-    addMouseEventListeners() {
+    handle_double_click() {
+        this.weightDiv.setAttribute("contenteditable", "true");
+        this.weightDiv.focus();
+        // Select content inside the div
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(this.weightDiv);
+        selection === null || selection === void 0 ? void 0 : selection.removeAllRanges();
+        selection === null || selection === void 0 ? void 0 : selection.addRange(range);
+    }
+    set_edited_weight(event) {
+        if (this.weightDiv.getAttribute("contenteditable") === "true" &&
+            (("key" in event && event.key === "Enter") || "clientX" in event)) {
+            // Save editing changes
+            this.weightDiv.setAttribute("contenteditable", "false");
+            // Validate input and update value
+            const new_weight = parseInt(this.weightDiv.innerText);
+            if (new_weight) {
+                this.weight = new_weight;
+            }
+            this.weightDiv.innerText = this.weight.toString();
+        }
+    }
+    addAllEventListeners() {
         // Add hover ELs for head and tail hitboxes
         this.hitbox_div_head.addEventListener("mouseenter", this.bound_mouse_handlers.enter);
         this.hitbox_div_head.addEventListener("mouseleave", this.bound_mouse_handlers.leave);
@@ -181,11 +206,15 @@ class Edge {
         // Add mouse down ELs for head and tail hitboxes
         this.hitbox_div_head.addEventListener("mousedown", this.bound_mouse_handlers.down_head_hitbox);
         this.hitbox_div_tail.addEventListener("mousedown", this.bound_mouse_handlers.down_tail_hitbox);
+        // Double click and enter or click away for changing weight value ELs
+        this.weightDiv.addEventListener("dblclick", this.bound_mouse_handlers.double_click);
+        document.addEventListener("keydown", this.bound_set_edited_weight);
+        document.addEventListener("mousedown", this.bound_set_edited_weight);
         // Add document-wide ELs
         document.addEventListener("mouseup", this.bound_mouse_handlers.up);
         document.addEventListener("mousemove", this.bound_mouse_handlers.move);
     }
-    removeMouseEventListeners() {
+    removeAllEventListeners() {
         // Remove hover ELs for head and tail hitboxes
         this.hitbox_div_head.removeEventListener("mouseenter", this.bound_mouse_handlers.enter);
         this.hitbox_div_head.removeEventListener("mouseleave", this.bound_mouse_handlers.leave);
@@ -194,6 +223,10 @@ class Edge {
         // Remove mouse down ELs for head and tail hitboxes
         this.hitbox_div_head.removeEventListener("mousedown", this.bound_mouse_handlers.down_head_hitbox);
         this.hitbox_div_tail.removeEventListener("mousedown", this.bound_mouse_handlers.down_tail_hitbox);
+        // Double click and enter for changing weight value ELs
+        this.weightDiv.removeEventListener("dblclick", this.bound_mouse_handlers.double_click);
+        document.removeEventListener("keydown", this.bound_set_edited_weight);
+        document.removeEventListener("mousedown", this.bound_set_edited_weight);
         // Remove document-wide ELs
         document.removeEventListener("mouseup", this.bound_mouse_handlers.up);
         document.removeEventListener("mousemove", this.bound_mouse_handlers.move);
@@ -256,7 +289,7 @@ class Edge {
         this.HTMLElementDependencies.forEach((el) => {
             this.graph.HTML_Container.removeChild(el);
         });
-        this.removeMouseEventListeners();
+        this.removeAllEventListeners();
         // Remove edge from source's out_edges
         let i = this.source.out_edges.indexOf(this);
         if (i === -1)
