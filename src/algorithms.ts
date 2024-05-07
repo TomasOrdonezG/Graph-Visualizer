@@ -82,32 +82,41 @@ class Algorithms {
     }
 
     public DFS(): Animation {
+        // Initialize graph styles, animation object and time
         this.graph.reset_colour();
         const DFS_Animation: Animation = new Animation(this.slider);
         let time = 0;
+
+        // Show dtime and ftime for every node
         for (let node of this.graph.nodes) {
             node.show_time_interval = true;
             node.updateText();
         }
 
         const DFS_Visit = (node: GraphNode) => {
+            // Increment time, set dtime, change node colour and add frame
             time++;
             DFS_Animation.addFrame(node, "gray");
             node.DFS_dtime = String(time);
             node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
-            for (let out_edge of node.out_edges) {
-                const adj = out_edge.destination;
+
+            // Recurse on undiscovered neighbours
+            for (let { edge, adj } of node.getEdges()) {
                 if (adj.colour === "white") {
-                    DFS_Animation.addFrame(out_edge, "black");
+                    // Change colour of connecting edge and add frame
+                    DFS_Animation.addFrame(edge, "black");
                     DFS_Visit(adj);
                 }
             }
+
+            // Increment time, set ftime, change node colour and add frame
             time++;
             node.DFS_ftime = String(time);
             node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
             DFS_Animation.addFrame(node, "black");
         };
 
+        // Run DFS on every undiscovered node
         for (let node of this.graph.nodes) {
             if (node.colour === "white") {
                 DFS_Visit(node);
@@ -120,24 +129,28 @@ class Algorithms {
     }
 
     public BFS(): Animation {
-        const BFS_Animation: Animation = new Animation(this.slider);
         this.graph.reset_colour();
+        let root = this.graph.get_first_selected();
 
         const Q: GraphNode[] = [];
-        let root = this.graph.get_first_selected();
-        BFS_Animation.addFrame(root, "gray");
         Q.push(root);
 
+        const BFS_Animation: Animation = new Animation(this.slider);
+        BFS_Animation.addFrame(root, "gray");
+
+        // Main BFS loop
         while (Q.length > 0) {
+            // Dequeue next node and search all its neighbours
             const node = Q.shift() as GraphNode;
-            for (let out_edge of node.out_edges) {
-                const adj = out_edge.destination;
+            for (let { edge, adj } of node.getEdges()) {
                 if (adj.colour === "white") {
-                    BFS_Animation.addFrame(out_edge, "black");
+                    // Add frame to connecting endge and newly discovered node. Then enqueue
+                    BFS_Animation.addFrame(edge, "black");
                     BFS_Animation.addFrame(adj, "gray");
                     Q.push(adj);
                 }
             }
+            // Mark node as fully searched
             BFS_Animation.addFrame(node, "black");
         }
 

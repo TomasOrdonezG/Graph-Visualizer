@@ -296,6 +296,47 @@ class GraphNode {
         this.out_edges.sort((a, b) => a.destination.value - b.destination.value);
         this.in_edges.sort((a, b) => a.source.value - b.source.value);
     }
+    getAllEdges() {
+        let all_edges = [];
+        // Merge in-edges and out-edges. Sorted by the value of the node that is not `this` ascending
+        let out_i = 0;
+        let in_i = 0;
+        while (out_i < this.out_edges.length && in_i < this.in_edges.length) {
+            const out_edge = this.out_edges[out_i];
+            const in_edge = this.in_edges[in_i];
+            // Push edge with smaller value (of other node) first
+            if (out_edge === in_edge) {
+                // Check for duplicates
+                all_edges.push(out_edge);
+                out_i++;
+                in_i++;
+            }
+            else if (out_edge.destination.value < in_edge.source.value) {
+                all_edges.push(out_edge);
+                out_i++;
+            }
+            else {
+                all_edges.push(in_edge);
+                in_i++;
+            }
+        }
+        // Add the leftover edges to the end of the array based on which index finished first
+        if (out_i < this.out_edges.length) {
+            all_edges = all_edges.concat(this.out_edges.slice(out_i));
+        }
+        else if (in_i < this.in_edges.length) {
+            all_edges = all_edges.concat(this.in_edges.slice(in_i));
+        }
+        return all_edges;
+    }
+    getEdges() {
+        // Only return out-edges when directed, return all edges and appropiate adjacent node otherwise
+        const edges = this.graph.directed ? this.out_edges : this.getAllEdges();
+        return edges.map((edge) => ({
+            edge: edge,
+            adj: edge.destination === this ? edge.source : edge.destination,
+        }));
+    }
 }
 // #region * ATTRIBUTES
 // Constants
