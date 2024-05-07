@@ -70,7 +70,7 @@ class Graph {
     toggle_directed(event) {
         // Prevent from changing graph type while traversing
         if (this.traversing) {
-            event.preventDefault();
+            event === null || event === void 0 ? void 0 : event.preventDefault();
             return;
         }
         // Toggle boolean
@@ -85,7 +85,7 @@ class Graph {
     toggle_weighted(event) {
         // Prevent from changing graph type while traversin
         if (this.traversing) {
-            event.preventDefault();
+            event === null || event === void 0 ? void 0 : event.preventDefault();
             return;
         }
         // Toggle boolean

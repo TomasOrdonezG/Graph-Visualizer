@@ -41,6 +41,11 @@ export default class Menu {
         });
         this.HTML_directed_toggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
         this.HTML_weighted_toggle.addEventListener("click", this.graph.toggle_weighted.bind(this.graph));
+        // Check if checkboxed align with default graph states
+        if (this.HTML_directed_toggle.checked !== this.graph.directed)
+            this.graph.toggle_directed();
+        if (this.HTML_weighted_toggle.checked !== this.graph.weighted)
+            this.graph.toggle_weighted();
     }
     focusMainMenu() {
         this.mainSideNav.style.display = "";

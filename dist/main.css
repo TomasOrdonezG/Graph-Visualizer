@@ -97,6 +97,8 @@
         opacity: 0;
         width: 0;
         height: 0; }
+        .graph-sidenav .switch-container .switch input:not(:checked) + .slider {
+          background-color: #ccc; }
         .graph-sidenav .switch-container .switch input:checked + .slider {
           background-color: #685cfe; }
         .graph-sidenav .switch-container .switch input:checked + .slider:before {
@@ -124,7 +126,10 @@
           background-color: white;
           -webkit-transition: 0.4s;
           border-radius: 50%;
-          transition: 0.4s; }
+          transition: 0.4s;
+          -webkit-transform: translateX(0);
+          -ms-transform: translateX(0);
+          transform: translateX(0); }
 
 .animation-menu {
   position: fixed;
