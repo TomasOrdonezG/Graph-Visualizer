@@ -10,6 +10,7 @@ export default class Graph {
     static DELAY_TIME = 200;
 
     public nodes: GraphNode[] = [];
+    public weighted: boolean = false;
     public directed: boolean = false;
 
     // Objects to keep track of
@@ -90,11 +91,31 @@ export default class Graph {
             return;
         }
 
-        // Update each edge to have its arrowhead to invisible
+        // Toggle boolean
         this.directed = !this.directed;
+
+        // Loop through every edge in the graph
         for (let node of this.nodes) {
-            for (let out_edge of node.out_edges) {
-                out_edge.linkNodesPos();
+            for (let edge of node.out_edges) {
+                edge.linkNodesPos(); // Update visual of the arrowheads
+            }
+        }
+    }
+
+    public toggle_weighted(event: MouseEvent) {
+        // Prevent from changing graph type while traversin
+        if (this.traversing) {
+            event.preventDefault();
+            return;
+        }
+
+        // Toggle boolean
+        this.weighted = !this.weighted;
+
+        // Loop through every edge in the graph
+        for (let node of this.nodes) {
+            for (let edge of node.out_edges) {
+                edge.updateWeight(edge.weight); // Update weight text
             }
         }
     }

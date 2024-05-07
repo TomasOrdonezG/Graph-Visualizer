@@ -231,6 +231,7 @@ export default class Edge {
     public updateWeight(weight: number): void {
         this.weight = weight;
         this.weightDiv.textContent = this.weight.toString();
+        this.weightDiv.style.display = this.graph.weighted ? "" : "none";
     }
     public updatePos = (x1: number, y1: number, x2: number, y2: number): void => {
         const get_line_styles = (x1: number, y1: number, x2: number, y2: number): string => {

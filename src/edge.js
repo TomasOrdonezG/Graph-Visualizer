@@ -251,6 +251,7 @@ class Edge {
     updateWeight(weight) {
         this.weight = weight;
         this.weightDiv.textContent = this.weight.toString();
+        this.weightDiv.style.display = this.graph.weighted ? "" : "none";
     }
     linkNodesPos() {
         const rnorm = GraphNode.RADIUS /

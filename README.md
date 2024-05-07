@@ -42,8 +42,6 @@ Place cursor near the left side of the screen to open the sidebar.
 
 ### Features
 
--   Implement [weighted graphs](<https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph>).
-    -   Add a way to edit weight of edges.
 -   Add distance attribute to each node when running BSF.
 -   Add discovery time and finish time of each node when running DFS.
 
@@ -55,11 +53,10 @@ Place cursor near the left side of the screen to open the sidebar.
 -   Create a [Heap](<https://en.wikipedia.org/wiki/Heap_(data_structure)>).
 -   Create a [Binary Search Tree (BST)](https://en.wikipedia.org/wiki/Binary_search_tree).
     -   Balance the BST using [AVL rotation](https://en.wikipedia.org/wiki/AVL_tree#Rebalancing).
--   Once weighted graphs are implemented:
-    -   [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm).
-    -   [Prim's Algorithm](https://en.wikipedia.org/wiki/Prim's_algorithm).
-    -   [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm).
-    -   Dijkstra's Algorithm on a DAG using topological ordering.
+-   [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm).
+-   [Prim's Algorithm](https://en.wikipedia.org/wiki/Prim's_algorithm).
+-   [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm).
+-   Dijkstra's Algorithm on a DAG using topological ordering.
 
 ### QoL
 
