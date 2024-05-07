@@ -21,7 +21,7 @@ Place cursor near the left side of the screen to open the sidebar.
 -   **Hold `Ctrl` + Left-Click drag** to **move all selected nodes**.
 -   **`Ctrl` + `A`** to **select all** nodes.
 -   **`Backspace`** to **delete all selected nodes**.
--   **`Enter`** to **edit the value** of a selected node (one at a time).
+-   **Double-click** a node to **edit its value**, click **`Enter`**, or click away to confirm.
 
 ### Edges/Arrows
 
@@ -31,6 +31,7 @@ Place cursor near the left side of the screen to open the sidebar.
 -   **Left-Click and drag** the head or tail and let go on an empty spot to remove the edge.
 -   **Hold `Shift` + Right-Click** on a node to **add an edge** that connects all selected nodes to the clicked node.
 -   **Hold `Shift` + Left-Click** anywhere in the blank page to **add a node and an edge** that connects all selected nodes to the newly created node.
+-   **Double-click** an edge to **edit its weight**, click **`Enter`**, or click away to confirm.
 
 ### Animating
 
