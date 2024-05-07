@@ -12,6 +12,7 @@ export default class Menu {
     private BFS_Button = document.querySelector(".BFS-button") as HTMLButtonElement;
     private DFS_Button = document.querySelector(".DFS-button") as HTMLButtonElement;
     private HTML_directed_toggle = document.querySelector(".directed-switch") as HTMLInputElement;
+    private HTML_weighted_toggle = document.querySelector(".weighted-switch") as HTMLInputElement;
 
     // Animation menu HTML elements
     private animationSideNav = document.querySelector(".animation-menu") as HTMLDivElement;
@@ -40,6 +41,7 @@ export default class Menu {
             this.animate(this.algorithms.DFS.bind(this.algorithms));
         });
         this.HTML_directed_toggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
+        this.HTML_weighted_toggle.addEventListener("click", this.graph.toggle_weighted.bind(this.graph));
     }
     private focusMainMenu() {
         this.mainSideNav.style.display = "";

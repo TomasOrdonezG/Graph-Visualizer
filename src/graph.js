@@ -6,6 +6,7 @@ class Graph {
     // #endregion
     constructor() {
         this.nodes = [];
+        this.weighted = false;
         this.directed = false;
         // Objects to keep track of
         this.initial_node = null;
@@ -72,11 +73,27 @@ class Graph {
             event.preventDefault();
             return;
         }
-        // Update each edge to have its arrowhead to invisible
+        // Toggle boolean
         this.directed = !this.directed;
+        // Loop through every edge in the graph
         for (let node of this.nodes) {
-            for (let out_edge of node.out_edges) {
-                out_edge.linkNodesPos();
+            for (let edge of node.out_edges) {
+                edge.linkNodesPos(); // Update visual of the arrowheads
+            }
+        }
+    }
+    toggle_weighted(event) {
+        // Prevent from changing graph type while traversin
+        if (this.traversing) {
+            event.preventDefault();
+            return;
+        }
+        // Toggle boolean
+        this.weighted = !this.weighted;
+        // Loop through every edge in the graph
+        for (let node of this.nodes) {
+            for (let edge of node.out_edges) {
+                edge.updateWeight(edge.weight); // Update weight text
             }
         }
     }

@@ -37,6 +37,7 @@ function main(): void {
                 node.select();
             }
         } else if (event.key === "Backspace") {
+            console.log("Backspace");
             // Delete selected nodes
             for (let i = GRAPH.nodes.length - 1; i >= 0; i--) {
                 if (GRAPH.nodes[i].selected && GRAPH.nodes[i].div.getAttribute("contenteditable") === "false") {

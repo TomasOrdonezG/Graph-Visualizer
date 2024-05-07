@@ -1,6 +1,7 @@
 /* Graph Elements */
 .graph-container {
   background-color: #ecedf8;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   position: absolute;
   height: 100%;
   width: 100%;
@@ -9,36 +10,37 @@
   top: 0;
   left: 0;
   z-index: 0; }
-
-.circle {
-  border-radius: 50%;
-  /* Ensures circular shape */
-  position: absolute;
-  /* Position relative to the container */
-  display: flex;
-  /* Use flexbox layout */
-  justify-content: center;
-  /* Center horizontally */
-  align-items: center;
-  /* Center vertically */
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: 500;
-  transition: transform 0.1s ease-in-out, font-size 0.1s ease-in-out;
-  outline: none;
-  z-index: 100; }
-
-.node-text {
-  position: absolute;
-  transform: translateX(-100%); }
-
-.line {
-  position: absolute;
-  height: 0;
-  border: 1px solid black; }
-
-.hitbox {
-  position: absolute;
-  border-radius: 59%; }
+  .graph-container .circle {
+    border-radius: 50%;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    transition: transform 0.1s ease-in-out, font-size 0.1s ease-in-out;
+    outline: none;
+    z-index: 100; }
+    .graph-container .circle .node-text {
+      position: relative;
+      transform: translateX(-100%); }
+  .graph-container .line {
+    position: absolute;
+    height: 0;
+    border: 1px solid black;
+    display: flex;
+    justify-content: center; }
+  .graph-container .weight {
+    position: absolute;
+    background-color: inherit;
+    padding: 0.5%;
+    font-size: small;
+    outline: none;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    z-index: 2; }
+  .graph-container .hitbox {
+    position: absolute;
+    border-radius: 59%; }
 
 .graph-sidenav {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;

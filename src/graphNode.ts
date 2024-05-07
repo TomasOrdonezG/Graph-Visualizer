@@ -33,14 +33,15 @@ export default class GraphNode {
     private dragging: boolean = false;
     private initialX_drag: number = 0;
     private initialY_drag: number = 0;
-    private bound_handlers = {
-        keydown: this.handle_keydown.bind(this),
-        mouse_enter_div: this.handle_mouse_enter.bind(this),
-        mouse_leave_div: this.handle_mouse_leave_div.bind(this),
-        mouse_down_div: this.handle_mouse_down_div.bind(this),
-        mouse_up_div: this.handle_mouse_up_div.bind(this),
-        mouse_up_doc: this.handle_mouse_up_doc.bind(this),
-        mouse_move: this.handle_mouse_move.bind(this),
+    private bound_set_edited_value = this.set_edited_value.bind(this);
+    private bound_mouse_handlers = {
+        enter_div: this.handle_mouse_enter.bind(this),
+        leave_div: this.handle_mouse_leave_div.bind(this),
+        down_div: this.handle_mouse_down_div.bind(this),
+        up_div: this.handle_mouse_up_div.bind(this),
+        up_doc: this.handle_mouse_up_doc.bind(this),
+        move: this.handle_mouse_move.bind(this),
+        double_click: this.handle_double_click.bind(this),
     };
 
     // Algorithm specific attributes
@@ -62,8 +63,8 @@ export default class GraphNode {
 
         // Create node Div
         this.div = document.createElement("div");
+        this.div.setAttribute("contenteditable", "false");
         this.div.classList.add("circle", "pan");
-        // this.div.setAttribute("contenteditable", "false");
         this.graph.HTML_Container.appendChild(this.div);
 
         // Create text elements
@@ -71,7 +72,6 @@ export default class GraphNode {
         this.time_interval_text.classList.add("node-text", "pan");
         this.time_interval_text.textContent = `[${this.DFS_dtime}, ${this.DFS_ftime}]`;
         this.graph.HTML_Container.appendChild(this.time_interval_text);
-        // this.time_interval_text.style.display = "none";
 
         this.updatePos(this.x, this.y);
         this.updateAll();
@@ -91,7 +91,6 @@ export default class GraphNode {
     }
     private handle_mouse_leave_div(): void {
         this.div.style.transform = "scale(1)";
-        this.updateBorderColour(this.selected ? GraphNode.SELECTED_BORDER_COLOUR : GraphNode.DEFAULT_BORDER_COLOUR);
     }
     private handle_mouse_down_div(event: MouseEvent): void {
         event.preventDefault();
@@ -169,28 +168,23 @@ export default class GraphNode {
             this.updatePos(event.clientX - this.initialX_drag, event.clientY - this.initialY_drag);
         }
     }
-    private handle_keydown(event: KeyboardEvent): void {
-        // Skip if this node is not selected or if the key pressed is not Enter
-        if (!this.selected || event.key !== "Enter") return;
-        event.preventDefault();
+    private handle_double_click(): void {
+        // Edit value
+        this.div.setAttribute("contenteditable", "true");
+        this.div.focus();
 
-        // Check if this is the only selected node
-        for (let node of this.graph.nodes) {
-            if (node !== this && node.selected) return;
-        }
-
-        if (this.div.getAttribute("contenteditable") !== "true") {
-            // Edit value
-            this.div.setAttribute("contenteditable", "true");
-            this.div.focus();
-
-            // Select content inside the div
-            const selection = window.getSelection();
-            const range = document.createRange();
-            range.selectNodeContents(this.div);
-            selection?.removeAllRanges();
-            selection?.addRange(range);
-        } else {
+        // Select content inside the div
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(this.div);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+    }
+    private set_edited_value(event: MouseEvent | KeyboardEvent): void {
+        if (
+            this.div.getAttribute("contenteditable") === "true" &&
+            (("key" in event && event.key === "Enter") || "clientX" in event)
+        ) {
             // Save editing changes
             this.div.setAttribute("contenteditable", "false");
 
@@ -207,31 +201,35 @@ export default class GraphNode {
     }
     private addAllEventListeners(): void {
         // Hover
-        this.div.addEventListener("mouseenter", this.bound_handlers.mouse_enter_div);
-        this.div.addEventListener("mouseleave", this.bound_handlers.mouse_leave_div);
+        this.div.addEventListener("mouseenter", this.bound_mouse_handlers.enter_div);
+        this.div.addEventListener("mouseleave", this.bound_mouse_handlers.leave_div);
 
         // Mouse actions
-        this.div.addEventListener("mousedown", this.bound_handlers.mouse_down_div);
-        document.addEventListener("mouseup", this.bound_handlers.mouse_up_doc);
-        this.div.addEventListener("mouseup", this.bound_handlers.mouse_up_div);
-        document.addEventListener("mousemove", this.bound_handlers.mouse_move);
+        this.div.addEventListener("mousedown", this.bound_mouse_handlers.down_div);
+        document.addEventListener("mousedown", this.bound_set_edited_value);
+        document.addEventListener("mouseup", this.bound_mouse_handlers.up_doc);
+        this.div.addEventListener("mouseup", this.bound_mouse_handlers.up_div);
+        document.addEventListener("mousemove", this.bound_mouse_handlers.move);
+        this.div.addEventListener("dblclick", this.bound_mouse_handlers.double_click);
 
         // Keyboard actions
-        document.addEventListener("keydown", this.bound_handlers.keydown);
+        document.addEventListener("keydown", this.bound_set_edited_value);
     }
     private removeAllEventListeners(): void {
         // Hover
-        this.div.removeEventListener("mouseenter", this.bound_handlers.mouse_enter_div);
-        this.div.removeEventListener("mouseleave", this.bound_handlers.mouse_leave_div);
+        this.div.removeEventListener("mouseenter", this.bound_mouse_handlers.enter_div);
+        this.div.removeEventListener("mouseleave", this.bound_mouse_handlers.leave_div);
 
         // Mouse actions
-        this.div.removeEventListener("mousedown", this.bound_handlers.mouse_down_div);
-        document.removeEventListener("mouseup", this.bound_handlers.mouse_up_doc);
-        this.div.removeEventListener("mouseup", this.bound_handlers.mouse_up_div);
-        document.removeEventListener("mousemove", this.bound_handlers.mouse_move);
+        this.div.removeEventListener("mousedown", this.bound_mouse_handlers.down_div);
+        document.removeEventListener("mousedown", this.bound_set_edited_value);
+        document.removeEventListener("mouseup", this.bound_mouse_handlers.up_doc);
+        this.div.removeEventListener("mouseup", this.bound_mouse_handlers.up_div);
+        document.removeEventListener("mousemove", this.bound_mouse_handlers.move);
+        this.div.removeEventListener("dblclick", this.bound_mouse_handlers.double_click);
 
         // Keyboard actions
-        document.removeEventListener("keydown", this.bound_handlers.keydown);
+        document.removeEventListener("keydown", this.bound_set_edited_value);
     }
 
     // Connection
@@ -283,7 +281,7 @@ export default class GraphNode {
         this.selected = true;
     }
     public deselect(): void {
-        this.updateBorderColour(GraphNode.DEFAULT_BORDER_COLOUR);
+        this.updateBorderColour(this.colour === GraphNode.SEARCHED_COLOUR ? "black" : GraphNode.DEFAULT_BORDER_COLOUR);
         this.selected = false;
     }
 

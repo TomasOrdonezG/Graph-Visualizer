@@ -23,11 +23,13 @@ export default class Edge {
     public moving_head: boolean = false;
     public moving_tail: boolean = false;
 
-    public line_div: HTMLDivElement;
+    public lineDiv: HTMLDivElement;
     public left_arrowhead_div: HTMLDivElement;
     public right_arrowhead_div: HTMLDivElement;
     public hitbox_div_head: HTMLDivElement;
     public hitbox_div_tail: HTMLDivElement;
+    public weightDiv: HTMLDivElement;
+    public HTMLElementDependencies: HTMLElement[];
     private bound_mouse_handlers = {
         leave: this.handle_mouse_leave.bind(this),
         enter: this.handle_mouse_enter.bind(this),
@@ -35,7 +37,9 @@ export default class Edge {
         down_tail_hitbox: this.handle_mouse_down_tail_hitbox.bind(this),
         up: this.handle_mouse_up.bind(this),
         move: this.handle_mouse_move.bind(this),
+        double_click: this.handle_double_click.bind(this),
     };
+    private bound_set_edited_weight = this.set_edited_weight.bind(this);
     // #endregion
 
     constructor(source: GraphNode, destination: GraphNode, graph: Graph) {
@@ -45,32 +49,46 @@ export default class Edge {
 
         // * Create Divs
         // Line
-        this.line_div = document.createElement("div");
-        this.line_div.classList.add("line", "pan");
-        this.graph.HTML_Container?.appendChild(this.line_div);
+        this.lineDiv = document.createElement("div");
+        this.lineDiv.classList.add("line", "pan");
+        this.graph.HTML_Container.appendChild(this.lineDiv);
 
         // Arrowheads
         this.left_arrowhead_div = document.createElement("div");
         this.left_arrowhead_div.classList.add("line", "pan");
-        this.graph.HTML_Container?.appendChild(this.left_arrowhead_div);
+        this.graph.HTML_Container.appendChild(this.left_arrowhead_div);
 
         this.right_arrowhead_div = document.createElement("div");
         this.right_arrowhead_div.classList.add("line", "pan");
-        this.graph.HTML_Container?.appendChild(this.right_arrowhead_div);
+        this.graph.HTML_Container.appendChild(this.right_arrowhead_div);
 
         // Hitboxes
         this.hitbox_div_head = document.createElement("div");
         this.hitbox_div_head.classList.add("hitbox", "pan");
-        this.graph.HTML_Container?.appendChild(this.hitbox_div_head);
+        this.graph.HTML_Container.appendChild(this.hitbox_div_head);
 
         this.hitbox_div_tail = document.createElement("div");
         this.hitbox_div_tail.classList.add("hitbox", "pan");
-        this.graph.HTML_Container?.appendChild(this.hitbox_div_tail);
+        this.graph.HTML_Container.appendChild(this.hitbox_div_tail);
 
         this.updateColour(Edge.DEFAULT_COLOUR);
 
+        // Weight
+        this.weightDiv = document.createElement("div");
+        this.weightDiv.classList.add("weight", "pan");
+        this.graph.HTML_Container.appendChild(this.weightDiv);
+        this.updateWeight(this.weight);
+        this.HTMLElementDependencies = [
+            this.lineDiv,
+            this.left_arrowhead_div,
+            this.right_arrowhead_div,
+            this.hitbox_div_head,
+            this.hitbox_div_tail,
+            this.weightDiv,
+        ];
+
         // Add mouse event listeners
-        this.addMouseEventListeners();
+        this.addAllEventListeners();
     }
 
     // Event listeners and handlers
@@ -122,7 +140,34 @@ export default class Edge {
             this.linkCursorToTailPos(event);
         }
     }
-    private addMouseEventListeners(): void {
+    private handle_double_click(): void {
+        this.weightDiv.setAttribute("contenteditable", "true");
+        this.weightDiv.focus();
+
+        // Select content inside the div
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(this.weightDiv);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+    }
+    private set_edited_weight(event: MouseEvent | KeyboardEvent): void {
+        if (
+            this.weightDiv.getAttribute("contenteditable") === "true" &&
+            (("key" in event && event.key === "Enter") || "clientX" in event)
+        ) {
+            // Save editing changes
+            this.weightDiv.setAttribute("contenteditable", "false");
+
+            // Validate input and update value
+            const new_weight = parseInt(this.weightDiv.innerText);
+            if (new_weight) {
+                this.weight = new_weight;
+            }
+            this.weightDiv.innerText = this.weight.toString();
+        }
+    }
+    private addAllEventListeners(): void {
         // Add hover ELs for head and tail hitboxes
         this.hitbox_div_head.addEventListener("mouseenter", this.bound_mouse_handlers.enter);
         this.hitbox_div_head.addEventListener("mouseleave", this.bound_mouse_handlers.leave);
@@ -133,11 +178,16 @@ export default class Edge {
         this.hitbox_div_head.addEventListener("mousedown", this.bound_mouse_handlers.down_head_hitbox);
         this.hitbox_div_tail.addEventListener("mousedown", this.bound_mouse_handlers.down_tail_hitbox);
 
+        // Double click and enter or click away for changing weight value ELs
+        this.weightDiv.addEventListener("dblclick", this.bound_mouse_handlers.double_click);
+        document.addEventListener("keydown", this.bound_set_edited_weight);
+        document.addEventListener("mousedown", this.bound_set_edited_weight);
+
         // Add document-wide ELs
         document.addEventListener("mouseup", this.bound_mouse_handlers.up);
         document.addEventListener("mousemove", this.bound_mouse_handlers.move);
     }
-    private removeMouseEventListeners(): void {
+    private removeAllEventListeners(): void {
         // Remove hover ELs for head and tail hitboxes
         this.hitbox_div_head.removeEventListener("mouseenter", this.bound_mouse_handlers.enter);
         this.hitbox_div_head.removeEventListener("mouseleave", this.bound_mouse_handlers.leave);
@@ -148,6 +198,11 @@ export default class Edge {
         this.hitbox_div_head.removeEventListener("mousedown", this.bound_mouse_handlers.down_head_hitbox);
         this.hitbox_div_tail.removeEventListener("mousedown", this.bound_mouse_handlers.down_tail_hitbox);
 
+        // Double click and enter for changing weight value ELs
+        this.weightDiv.removeEventListener("dblclick", this.bound_mouse_handlers.double_click);
+        document.removeEventListener("keydown", this.bound_set_edited_weight);
+        document.removeEventListener("mousedown", this.bound_set_edited_weight);
+
         // Remove document-wide ELs
         document.removeEventListener("mouseup", this.bound_mouse_handlers.up);
         document.removeEventListener("mousemove", this.bound_mouse_handlers.move);
@@ -157,23 +212,27 @@ export default class Edge {
         this.colour = colour;
 
         // border
-        this.line_div.style.border = `1px solid ${this.colour}`;
+        this.lineDiv.style.border = `1px solid ${this.colour}`;
         this.left_arrowhead_div.style.border = `1px solid ${this.colour}`;
         this.right_arrowhead_div.style.border = `1px solid ${this.colour}`;
 
         // Thickness
         const bg = this.colour === "black" ? this.colour : "transparent";
-        this.line_div.style.backgroundColor = bg;
+        this.lineDiv.style.backgroundColor = bg;
         this.left_arrowhead_div.style.backgroundColor = bg;
         this.right_arrowhead_div.style.backgroundColor = bg;
 
         // Z-Index
         const zi = this.colour === "black" ? "1" : "-1";
-        this.line_div.style.zIndex = zi;
+        this.lineDiv.style.zIndex = zi;
         this.left_arrowhead_div.style.zIndex = zi;
         this.right_arrowhead_div.style.zIndex = zi;
     }
-
+    public updateWeight(weight: number): void {
+        this.weight = weight;
+        this.weightDiv.textContent = this.weight.toString();
+        this.weightDiv.style.display = this.graph.weighted ? "" : "none";
+    }
     public updatePos = (x1: number, y1: number, x2: number, y2: number): void => {
         const get_line_styles = (x1: number, y1: number, x2: number, y2: number): string => {
             // Gets the styles needed to draw a line as a div
@@ -190,20 +249,20 @@ export default class Edge {
             let angle = Math.PI - Math.atan2(-height, width);
 
             let styles =
-                `width: ${length.toString()}px; ` +
-                `-moz-transform: rotate(${angle.toString()}rad); ` +
-                `-webkit-transform: rotate(${angle.toString()}rad); ` +
-                `-o-transform: rotate(${angle.toString()}rad); ` +
-                `-ms-transform: rotate(${angle.toString()}rad); ` +
-                `top: ${y.toString()}px; ` +
-                `left: ${x.toString()}px; `;
+                `width: ${length}px; ` +
+                `-moz-transform: rotate(${angle}rad); ` +
+                `-webkit-transform: rotate(${angle}rad); ` +
+                `-o-transform: rotate(${angle}rad); ` +
+                `-ms-transform: rotate(${angle}rad); ` +
+                `top: ${y}px; ` +
+                `left: ${x}px; `;
             return styles;
         };
 
         // * LINE
         // Set edge position
         const line_styles = get_line_styles(x1, y1, x2, y2);
-        this.line_div.setAttribute("style", line_styles);
+        this.lineDiv.setAttribute("style", line_styles);
 
         // * ARROWHEAD (if the graph is directed)
         if (this.graph.directed) {
@@ -232,8 +291,8 @@ export default class Edge {
             const hitbox_style =
                 `width: ${(Edge.HITBOX_RADIUS * 2).toString()}px;` +
                 `height: ${(Edge.HITBOX_RADIUS * 2).toString()}px;` +
-                `top: ${y.toString()}px;` +
-                `left: ${x.toString()}px;`;
+                `top: ${y}px;` +
+                `left: ${x}px;`;
             return hitbox_style;
         };
 
@@ -249,9 +308,14 @@ export default class Edge {
         const hitbox_style_tail = get_hitbox_style(hb_xt, hb_yt);
         this.hitbox_div_tail.setAttribute("style", hitbox_style_tail);
 
+        // * Weight
+        this.weightDiv.style.left = `${(x2 + x1) / 2}px`;
+        this.weightDiv.style.top = `${(y2 + y1) / 2}px`;
+
         // * Update colour
         this.updateColour(this.colour);
     };
+
     public linkNodesPos(): void {
         const rnorm =
             GraphNode.RADIUS /
@@ -297,12 +361,10 @@ export default class Edge {
 
     public delete(): void {
         // Remove divs and event listeners
-        this.graph.HTML_Container?.removeChild(this.line_div);
-        this.graph.HTML_Container?.removeChild(this.left_arrowhead_div);
-        this.graph.HTML_Container?.removeChild(this.right_arrowhead_div);
-        this.graph.HTML_Container?.removeChild(this.hitbox_div_head);
-        this.graph.HTML_Container?.removeChild(this.hitbox_div_tail);
-        this.removeMouseEventListeners();
+        this.HTMLElementDependencies.forEach((el: HTMLElement) => {
+            this.graph.HTML_Container.removeChild(el);
+        });
+        this.removeAllEventListeners();
 
         // Remove edge from source's out_edges
         let i = this.source.out_edges.indexOf(this);
