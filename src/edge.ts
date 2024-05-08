@@ -211,16 +211,15 @@ export default class Edge {
     public updateColour(colour: string): void {
         this.colour = colour;
 
-        // border
-        this.lineDiv.style.border = `1px solid ${this.colour}`;
-        this.left_arrowhead_div.style.border = `1px solid ${this.colour}`;
-        this.right_arrowhead_div.style.border = `1px solid ${this.colour}`;
+        // Colour
+        this.lineDiv.style.backgroundColor = this.colour;
+        this.left_arrowhead_div.style.backgroundColor = this.colour;
+        this.right_arrowhead_div.style.backgroundColor = this.colour;
 
         // Thickness
-        const bg = this.colour === "black" ? this.colour : "transparent";
-        this.lineDiv.style.backgroundColor = bg;
-        this.left_arrowhead_div.style.backgroundColor = bg;
-        this.right_arrowhead_div.style.backgroundColor = bg;
+        this.lineDiv.style.height = `${this.colour === Edge.HIGHLIGHT_COLOUR ? 3 : 1}px`;
+        this.left_arrowhead_div.style.height = `${this.colour === Edge.HIGHLIGHT_COLOUR ? 3 : 1}px`;
+        this.right_arrowhead_div.style.height = `${this.colour === Edge.HIGHLIGHT_COLOUR ? 3 : 1}px`;
 
         // Z-Index
         const zi = this.colour === "black" ? "1" : "-1";

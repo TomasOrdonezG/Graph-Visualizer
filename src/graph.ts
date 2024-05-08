@@ -84,10 +84,10 @@ export default class Graph {
         return this.nodes[0];
     }
 
-    public toggle_directed(event: MouseEvent): void {
+    public toggle_directed(event?: MouseEvent): void {
         // Prevent from changing graph type while traversing
         if (this.traversing) {
-            event.preventDefault();
+            event?.preventDefault();
             return;
         }
 
@@ -102,10 +102,10 @@ export default class Graph {
         }
     }
 
-    public toggle_weighted(event: MouseEvent) {
+    public toggle_weighted(event?: MouseEvent) {
         // Prevent from changing graph type while traversin
         if (this.traversing) {
-            event.preventDefault();
+            event?.preventDefault();
             return;
         }
 
@@ -122,5 +122,11 @@ export default class Graph {
 
     public sortNodes() {
         this.nodes.sort((a, b) => a.value - b.value);
+    }
+
+    public reset_distances(): void {
+        for (let node of this.nodes) {
+            node.distance = Infinity;
+        }
     }
 }

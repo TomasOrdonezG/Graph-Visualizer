@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import { MinPriorityQueue } from "./minPQ.js";
 class Animation {
     constructor(slider) {
         this.fps = 5;
@@ -72,30 +73,36 @@ class Algorithms {
         this.slider = slider;
     }
     DFS() {
+        // Initialize graph styles, animation object and time
         this.graph.reset_colour();
         const DFS_Animation = new Animation(this.slider);
         let time = 0;
-        for (let node of this.graph.nodes) {
-            node.show_time_interval = true;
-            node.updateText();
-        }
+        // // Show dtime and ftime for every node
+        // for (let node of this.graph.nodes) {
+        //     node.show_time_interval = true;
+        //     node.updateText();
+        // }
         const DFS_Visit = (node) => {
+            // Increment time, set dtime, change node colour and add frame
             time++;
             DFS_Animation.addFrame(node, "gray");
             node.DFS_dtime = String(time);
             node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
-            for (let out_edge of node.out_edges) {
-                const adj = out_edge.destination;
+            // Recurse on undiscovered neighbours
+            for (let { outEdge: edge, adj } of node.getOutEdges()) {
                 if (adj.colour === "white") {
-                    DFS_Animation.addFrame(out_edge, "black");
+                    // Change colour of connecting edge and add frame
+                    DFS_Animation.addFrame(edge, "black");
                     DFS_Visit(adj);
                 }
             }
+            // Increment time, set ftime, change node colour and add frame
             time++;
             node.DFS_ftime = String(time);
             node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
             DFS_Animation.addFrame(node, "black");
         };
+        // Run DFS on every undiscovered node
         for (let node of this.graph.nodes) {
             if (node.colour === "white") {
                 DFS_Visit(node);
@@ -106,27 +113,66 @@ class Algorithms {
         return DFS_Animation;
     }
     BFS() {
-        const BFS_Animation = new Animation(this.slider);
         this.graph.reset_colour();
-        const Q = [];
         let root = this.graph.get_first_selected();
-        BFS_Animation.addFrame(root, "gray");
+        const Q = [];
         Q.push(root);
+        const BFS_Animation = new Animation(this.slider);
+        BFS_Animation.addFrame(root, "gray");
+        // Main BFS loop
         while (Q.length > 0) {
+            // Dequeue next node and search all its neighbours
             const node = Q.shift();
-            for (let out_edge of node.out_edges) {
-                const adj = out_edge.destination;
+            for (let { outEdge: edge, adj } of node.getOutEdges()) {
                 if (adj.colour === "white") {
-                    BFS_Animation.addFrame(out_edge, "black");
+                    // Add frame to connecting endge and newly discovered node. Then enqueue
+                    BFS_Animation.addFrame(edge, "black");
                     BFS_Animation.addFrame(adj, "gray");
                     Q.push(adj);
                 }
             }
+            // Mark node as fully searched
             BFS_Animation.addFrame(node, "black");
         }
         this.graph.reset_colour();
         BFS_Animation.updateSlider();
         return BFS_Animation;
+    }
+    Dijkstra() {
+        const DijkstraAnimation = new Animation(this.slider);
+        // Initialize graph
+        this.graph.reset_colour();
+        this.graph.reset_distances();
+        const root = this.graph.get_first_selected();
+        root.distance = 0;
+        // Initialize min-priority-queue
+        const Q = new MinPriorityQueue((item, key) => (item.distance = key), (item) => item.distance);
+        Q.buildPriorityQueueOnArray(this.graph.nodes);
+        // Main Dijsktra loop
+        while (!Q.isEmpty()) {
+            // Extract node with least distance that hasn't been search and colour gray
+            const node = Q.extractMin();
+            DijkstraAnimation.addFrame(node, "gray");
+            // Relax every adjacent edge
+            for (let { outEdge: edge, adj } of node.getOutEdges()) {
+                if (adj.distance > node.distance + edge.weight) {
+                    // Update distance of the neighbour node and change colour of the edge
+                    DijkstraAnimation.addFrame(edge, "black");
+                    adj.distance = node.distance + edge.weight;
+                    Q.decreaseKey(Q.arr.indexOf(adj), adj.distance);
+                    // Unhighlight every other in edge
+                    for (let { inEdge } of adj.getInEdges()) {
+                        if (edge !== inEdge && inEdge.colour === "black") {
+                            DijkstraAnimation.addFrame(inEdge, "gray");
+                        }
+                    }
+                }
+            }
+            DijkstraAnimation.addFrame(node, "black");
+        }
+        this.graph.reset_colour();
+        this.graph.reset_distances();
+        return DijkstraAnimation;
     }
 }
 export { Algorithms, Animation };

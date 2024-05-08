@@ -16,6 +16,7 @@ export default class Menu {
         this.mainSideNav = document.querySelector(".graph-sidenav");
         this.BFS_Button = document.querySelector(".BFS-button");
         this.DFS_Button = document.querySelector(".DFS-button");
+        this.Dijkstra_Button = document.querySelector(".Dijkstra-button");
         this.HTML_directed_toggle = document.querySelector(".directed-switch");
         this.HTML_weighted_toggle = document.querySelector(".weighted-switch");
         // Animation menu HTML elements
@@ -33,14 +34,30 @@ export default class Menu {
         this.focusMainMenu();
     }
     mainMenuEventListeners() {
+        // * Animation buttons
         this.BFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.BFS.bind(this.algorithms));
         });
         this.DFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.DFS.bind(this.algorithms));
         });
+        this.Dijkstra_Button.addEventListener("click", () => {
+            if (!this.graph.weighted) {
+                // Change graph to weighted if it isn't already
+                this.HTML_weighted_toggle.checked = true;
+                this.graph.toggle_weighted();
+            }
+            this.animate(this.algorithms.Dijkstra.bind(this.algorithms));
+        });
+        // * Toggles
+        // Toggle events
         this.HTML_directed_toggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
         this.HTML_weighted_toggle.addEventListener("click", this.graph.toggle_weighted.bind(this.graph));
+        // Check if toggles checks (checkboxes) align with default graph states
+        if (this.HTML_directed_toggle.checked !== this.graph.directed)
+            this.graph.toggle_directed();
+        if (this.HTML_weighted_toggle.checked !== this.graph.weighted)
+            this.graph.toggle_weighted();
     }
     focusMainMenu() {
         this.mainSideNav.style.display = "";
