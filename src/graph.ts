@@ -123,4 +123,10 @@ export default class Graph {
     public sortNodes() {
         this.nodes.sort((a, b) => a.value - b.value);
     }
+
+    public reset_distances(): void {
+        for (let node of this.nodes) {
+            node.distance = Infinity;
+        }
+    }
 }

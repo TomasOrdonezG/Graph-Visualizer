@@ -11,6 +11,7 @@ export default class Menu {
     private mainSideNav = document.querySelector(".graph-sidenav") as HTMLDivElement;
     private BFS_Button = document.querySelector(".BFS-button") as HTMLButtonElement;
     private DFS_Button = document.querySelector(".DFS-button") as HTMLButtonElement;
+    private Dijkstra_Button = document.querySelector(".Dijkstra-button") as HTMLButtonElement;
     private HTML_directed_toggle = document.querySelector(".directed-switch") as HTMLInputElement;
     private HTML_weighted_toggle = document.querySelector(".weighted-switch") as HTMLInputElement;
 
@@ -34,16 +35,28 @@ export default class Menu {
     }
 
     private mainMenuEventListeners() {
+        // * Animation buttons
         this.BFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.BFS.bind(this.algorithms));
         });
         this.DFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.DFS.bind(this.algorithms));
         });
+        this.Dijkstra_Button.addEventListener("click", () => {
+            if (!this.graph.weighted) {
+                // Change graph to weighted if it isn't already
+                this.HTML_weighted_toggle.checked = true;
+                this.graph.toggle_weighted();
+            }
+            this.animate(this.algorithms.Dijkstra.bind(this.algorithms));
+        });
+
+        // * Toggles
+        // Toggle events
         this.HTML_directed_toggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
         this.HTML_weighted_toggle.addEventListener("click", this.graph.toggle_weighted.bind(this.graph));
 
-        // Check if checkboxed align with default graph states
+        // Check if toggles checks (checkboxes) align with default graph states
         if (this.HTML_directed_toggle.checked !== this.graph.directed) this.graph.toggle_directed();
         if (this.HTML_weighted_toggle.checked !== this.graph.weighted) this.graph.toggle_weighted();
     }

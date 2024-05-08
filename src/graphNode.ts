@@ -385,12 +385,21 @@ export default class GraphNode {
         return all_edges;
     }
 
-    public getEdges(): { edge: Edge; adj: GraphNode }[] {
+    public getOutEdges(): { outEdge: Edge; adj: GraphNode }[] {
         // Only return out-edges when directed, return all edges and appropiate adjacent node otherwise
-        const edges = this.graph.directed ? this.out_edges : this.getAllEdges();
-        return edges.map((edge) => ({
-            edge: edge,
-            adj: edge.destination === this ? edge.source : edge.destination,
+        const outEdges = this.graph.directed ? this.out_edges : this.getAllEdges();
+        return outEdges.map((outEdge) => ({
+            outEdge: outEdge,
+            adj: outEdge.destination === this ? outEdge.source : outEdge.destination,
+        }));
+    }
+
+    public getInEdges(): { inEdge: Edge; adj: GraphNode }[] {
+        // Only return in-edges when directed, return all edges and appropiate adjacent node otherwise
+        const inEdges = this.graph.directed ? this.in_edges : this.getAllEdges();
+        return inEdges.map((inEdge) => ({
+            inEdge: inEdge,
+            adj: inEdge.destination === this ? inEdge.source : inEdge.destination,
         }));
     }
 }

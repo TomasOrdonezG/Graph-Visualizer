@@ -100,6 +100,11 @@ class Graph {
     sortNodes() {
         this.nodes.sort((a, b) => a.value - b.value);
     }
+    reset_distances() {
+        for (let node of this.nodes) {
+            node.distance = Infinity;
+        }
+    }
 }
 // #region ATTRIBUTES
 // Global class constants

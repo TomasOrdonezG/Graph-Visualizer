@@ -33,16 +33,17 @@ Place cursor near the left side of the screen to open the sidebar.
 -   **Hold `Shift` + Left-Click** anywhere in the blank page to **add a node and an edge** that connects all selected nodes to the newly created node.
 -   **Double-click** an edge to **edit its weight**, click **`Enter`**, or click away to confirm.
 
-### Animating
+### Animations
 
 -   Click `BFS` Button to run [Breadth First Search (BFS)](https://en.wikipedia.org/wiki/Breadth-first_search) on the first selected node.
--   Click `DFS` Button to run [Depth First Search (DFS)](https://en.wikipedia.org/wiki/Depth-first_search) on the graph.
+-   Click `DFS` Button to run [Depth First Search (DFS)](https://en.wikipedia.org/wiki/Depth-first_search) on the graph (on all nodes).
+-   Click `Dijkstra` Button to run [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm) on the first selected node as the root node. Finds single pair shortest paths for all other nodes.
 
 ## Future Plans
 
 ### Features
 
--   Add distance attribute to each node when running BSF.
+-   Add distance attribute to each node when running BSF and Dijkstra's algorithm.
 -   Add discovery time and finish time of each node when running DFS.
 
 ### Animations
@@ -55,14 +56,11 @@ Place cursor near the left side of the screen to open the sidebar.
     -   Balance the BST using [AVL rotation](https://en.wikipedia.org/wiki/AVL_tree#Rebalancing).
 -   [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm).
 -   [Prim's Algorithm](https://en.wikipedia.org/wiki/Prim's_algorithm).
--   [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm).
--   Dijkstra's Algorithm on a DAG using topological ordering.
 
 ### QoL
 
 -   Add visual when adding an edge between two nodes using Right-Click drag.
 -   More keyboard shortcuts (need ideas for this one).
--   Play/Pause and frame skipping while in an animation.
 -   Add a slider for animation speed.
 -   Add area selecting with cursor drag.
 -   Colour customization.
