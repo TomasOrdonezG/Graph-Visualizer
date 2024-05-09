@@ -205,6 +205,66 @@ class Algorithms {
         this.graph.reset_distances();
         return DijkstraAnimation;
     }
+
+    public Kruskal(): Animation {
+        this.graph.reset_colour();
+        this.graph.deselect_all();
+        const KruskalAnimation = new Animation(this.slider);
+
+        const sortAllEdges = (): Edge[] => {
+            // Get all edges from the graph sorted by weight ascending
+            const edges: Edge[] = [];
+            for (let node of this.graph.nodes) {
+                edges.push(...node.out_edges);
+            }
+            return edges.sort((a, b) => a.weight - b.weight);
+        };
+        const edges = sortAllEdges();
+
+        // Create clusters for each node
+        const clusters = {
+            cMap: new WeakMap<GraphNode, GraphNode>(),
+
+            init(allNodes: GraphNode[]): void {
+                allNodes.map((node) => this.cMap.set(node, node));
+            },
+
+            getHead(node: GraphNode): GraphNode | undefined {
+                const parent = this.cMap.get(node);
+                if (!parent || parent === node) return parent;
+                return this.getHead(parent);
+            },
+
+            merge(node1: GraphNode, node2: GraphNode): void {
+                const head1 = this.getHead(node1);
+                if (!head1) return;
+                this.cMap.set(head1, node2);
+            },
+
+            equal(node1: GraphNode, node2: GraphNode): boolean {
+                const head1 = this.getHead(node1);
+                const head2 = this.getHead(node2);
+                if (!head1 || !head2) return false;
+                return head1 === head2;
+            },
+        };
+        clusters.init(this.graph.nodes);
+
+        // Main Kruskal loop
+        for (let edge of edges) {
+            KruskalAnimation.addFrame(edge, "orange");
+            if (!clusters.equal(edge.source, edge.destination)) {
+                // Merge clusters and select edge
+                clusters.merge(edge.source, edge.destination);
+                KruskalAnimation.addFrame(edge, "black");
+            } else {
+                KruskalAnimation.addFrame(edge, "gray");
+            }
+        }
+
+        this.graph.reset_colour();
+        return KruskalAnimation;
+    }
 }
 
 export { Algorithms, Animation };

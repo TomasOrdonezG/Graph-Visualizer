@@ -17,6 +17,7 @@ export default class Menu {
         this.BFS_Button = document.querySelector(".BFS-button");
         this.DFS_Button = document.querySelector(".DFS-button");
         this.Dijkstra_Button = document.querySelector(".Dijkstra-button");
+        this.Kruskal_Button = document.querySelector(".Kruskal-button");
         this.HTML_directed_toggle = document.querySelector(".directed-switch");
         this.HTML_weighted_toggle = document.querySelector(".weighted-switch");
         // Animation menu HTML elements
@@ -35,6 +36,13 @@ export default class Menu {
     }
     mainMenuEventListeners() {
         // * Animation buttons
+        const weightedOn = () => {
+            if (!this.graph.weighted) {
+                // Change graph to weighted if it isn't already
+                this.HTML_weighted_toggle.checked = true;
+                this.graph.toggle_weighted();
+            }
+        };
         this.BFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.BFS.bind(this.algorithms));
         });
@@ -42,12 +50,12 @@ export default class Menu {
             this.animate(this.algorithms.DFS.bind(this.algorithms));
         });
         this.Dijkstra_Button.addEventListener("click", () => {
-            if (!this.graph.weighted) {
-                // Change graph to weighted if it isn't already
-                this.HTML_weighted_toggle.checked = true;
-                this.graph.toggle_weighted();
-            }
+            weightedOn();
             this.animate(this.algorithms.Dijkstra.bind(this.algorithms));
+        });
+        this.Kruskal_Button.addEventListener("click", () => {
+            weightedOn();
+            this.animate(this.algorithms.Kruskal.bind(this.algorithms));
         });
         // * Toggles
         // Toggle events

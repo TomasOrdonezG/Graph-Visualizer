@@ -217,7 +217,7 @@ export default class Edge {
         this.right_arrowhead_div.style.backgroundColor = this.colour;
 
         // Thickness
-        this.lineDiv.style.height = `${this.colour === Edge.HIGHLIGHT_COLOUR ? 3 : 1}px`;
+        this.lineDiv.style.height = `${this.colour !== Edge.DEFAULT_COLOUR ? 3 : 1}px`;
         this.left_arrowhead_div.style.height = `${this.colour === Edge.HIGHLIGHT_COLOUR ? 3 : 1}px`;
         this.right_arrowhead_div.style.height = `${this.colour === Edge.HIGHLIGHT_COLOUR ? 3 : 1}px`;
 
