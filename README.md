@@ -35,9 +35,14 @@ Place cursor near the left side of the screen to open the sidebar.
 
 ### Animations
 
--   Click `BFS` Button to run [Breadth First Search (BFS)](https://en.wikipedia.org/wiki/Breadth-first_search) on the first selected node.
--   Click `DFS` Button to run [Depth First Search (DFS)](https://en.wikipedia.org/wiki/Depth-first_search) on the graph (on all nodes).
--   Click `Dijkstra` Button to run [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm) on the first selected node as the root node. Finds single pair shortest paths for all other nodes.
+The left hand side menu contains buttons to run many different types of algorithms. Some algorithms need to have one node as the root, this node will be chosen as the first selected node or the node with lowest value. If the algorithm requires the graph to be in a particular state (i.e., Dijkstra's algorithm requires the graph to be a weighted graph), then the graph will automatically be set to that state.
+
+**Available algorithms:**
+
+-   [BFS](https://en.wikipedia.org/wiki/Breadth-first_search)
+-   [DFS](https://en.wikipedia.org/wiki/Depth-first_search)
+-   [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)
+-   [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm)
 
 ## Future Plans
 
@@ -54,7 +59,6 @@ Place cursor near the left side of the screen to open the sidebar.
 -   Create a [Heap](<https://en.wikipedia.org/wiki/Heap_(data_structure)>).
 -   Create a [Binary Search Tree (BST)](https://en.wikipedia.org/wiki/Binary_search_tree).
     -   Balance the BST using [AVL rotation](https://en.wikipedia.org/wiki/AVL_tree#Rebalancing).
--   [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm).
 -   [Prim's Algorithm](https://en.wikipedia.org/wiki/Prim's_algorithm).
 
 ### QoL
