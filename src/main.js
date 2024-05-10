@@ -35,17 +35,6 @@ function main() {
                 node.select();
             }
         }
-        else if (event.key === "Backspace") {
-            // Delete selected nodes
-            for (let i = GRAPH.nodes.length - 1; i >= 0; i--) {
-                if (GRAPH.nodes[i].selected && GRAPH.nodes[i].div.getAttribute("contenteditable") === "false") {
-                    GRAPH.nodes[i].delete();
-                }
-            }
-            if (GRAPH.size === 0)
-                GRAPH.next_node_val = 0;
-            GRAPH.sortNodes();
-        }
     });
     document.addEventListener("keyup", (event) => {
         // Update keyboard states

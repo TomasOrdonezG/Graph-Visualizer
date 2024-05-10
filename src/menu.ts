@@ -24,6 +24,9 @@ export default class Menu {
     private next_frame_button = document.querySelector(".next-frame") as HTMLButtonElement;
     private stop_animation_button = document.querySelector(".stop") as HTMLButtonElement;
     private reset_animation_button = document.querySelector(".reset") as HTMLButtonElement;
+
+    // Top-Right menu HTML elements
+    private reset_graph_button = document.querySelector(".top-right-menu") as HTMLButtonElement;
     // #endregion
 
     constructor(graph: Graph) {
@@ -33,9 +36,11 @@ export default class Menu {
         // Add menu event listeners and focus on main menu
         this.animationMenuEventListeners();
         this.mainMenuEventListeners();
+        this.topRightMenuEventListeners();
         this.focusMainMenu();
     }
 
+    // * MAIN SIDE MENU
     private mainMenuEventListeners() {
         // * Animation buttons
         const weightedOn = (): void => {
@@ -77,6 +82,7 @@ export default class Menu {
         this.mainSideNav.style.display = "none";
     }
 
+    // * ANIMATION MENU
     private animationMenuEventListeners() {
         const prev_frame = (): void => {
             if (!this.currentAnimation) return;
@@ -165,12 +171,19 @@ export default class Menu {
     private hideAnimationMenu() {
         this.animationSideNav.style.display = "none";
     }
-
     private animate(algorithm: () => Animation | null) {
         // Get animation object and focus on the animation menu
         this.currentAnimation = algorithm();
         if (!this.currentAnimation) return;
         this.graph.traversing = true;
         this.focusAnimationMenu();
+    }
+
+    // * TOP-RIGHT MENU
+    private topRightMenuEventListeners(): void {
+        this.reset_graph_button.addEventListener("click", (): void => {
+            for (let node of this.graph.nodes) node.select();
+            this.graph.delete_all_selected();
+        });
     }
 }

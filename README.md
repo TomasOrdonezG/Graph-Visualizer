@@ -11,6 +11,8 @@ Place cursor near the left side of the screen to open the sidebar.
 ### Graph
 
 -   Toggle `Directed` in the sidebar to switch between a directed and an undirected graph.
+-   Toggle `Weighted` in the sidebar to switch between a weighted and an unweighted graph.
+-   **Middle-Click** and drag to pan around the canvas.
 
 ### Nodes/Vertices
 

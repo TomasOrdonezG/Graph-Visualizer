@@ -21,6 +21,7 @@ class Graph {
         this.isMiddleMouseDown = false;
         this.middleDown_x1 = 0;
         this.middleDown_y1 = 0;
+        this.initial_node_positions = [];
         // Selection box
         this.selection_div = document.querySelector(".selection-box");
         this.selection_x1 = 0;
@@ -31,6 +32,18 @@ class Graph {
                 // Handle right down state
                 this.isLeftMouseDown = true;
                 this.show_selection_box(event.clientX, event.clientY);
+            }
+            else if (event.button === 1) {
+                event.preventDefault();
+                this.isMiddleMouseDown = true;
+                // Remember the initial click position and all of the initial positions of the nodes
+                this.middleDown_x1 = event.clientX;
+                this.middleDown_y1 = event.clientY;
+                this.initial_node_positions = this.nodes.map((node) => ({
+                    node: node,
+                    x1: node.x,
+                    y1: node.y,
+                }));
             }
         });
         this.HTML_Container.addEventListener("mouseup", (event) => {
@@ -45,6 +58,11 @@ class Graph {
                     this.addNode(event.clientX, event.clientY);
                 }
             }
+            else if (event.button === 1) {
+                event.preventDefault();
+                this.isMiddleMouseDown = false;
+                this.initial_node_positions = [];
+            }
         });
         this.HTML_Container.addEventListener("mousemove", (event) => {
             if (this.isLeftMouseDown) {
@@ -53,6 +71,17 @@ class Graph {
             }
             if (this.isMiddleMouseDown) {
                 // Move everything
+                event.preventDefault();
+                this.selection_x1;
+                this.selection_y1;
+                for (let { node, x1, y1 } of this.initial_node_positions) {
+                    node.updatePos(x1 + event.clientX - this.middleDown_x1, y1 + event.clientY - this.middleDown_y1);
+                }
+            }
+        });
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Backspace") {
+                this.delete_all_selected();
             }
         });
     }
@@ -85,6 +114,17 @@ class Graph {
         for (let node of this.nodes) {
             node.deselect();
         }
+    }
+    delete_all_selected() {
+        // Delete selected nodes
+        for (let i = this.nodes.length - 1; i >= 0; i--) {
+            if (this.nodes[i].selected && this.nodes[i].div.getAttribute("contenteditable") === "false") {
+                this.nodes[i].delete();
+            }
+        }
+        if (this.size === 0)
+            this.next_node_val = 0;
+        this.sortNodes();
     }
     reset_colour() {
         // Initialize each node to white and egde to gray

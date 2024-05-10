@@ -27,13 +27,17 @@ export default class Menu {
         this.next_frame_button = document.querySelector(".next-frame");
         this.stop_animation_button = document.querySelector(".stop");
         this.reset_animation_button = document.querySelector(".reset");
+        // Top-Right menu HTML elements
+        this.reset_graph_button = document.querySelector(".top-right-menu");
         this.graph = graph;
         this.algorithms = new Algorithms(this.graph, document.querySelector(".frame-slider"));
         // Add menu event listeners and focus on main menu
         this.animationMenuEventListeners();
         this.mainMenuEventListeners();
+        this.topRightMenuEventListeners();
         this.focusMainMenu();
     }
+    // * MAIN SIDE MENU
     mainMenuEventListeners() {
         // * Animation buttons
         const weightedOn = () => {
@@ -74,6 +78,7 @@ export default class Menu {
     hideMainMenu() {
         this.mainSideNav.style.display = "none";
     }
+    // * ANIMATION MENU
     animationMenuEventListeners() {
         const prev_frame = () => {
             if (!this.currentAnimation)
@@ -171,5 +176,13 @@ export default class Menu {
             return;
         this.graph.traversing = true;
         this.focusAnimationMenu();
+    }
+    // * TOP-RIGHT MENU
+    topRightMenuEventListeners() {
+        this.reset_graph_button.addEventListener("click", () => {
+            for (let node of this.graph.nodes)
+                node.select();
+            this.graph.delete_all_selected();
+        });
     }
 }
