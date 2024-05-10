@@ -40,27 +40,9 @@ class MinHeap {
         }
     }
 }
-/**
- * @param i Index of target
- * @returns Index of the parent
- */
-MinHeap.parent = (i) => {
-    return Math.floor((i - 1) / 2);
-};
-/**
- * @param i Index of target
- * @returns Index of the left child
- */
-MinHeap.left = (i) => {
-    return i * 2 + 1;
-};
-/**
- * @param i Index of target
- * @returns Index of the right child
- */
-MinHeap.right = (i) => {
-    return (i + 1) * 2;
-};
+MinHeap.parent = (i) => Math.floor((i - 1) / 2);
+MinHeap.left = (i) => i * 2 + 1;
+MinHeap.right = (i) => (i + 1) * 2;
 export class MinPriorityQueue extends MinHeap {
     /**
      * @param setItemKey Function to change the key of any item in the queue
