@@ -24,6 +24,9 @@ export default class Menu {
     private next_frame_button = document.querySelector(".next-frame") as HTMLButtonElement;
     private stop_animation_button = document.querySelector(".stop") as HTMLButtonElement;
     private reset_animation_button = document.querySelector(".reset") as HTMLButtonElement;
+
+    // Top-Right menu HTML elements
+    private reset_graph_button = document.querySelector(".top-right-menu") as HTMLButtonElement;
     // #endregion
 
     constructor(graph: Graph) {
@@ -33,9 +36,11 @@ export default class Menu {
         // Add menu event listeners and focus on main menu
         this.animationMenuEventListeners();
         this.mainMenuEventListeners();
+        this.topRightMenuEventListeners();
         this.focusMainMenu();
     }
 
+    // * MAIN SIDE MENU
     private mainMenuEventListeners() {
         // * Animation buttons
         const weightedOn = (): void => {
@@ -77,14 +82,17 @@ export default class Menu {
         this.mainSideNav.style.display = "none";
     }
 
+    // * ANIMATION MENU
     private animationMenuEventListeners() {
-        this.prev_frame_button.addEventListener("click", () => {
-            if (this.currentAnimation) this.currentAnimation.prev_frame();
-        });
-        this.next_frame_button.addEventListener("click", () => {
-            if (this.currentAnimation) this.currentAnimation.next_frame();
-        });
-        this.play_pause_animation_button.addEventListener("click", async () => {
+        const prev_frame = (): void => {
+            if (!this.currentAnimation) return;
+            this.currentAnimation.prev_frame();
+        };
+        const next_frame = (): void => {
+            if (!this.currentAnimation) return;
+            this.currentAnimation.next_frame();
+        };
+        const play_pause_animation = async (): Promise<void> => {
             // Toggle playing attribute of the current animation
             if (!this.currentAnimation) return;
             if (this.play_pause_animation_button.textContent === "▶") {
@@ -100,8 +108,10 @@ export default class Menu {
                 this.play_pause_animation_button.textContent = "▶";
                 this.currentAnimation.pause();
             }
-        });
-        this.stop_animation_button.addEventListener("click", () => {
+        };
+        const stop_animation = (): void => {
+            if (!this.currentAnimation) return;
+
             // Removes the current animation and resets all nodes
             this.focusMainMenu();
             this.currentAnimation?.pause();
@@ -115,16 +125,41 @@ export default class Menu {
                 node.show_time_interval = false;
                 node.updateText();
             }
-        });
-        this.reset_animation_button.addEventListener("click", () => {
+        };
+        const reset_animation = (): void => {
             // Resets animation
-            if (this.currentAnimation) {
-                this.currentAnimation.curr_index = 0;
-                this.graph.reset_colour();
-                this.currentAnimation.updateSlider();
+            if (!this.currentAnimation) return;
+            this.currentAnimation.curr_index = 0;
+            this.graph.reset_colour();
+            this.currentAnimation.updateSlider();
 
-                this.play_pause_animation_button.textContent = "▶";
-                this.currentAnimation.playing = false;
+            this.play_pause_animation_button.textContent = "▶";
+            this.currentAnimation.playing = false;
+        };
+
+        // Animation controls with buttons
+        this.prev_frame_button.addEventListener("click", prev_frame);
+        this.next_frame_button.addEventListener("click", next_frame);
+        this.play_pause_animation_button.addEventListener("click", play_pause_animation);
+        this.stop_animation_button.addEventListener("click", stop_animation);
+        this.reset_animation_button.addEventListener("click", reset_animation);
+
+        // Animation controls with keyboard
+        document.addEventListener("keydown", (event: KeyboardEvent): void => {
+            const keyControls = [
+                { key: "ArrowLeft", action: prev_frame },
+                { key: "ArrowRight", action: next_frame },
+                { key: " ", action: play_pause_animation },
+                { key: "Escape", action: stop_animation },
+                { key: "r", action: reset_animation },
+            ];
+
+            for (let keyControl of keyControls) {
+                if (event.key === keyControl.key) {
+                    event.preventDefault();
+                    keyControl.action();
+                    return;
+                }
             }
         });
     }
@@ -136,11 +171,19 @@ export default class Menu {
     private hideAnimationMenu() {
         this.animationSideNav.style.display = "none";
     }
-
-    private animate(algorithm: () => Animation) {
+    private animate(algorithm: () => Animation | null) {
         // Get animation object and focus on the animation menu
         this.currentAnimation = algorithm();
+        if (!this.currentAnimation) return;
         this.graph.traversing = true;
         this.focusAnimationMenu();
+    }
+
+    // * TOP-RIGHT MENU
+    private topRightMenuEventListeners(): void {
+        this.reset_graph_button.addEventListener("click", (): void => {
+            for (let node of this.graph.nodes) node.select();
+            this.graph.delete_all_selected();
+        });
     }
 }

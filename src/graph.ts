@@ -12,6 +12,7 @@ export default class Graph {
     public nodes: GraphNode[] = [];
     public weighted: boolean = false;
     public directed: boolean = false;
+    public HTML_Container: HTMLDivElement = document.querySelector(".graph-container") as HTMLDivElement;
 
     // Objects to keep track of
     public initial_node: GraphNode | null = null;
@@ -20,27 +21,96 @@ export default class Graph {
 
     public size: number = 0;
     public next_node_val: number = 0;
+
+    // Graph states
     public traversing: boolean = false;
-    public HTML_Container: HTMLDivElement = document.querySelector(".graph-container") as HTMLDivElement;
+    private isLeftMouseDown: boolean = false;
+    private isMiddleMouseDown: boolean = false;
+    private middleDown_x1: number = 0;
+    private middleDown_y1: number = 0;
+    private initial_node_positions: { node: GraphNode; x1: number; y1: number }[] = [];
+
+    // Selection box
+    private selection_div: HTMLDivElement = document.querySelector(".selection-box") as HTMLDivElement;
+    private selection_x1: number = 0;
+    private selection_y1: number = 0;
     // #endregion
 
     constructor() {
-        this.HTML_Container.addEventListener("mouseup", this.addNode.bind(this));
+        this.selection_div.style.display = "none";
+        this.HTML_Container.addEventListener("mousedown", (event: MouseEvent): void => {
+            if (event.button === 0 && !(event.target as HTMLElement).closest(".pan")) {
+                // Handle right down state
+                this.isLeftMouseDown = true;
+                this.show_selection_box(event.clientX, event.clientY);
+            } else if (event.button === 1) {
+                event.preventDefault();
+                this.isMiddleMouseDown = true;
+
+                // Remember the initial click position and all of the initial positions of the nodes
+                this.middleDown_x1 = event.clientX;
+                this.middleDown_y1 = event.clientY;
+                this.initial_node_positions = this.nodes.map((node: GraphNode) => ({
+                    node: node,
+                    x1: node.x,
+                    y1: node.y,
+                }));
+            }
+        });
+        this.HTML_Container.addEventListener("mouseup", (event: MouseEvent): void => {
+            if (event.button === 0) {
+                // Turn off left down state and hide the selection box
+                this.isLeftMouseDown = false;
+                this.hide_selection_box();
+
+                // Add node when selection div is small and not clicking another node
+                if (
+                    parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
+                    parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
+                    !(event.target as HTMLDivElement).closest(".pan")
+                ) {
+                    this.addNode(event.clientX, event.clientY);
+                }
+            } else if (event.button === 1) {
+                event.preventDefault();
+                this.isMiddleMouseDown = false;
+                this.initial_node_positions = [];
+            }
+        });
+        this.HTML_Container.addEventListener("mousemove", (event: MouseEvent): void => {
+            if (this.isLeftMouseDown) {
+                // Handle left click drag
+                this.resize_selection_box(event.clientX, event.clientY);
+            }
+            if (this.isMiddleMouseDown) {
+                // Move everything
+                event.preventDefault();
+                this.selection_x1;
+                this.selection_y1;
+                for (let { node, x1, y1 } of this.initial_node_positions) {
+                    node.updatePos(x1 + event.clientX - this.middleDown_x1, y1 + event.clientY - this.middleDown_y1);
+                }
+            }
+        });
+        document.addEventListener("keydown", (event: KeyboardEvent) => {
+            if (event.key === "Backspace") {
+                this.delete_all_selected();
+            }
+        });
     }
 
-    public addNode(event: MouseEvent): void {
+    public addNode(clientX: number, clientY: number): void {
         // Prevent adding a node when mouse is on a node div, or edge div
-        if (event.button !== 0 || this.traversing || (event.target as HTMLElement).closest(".pan")) {
-            return;
-        }
+        if (this.traversing || this.initial_node) return;
 
         // Create the new node object
-        const new_node = new GraphNode(event.clientX, event.clientY, this.next_node_val, this);
+        const new_node = new GraphNode(clientX, clientY, this.next_node_val, this);
 
         // Connect all selected nodes to the new node if SHIFT is down
         if (keyboardState.SHIFT && !keyboardState.CTRL) {
             for (let node of this.nodes) {
                 if (node.selected) {
+                    console.log("Connect");
                     node.connect(new_node);
                 }
             }
@@ -63,6 +133,17 @@ export default class Graph {
         }
     }
 
+    public delete_all_selected(): void {
+        // Delete selected nodes
+        for (let i = this.nodes.length - 1; i >= 0; i--) {
+            if (this.nodes[i].selected && this.nodes[i].div.getAttribute("contenteditable") === "false") {
+                this.nodes[i].delete();
+            }
+        }
+        if (this.size === 0) this.next_node_val = 0;
+        this.sortNodes();
+    }
+
     public reset_colour(): void {
         // Initialize each node to white and egde to gray
         for (let node of this.nodes) {
@@ -75,7 +156,9 @@ export default class Graph {
         }
     }
 
-    public get_first_selected(): GraphNode {
+    public get_first_selected(): GraphNode | null {
+        if (!this.nodes) return null;
+
         for (let node of this.nodes) {
             if (node.selected) {
                 return node;
@@ -127,6 +210,58 @@ export default class Graph {
     public reset_distances(): void {
         for (let node of this.nodes) {
             node.distance = Infinity;
+        }
+    }
+
+    // Selection box methods
+    private hide_selection_box(): void {
+        this.select_content_inside();
+        this.selection_div.style.display = "none";
+    }
+
+    private show_selection_box(x1: number, y1: number): void {
+        this.selection_x1 = x1;
+        this.selection_y1 = y1;
+        this.selection_div.style.display = "";
+        this.selection_div.style.left = `${x1}px`;
+        this.selection_div.style.top = `${y1}px`;
+        this.selection_div.style.width = `0px`;
+        this.selection_div.style.height = `0px`;
+    }
+
+    private resize_selection_box(x2: number, y2: number): void {
+        this.selection_div.style.left = `${Math.min(this.selection_x1, x2)}px`;
+        this.selection_div.style.top = `${Math.min(this.selection_y1, y2)}px`;
+        this.selection_div.style.width = `${Math.abs(x2 - this.selection_x1)}px`;
+        this.selection_div.style.height = `${Math.abs(y2 - this.selection_y1)}px`;
+    }
+
+    private select_content_inside(): void {
+        if (this.selection_div.style.display === "none") return;
+
+        const selection_left = parseInt(this.selection_div.style.left);
+        const selection_top = parseInt(this.selection_div.style.top);
+        const selection_right = selection_left + parseInt(this.selection_div.style.width);
+        const selection_bottom = selection_top + parseInt(this.selection_div.style.height);
+
+        if (selection_right - selection_left < GraphNode.RADIUS || selection_bottom - selection_top < GraphNode.RADIUS)
+            return;
+        this.deselect_all();
+
+        for (let node of this.nodes) {
+            const node_left = node.x - GraphNode.RADIUS - GraphNode.BORDER_WIDTH;
+            const node_right = node.x + GraphNode.RADIUS + GraphNode.BORDER_WIDTH;
+            const node_top = node.y - GraphNode.RADIUS - GraphNode.BORDER_WIDTH;
+            const node_bottom = node.y + GraphNode.RADIUS + GraphNode.BORDER_WIDTH;
+
+            if (
+                selection_top < node_top &&
+                selection_left < node_left &&
+                selection_right > node_right &&
+                selection_bottom > node_bottom
+            ) {
+                node.select();
+            }
         }
     }
 }

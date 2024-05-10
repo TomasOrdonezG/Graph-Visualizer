@@ -76,6 +76,8 @@ class Algorithms {
         // Initialize graph styles, animation object and time
         this.graph.reset_colour();
         const DFS_Animation = new Animation(this.slider);
+        if (!this.graph.nodes)
+            return null;
         let time = 0;
         // // Show dtime and ftime for every node
         // for (let node of this.graph.nodes) {
@@ -115,6 +117,8 @@ class Algorithms {
     BFS() {
         this.graph.reset_colour();
         let root = this.graph.get_first_selected();
+        if (!root)
+            return null;
         const Q = [];
         Q.push(root);
         const BFS_Animation = new Animation(this.slider);
@@ -144,6 +148,8 @@ class Algorithms {
         this.graph.reset_colour();
         this.graph.reset_distances();
         const root = this.graph.get_first_selected();
+        if (!root)
+            return null;
         root.distance = 0;
         // Initialize min-priority-queue
         const Q = new MinPriorityQueue((item, key) => (item.distance = key), (item) => item.distance);
@@ -177,6 +183,8 @@ class Algorithms {
     Kruskal() {
         this.graph.reset_colour();
         this.graph.deselect_all();
+        if (!this.graph.nodes)
+            return null;
         const KruskalAnimation = new Animation(this.slider);
         const sortAllEdges = () => {
             // Get all edges from the graph sorted by weight ascending
