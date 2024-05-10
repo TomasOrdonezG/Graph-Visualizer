@@ -86,6 +86,7 @@ class Algorithms {
         // Initialize graph styles, animation object and time
         this.graph.reset_colour();
         const DFS_Animation: Animation = new Animation(this.slider);
+        if (!this.graph.nodes) return null;
         let time = 0;
 
         // // Show dtime and ftime for every node
@@ -211,6 +212,7 @@ class Algorithms {
     public Kruskal(): Animation | null {
         this.graph.reset_colour();
         this.graph.deselect_all();
+        if (!this.graph.nodes) return null;
         const KruskalAnimation = new Animation(this.slider);
 
         const sortAllEdges = (): Edge[] => {

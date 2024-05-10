@@ -76,6 +76,8 @@ class Algorithms {
         // Initialize graph styles, animation object and time
         this.graph.reset_colour();
         const DFS_Animation = new Animation(this.slider);
+        if (!this.graph.nodes)
+            return null;
         let time = 0;
         // // Show dtime and ftime for every node
         // for (let node of this.graph.nodes) {
@@ -181,6 +183,8 @@ class Algorithms {
     Kruskal() {
         this.graph.reset_colour();
         this.graph.deselect_all();
+        if (!this.graph.nodes)
+            return null;
         const KruskalAnimation = new Animation(this.slider);
         const sortAllEdges = () => {
             // Get all edges from the graph sorted by weight ascending
