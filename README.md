@@ -36,7 +36,17 @@ Place cursor near the left side of the screen to open the sidebar.
 
 ### Animations
 
-The left hand side menu contains buttons to run many different types of algorithms. Some algorithms need to have one node as the root, this node will be chosen as the first selected node or the node with lowest value. If the algorithm requires the graph to be in a particular state (i.e., Dijkstra's algorithm requires the graph to be a weighted graph), then the graph will automatically be set to that state.
+The left hand side menu contains buttons to run many different types of algorithms. Some algorithms need to have one node as the root, this node will be chosen as the first selected node or the node with lowest value.
+
+**Once the animation has been created:**
+
+-   **`LeftArrow`** to skip to the previous frame.
+-   **`RightArrow`** to skip to the next frame.
+-   **`SPACE`** to toggle play/pause.
+-   **`r`** to reset the animation.
+-   **`ESC`** to exit the animation state.
+
+Each one of these commands can also be done by clicking the corresponding buttons on the animation menu.
 
 **Available algorithms:**
 

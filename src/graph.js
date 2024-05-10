@@ -37,13 +37,13 @@ class Graph {
             if (event.button === 0) {
                 // Turn off left down state and hide the selection box
                 this.isLeftMouseDown = false;
+                this.hide_selection_box();
                 // Add node when selection div is small and not clicking another node
                 if (parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
                     parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
                     !event.target.closest(".pan")) {
                     this.addNode(event.clientX, event.clientY);
                 }
-                this.hide_selection_box();
             }
         });
         this.HTML_Container.addEventListener("mousemove", (event) => {
@@ -66,6 +66,7 @@ class Graph {
         if (keyboardState.SHIFT && !keyboardState.CTRL) {
             for (let node of this.nodes) {
                 if (node.selected) {
+                    console.log("Connect");
                     node.connect(new_node);
                 }
             }
@@ -167,11 +168,13 @@ class Graph {
     select_content_inside() {
         if (this.selection_div.style.display === "none")
             return;
-        this.deselect_all();
         const selection_left = parseInt(this.selection_div.style.left);
         const selection_top = parseInt(this.selection_div.style.top);
         const selection_right = selection_left + parseInt(this.selection_div.style.width);
         const selection_bottom = selection_top + parseInt(this.selection_div.style.height);
+        if (selection_right - selection_left < GraphNode.RADIUS || selection_bottom - selection_top < GraphNode.RADIUS)
+            return;
+        this.deselect_all();
         for (let node of this.nodes) {
             const node_left = node.x - GraphNode.RADIUS - GraphNode.BORDER_WIDTH;
             const node_right = node.x + GraphNode.RADIUS + GraphNode.BORDER_WIDTH;

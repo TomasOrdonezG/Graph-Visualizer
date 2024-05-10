@@ -75,15 +75,17 @@ export default class Menu {
         this.mainSideNav.style.display = "none";
     }
     animationMenuEventListeners() {
-        this.prev_frame_button.addEventListener("click", () => {
-            if (this.currentAnimation)
-                this.currentAnimation.prev_frame();
-        });
-        this.next_frame_button.addEventListener("click", () => {
-            if (this.currentAnimation)
-                this.currentAnimation.next_frame();
-        });
-        this.play_pause_animation_button.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
+        const prev_frame = () => {
+            if (!this.currentAnimation)
+                return;
+            this.currentAnimation.prev_frame();
+        };
+        const next_frame = () => {
+            if (!this.currentAnimation)
+                return;
+            this.currentAnimation.next_frame();
+        };
+        const play_pause_animation = () => __awaiter(this, void 0, void 0, function* () {
             // Toggle playing attribute of the current animation
             if (!this.currentAnimation)
                 return;
@@ -101,9 +103,11 @@ export default class Menu {
                 this.play_pause_animation_button.textContent = "▶";
                 this.currentAnimation.pause();
             }
-        }));
-        this.stop_animation_button.addEventListener("click", () => {
+        });
+        const stop_animation = () => {
             var _a;
+            if (!this.currentAnimation)
+                return;
             // Removes the current animation and resets all nodes
             this.focusMainMenu();
             (_a = this.currentAnimation) === null || _a === void 0 ? void 0 : _a.pause();
@@ -116,15 +120,38 @@ export default class Menu {
                 node.show_time_interval = false;
                 node.updateText();
             }
-        });
-        this.reset_animation_button.addEventListener("click", () => {
+        };
+        const reset_animation = () => {
             // Resets animation
-            if (this.currentAnimation) {
-                this.currentAnimation.curr_index = 0;
-                this.graph.reset_colour();
-                this.currentAnimation.updateSlider();
-                this.play_pause_animation_button.textContent = "▶";
-                this.currentAnimation.playing = false;
+            if (!this.currentAnimation)
+                return;
+            this.currentAnimation.curr_index = 0;
+            this.graph.reset_colour();
+            this.currentAnimation.updateSlider();
+            this.play_pause_animation_button.textContent = "▶";
+            this.currentAnimation.playing = false;
+        };
+        // Animation controls with buttons
+        this.prev_frame_button.addEventListener("click", prev_frame);
+        this.next_frame_button.addEventListener("click", next_frame);
+        this.play_pause_animation_button.addEventListener("click", play_pause_animation);
+        this.stop_animation_button.addEventListener("click", stop_animation);
+        this.reset_animation_button.addEventListener("click", reset_animation);
+        // Animation controls with keyboard
+        document.addEventListener("keydown", (event) => {
+            const keyControls = [
+                { key: "ArrowLeft", action: prev_frame },
+                { key: "ArrowRight", action: next_frame },
+                { key: " ", action: play_pause_animation },
+                { key: "Escape", action: stop_animation },
+                { key: "r", action: reset_animation },
+            ];
+            for (let keyControl of keyControls) {
+                if (event.key === keyControl.key) {
+                    event.preventDefault();
+                    keyControl.action();
+                    return;
+                }
             }
         });
     }
