@@ -1,4 +1,6 @@
-*.json
-test
-node_modules
-Video Demos
+package-lock.json
+package.json
+tsconfig.json
+
+node_modules/
+Video Demos/

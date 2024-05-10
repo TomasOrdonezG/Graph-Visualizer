@@ -10,29 +10,9 @@ class MinHeap<Item> {
         this.getItemKey = getItemKey;
     }
 
-    /**
-     * @param i Index of target
-     * @returns Index of the parent
-     */
-    protected static parent = (i: number): number => {
-        return Math.floor((i - 1) / 2);
-    };
-
-    /**
-     * @param i Index of target
-     * @returns Index of the left child
-     */
-    protected static left = (i: number): number => {
-        return i * 2 + 1;
-    };
-
-    /**
-     * @param i Index of target
-     * @returns Index of the right child
-     */
-    protected static right = (i: number): number => {
-        return (i + 1) * 2;
-    };
+    protected static parent = (i: number): number => Math.floor((i - 1) / 2);
+    protected static left = (i: number): number => i * 2 + 1;
+    protected static right = (i: number): number => (i + 1) * 2;
 
     /**
      * @abstract Maintains the min-heap property
