@@ -37,9 +37,9 @@ export default class Animation {
 
     public async play() {
         this.playing = true;
-        while (this.playing && this.next_frame()) {
+        do {
             await new Promise((resolve) => setTimeout(resolve, 1000 / this.fps));
-        }
+        } while (this.playing && this.next_frame());
     }
     public pause() {
         this.playing = false;

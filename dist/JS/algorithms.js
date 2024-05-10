@@ -30,9 +30,9 @@ class Animation {
     play() {
         return __awaiter(this, void 0, void 0, function* () {
             this.playing = true;
-            while (this.playing && this.next_frame()) {
+            do {
                 yield new Promise((resolve) => setTimeout(resolve, 1000 / this.fps));
-            }
+            } while (this.playing && this.next_frame());
         });
     }
     pause() {
