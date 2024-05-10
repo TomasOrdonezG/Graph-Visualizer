@@ -15,7 +15,8 @@ Place cursor near the left side of the screen to open the sidebar.
 ### Nodes/Vertices
 
 -   **Left-Click** anywhere in the blank page to **add a graph node**.
--   **Left-Click and drage** a node to **move** it (and select it).
+-   **Left-Click and drag** a node to **move** it (and select it).
+-   **Left-Click and drag** on an empty space to create a box which will select all nodes inside.
 -   **Hold `Shift` + Left-Click** anywhere in the blank page to **add a node and an edge** that connects all selected nodes to the newly created node.
 -   **Hold `Ctrl` + Left-Click** to **select multiple nodes**.
 -   **Hold `Ctrl` + Left-Click drag** to **move all selected nodes**.
