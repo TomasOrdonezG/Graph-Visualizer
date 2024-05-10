@@ -97,6 +97,8 @@ class Graph {
         }
     }
     get_first_selected() {
+        if (!this.nodes)
+            return null;
         for (let node of this.nodes) {
             if (node.selected) {
                 return node;

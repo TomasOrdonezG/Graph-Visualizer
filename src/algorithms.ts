@@ -82,7 +82,7 @@ class Algorithms {
         this.slider = slider;
     }
 
-    public DFS(): Animation {
+    public DFS(): Animation | null {
         // Initialize graph styles, animation object and time
         this.graph.reset_colour();
         const DFS_Animation: Animation = new Animation(this.slider);
@@ -129,9 +129,10 @@ class Algorithms {
         return DFS_Animation;
     }
 
-    public BFS(): Animation {
+    public BFS(): Animation | null {
         this.graph.reset_colour();
         let root = this.graph.get_first_selected();
+        if (!root) return null;
 
         const Q: GraphNode[] = [];
         Q.push(root);
@@ -160,13 +161,14 @@ class Algorithms {
         return BFS_Animation;
     }
 
-    public Dijkstra(): Animation {
+    public Dijkstra(): Animation | null {
         const DijkstraAnimation: Animation = new Animation(this.slider);
 
         // Initialize graph
         this.graph.reset_colour();
         this.graph.reset_distances();
         const root = this.graph.get_first_selected();
+        if (!root) return null;
         root.distance = 0;
 
         // Initialize min-priority-queue
@@ -206,7 +208,7 @@ class Algorithms {
         return DijkstraAnimation;
     }
 
-    public Kruskal(): Animation {
+    public Kruskal(): Animation | null {
         this.graph.reset_colour();
         this.graph.deselect_all();
         const KruskalAnimation = new Animation(this.slider);

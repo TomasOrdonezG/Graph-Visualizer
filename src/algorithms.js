@@ -115,6 +115,8 @@ class Algorithms {
     BFS() {
         this.graph.reset_colour();
         let root = this.graph.get_first_selected();
+        if (!root)
+            return null;
         const Q = [];
         Q.push(root);
         const BFS_Animation = new Animation(this.slider);
@@ -144,6 +146,8 @@ class Algorithms {
         this.graph.reset_colour();
         this.graph.reset_distances();
         const root = this.graph.get_first_selected();
+        if (!root)
+            return null;
         root.distance = 0;
         // Initialize min-priority-queue
         const Q = new MinPriorityQueue((item, key) => (item.distance = key), (item) => item.distance);

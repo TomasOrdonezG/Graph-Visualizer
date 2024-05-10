@@ -137,9 +137,10 @@ export default class Menu {
         this.animationSideNav.style.display = "none";
     }
 
-    private animate(algorithm: () => Animation) {
+    private animate(algorithm: () => Animation | null) {
         // Get animation object and focus on the animation menu
         this.currentAnimation = algorithm();
+        if (!this.currentAnimation) return;
         this.graph.traversing = true;
         this.focusAnimationMenu();
     }

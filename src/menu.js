@@ -140,6 +140,8 @@ export default class Menu {
     animate(algorithm) {
         // Get animation object and focus on the animation menu
         this.currentAnimation = algorithm();
+        if (!this.currentAnimation)
+            return;
         this.graph.traversing = true;
         this.focusAnimationMenu();
     }

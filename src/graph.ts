@@ -117,7 +117,9 @@ export default class Graph {
         }
     }
 
-    public get_first_selected(): GraphNode {
+    public get_first_selected(): GraphNode | null {
+        if (!this.nodes) return null;
+
         for (let node of this.nodes) {
             if (node.selected) {
                 return node;
