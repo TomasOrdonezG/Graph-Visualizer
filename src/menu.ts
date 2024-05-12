@@ -1,4 +1,4 @@
-import Graph from "./graph.js";
+import Graph, { GraphJSON } from "./graph.js";
 import { Algorithms, Animation } from "./algorithms.js";
 
 export default class Menu {
@@ -26,7 +26,10 @@ export default class Menu {
     private reset_animation_button = document.querySelector(".reset") as HTMLButtonElement;
 
     // Top-Right menu HTML elements
-    private reset_graph_button = document.querySelector(".top-right-menu") as HTMLButtonElement;
+    private import_file_input = document.querySelector(".import-button") as HTMLInputElement;
+    private export_button = document.querySelector(".export-button") as HTMLButtonElement;
+    private reset_graph_button = document.querySelector(".reset-graph-button") as HTMLButtonElement;
+
     // #endregion
 
     constructor(graph: Graph) {
@@ -181,9 +184,44 @@ export default class Menu {
 
     // * TOP-RIGHT MENU
     private topRightMenuEventListeners(): void {
-        this.reset_graph_button.addEventListener("click", (): void => {
-            for (let node of this.graph.nodes) node.select();
-            this.graph.delete_all_selected();
-        });
+        this.reset_graph_button.addEventListener("click", this.graph.delete_all_nodes.bind(this.graph));
+        this.export_button.addEventListener("click", this.export_graph.bind(this));
+        this.import_file_input.addEventListener("change", this.import_graph.bind(this));
+    }
+
+    private export_graph(): void {
+        const json_graph = this.graph.jsonify();
+
+        // Download the JSON for the user
+        const json_string = JSON.stringify(json_graph, null, 2);
+        const blob = new Blob([json_string], { type: "application/json" });
+        const download_link = document.createElement("a");
+        download_link.href = URL.createObjectURL(blob);
+        download_link.download = "graph.json";
+        document.body.appendChild(download_link);
+        download_link.click();
+        document.body.removeChild(download_link);
+    }
+
+    private import_graph(): void {
+        if (!this.import_file_input.files || this.import_file_input.files.length <= 0) return;
+        const file = this.import_file_input.files[0];
+        if (!file) return;
+
+        // Read file
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const contents = e.target?.result as string;
+            try {
+                const jsonData = JSON.parse(contents);
+                // console.log(jsonData);
+
+                // Create the graph
+                this.graph.build(jsonData);
+            } catch (error) {
+                console.error("Error parsing the JSON file: ", error);
+            }
+        };
+        reader.readAsText(file);
     }
 }

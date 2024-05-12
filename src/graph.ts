@@ -2,7 +2,10 @@ import GraphNode from "./graphNode.js";
 import Edge from "./edge.js";
 import { keyboardState } from "./main.js";
 
-// Graph global variable
+export interface GraphJSON {
+    vertices: { value: number; x: number; y: number }[];
+    adjacency_matrix: (number | null)[][];
+}
 export default class Graph {
     // #region ATTRIBUTES
 
@@ -144,6 +147,13 @@ export default class Graph {
         this.sortNodes();
     }
 
+    public delete_all_nodes(): void {
+        for (let node of this.nodes) {
+            node.select();
+        }
+        this.delete_all_selected();
+    }
+
     public reset_colour(): void {
         // Initialize each node to white and egde to gray
         for (let node of this.nodes) {
@@ -210,6 +220,59 @@ export default class Graph {
     public reset_distances(): void {
         for (let node of this.nodes) {
             node.distance = Infinity;
+        }
+    }
+
+    public jsonify() {
+        // Construct adjacency matrix
+        const adjacency_matrix: GraphJSON["adjacency_matrix"] = [];
+        for (let node1 of this.nodes) {
+            const row: (number | null)[] = [];
+            let next_adj_i = 0; // Keep track of the next adjacent edge index
+
+            for (let node2 of this.nodes) {
+                const next_out_edge = node1.out_edges[next_adj_i];
+                if (next_out_edge && next_out_edge.destination === node2) {
+                    row.push(next_out_edge.weight); // Push weight when node2 is a neighbour of node1
+                    next_adj_i++;
+                } else {
+                    row.push(null); // Cade node2 is not a neighbour of node1
+                }
+            }
+            adjacency_matrix.push(row);
+        }
+
+        // Vertices
+        const vertices: GraphJSON["vertices"] = this.nodes.map(({ value, x, y }) => ({
+            value: value,
+            x: x / window.innerWidth,
+            y: y / window.innerHeight,
+        }));
+
+        return { adjacency_matrix, vertices };
+    }
+
+    public build(graph_content: GraphJSON): void {
+        this.delete_all_nodes();
+
+        // Create nodes
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        for (let node of graph_content.vertices) {
+            const new_node = new GraphNode(vw * node.x, vh * node.y, node.value, this);
+            this.nodes.push(new_node);
+        }
+
+        // Connect nodes
+        for (let i = 0; i < graph_content.adjacency_matrix.length; i++) {
+            const target_node = this.nodes[i];
+            for (let j = 0; j < graph_content.adjacency_matrix[i].length; j++) {
+                const adj = this.nodes[j];
+                const weight: number | null = graph_content.adjacency_matrix[i][j];
+                if (weight) {
+                    target_node.connect(adj);
+                }
+            }
         }
     }
 
