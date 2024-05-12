@@ -13,6 +13,10 @@ function main() {
     window.addEventListener("contextmenu", (event) => {
         event.preventDefault();
     });
+    // Trigger tab close confirmation
+    window.addEventListener("beforeunload", (event) => {
+        event.preventDefault();
+    });
     // Keyboard events
     document.addEventListener("keydown", (event) => {
         // Update keyboard states
