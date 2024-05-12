@@ -1,7 +1,6 @@
 import GraphNode from "./graphNode.js";
 import Edge from "./edge.js";
 import { keyboardState } from "./main.js";
-// Graph global variable
 class Graph {
     // #endregion
     constructor() {
@@ -126,6 +125,12 @@ class Graph {
             this.next_node_val = 0;
         this.sortNodes();
     }
+    delete_all_nodes() {
+        for (let node of this.nodes) {
+            node.select();
+        }
+        this.delete_all_selected();
+    }
     reset_colour() {
         // Initialize each node to white and egde to gray
         for (let node of this.nodes) {
@@ -183,6 +188,58 @@ class Graph {
     reset_distances() {
         for (let node of this.nodes) {
             node.distance = Infinity;
+        }
+    }
+    jsonify() {
+        // Construct adjacency matrix
+        const adjacency_matrix = [];
+        for (let node1 of this.nodes) {
+            const row = [];
+            let next_adj_i = 0; // Keep track of the next adjacent edge index
+            for (let node2 of this.nodes) {
+                const next_out_edge = node1.out_edges[next_adj_i];
+                if (next_out_edge && next_out_edge.destination === node2) {
+                    row.push(next_out_edge.weight); // Push weight when node2 is a neighbour of node1
+                    next_adj_i++;
+                }
+                else {
+                    row.push(null); // Cade node2 is not a neighbour of node1
+                }
+            }
+            adjacency_matrix.push(row);
+        }
+        // Vertices
+        const vertices = this.nodes.map(({ value, x, y }) => ({
+            value: value,
+            x: x / window.innerWidth,
+            y: y / window.innerHeight,
+        }));
+        // Settings
+        const settings = {
+            directed: this.directed,
+            weighted: this.weighted,
+        };
+        return { adjacency_matrix, vertices, settings };
+    }
+    build(graph_content) {
+        this.delete_all_nodes();
+        // Create nodes
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        for (let node of graph_content.vertices) {
+            const new_node = new GraphNode(vw * node.x, vh * node.y, node.value, this);
+            this.nodes.push(new_node);
+        }
+        // Connect nodes
+        for (let i = 0; i < graph_content.adjacency_matrix.length; i++) {
+            const target_node = this.nodes[i];
+            for (let j = 0; j < graph_content.adjacency_matrix[i].length; j++) {
+                const adj = this.nodes[j];
+                const weight = graph_content.adjacency_matrix[i][j];
+                if (weight) {
+                    target_node.connect(adj);
+                }
+            }
         }
     }
     // Selection box methods
