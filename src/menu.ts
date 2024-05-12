@@ -26,9 +26,9 @@ export default class Menu {
     private reset_animation_button = document.querySelector(".reset") as HTMLButtonElement;
 
     // Top-Right menu HTML elements
-    private import_file_input = document.querySelector(".import-button") as HTMLInputElement;
-    private export_button = document.querySelector(".export-button") as HTMLButtonElement;
-    private reset_graph_button = document.querySelector(".reset-graph-button") as HTMLButtonElement;
+    private import_file_input = document.querySelector(".import-input") as HTMLInputElement;
+    private export_button = document.querySelector(".export-button") as HTMLDivElement;
+    private reset_graph_button = document.querySelector(".reset-graph-button") as HTMLDivElement;
 
     // #endregion
 
@@ -46,13 +46,6 @@ export default class Menu {
     // * MAIN SIDE MENU
     private mainMenuEventListeners() {
         // * Animation buttons
-        const weightedOn = (): void => {
-            if (!this.graph.weighted) {
-                // Change graph to weighted if it isn't already
-                this.HTML_weighted_toggle.checked = true;
-                this.graph.toggle_weighted();
-            }
-        };
         this.BFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.BFS.bind(this.algorithms));
         });
@@ -60,11 +53,11 @@ export default class Menu {
             this.animate(this.algorithms.DFS.bind(this.algorithms));
         });
         this.Dijkstra_Button.addEventListener("click", () => {
-            weightedOn();
+            this.setWeighted(true);
             this.animate(this.algorithms.Dijkstra.bind(this.algorithms));
         });
         this.Kruskal_Button.addEventListener("click", () => {
-            weightedOn();
+            this.setWeighted(true);
             this.animate(this.algorithms.Kruskal.bind(this.algorithms));
         });
 
@@ -77,6 +70,24 @@ export default class Menu {
         if (this.HTML_directed_toggle.checked !== this.graph.directed) this.graph.toggle_directed();
         if (this.HTML_weighted_toggle.checked !== this.graph.weighted) this.graph.toggle_weighted();
     }
+    private setWeighted = (on: boolean): void => {
+        if (on) {
+            this.HTML_weighted_toggle.checked = true;
+            if (!this.graph.weighted) this.graph.toggle_weighted();
+        } else {
+            this.HTML_weighted_toggle.checked = false;
+            if (this.graph.weighted) this.graph.toggle_weighted();
+        }
+    };
+    private setDirected = (on: boolean): void => {
+        if (on) {
+            this.HTML_directed_toggle.checked = true;
+            if (!this.graph.directed) this.graph.toggle_directed();
+        } else {
+            this.HTML_directed_toggle.checked = false;
+            if (this.graph.directed) this.graph.toggle_directed();
+        }
+    };
     private focusMainMenu() {
         this.mainSideNav.style.display = "";
         this.hideAnimationMenu();
@@ -214,10 +225,24 @@ export default class Menu {
             const contents = e.target?.result as string;
             try {
                 const jsonData = JSON.parse(contents);
-                // console.log(jsonData);
+                if (
+                    !Object.keys(jsonData).includes("vertices") ||
+                    !Object.keys(jsonData).includes("adjacency_matrix") ||
+                    !Object.keys(jsonData).includes("settings")
+                ) {
+                    console.log(jsonData);
+                    window.alert("JSON file is in the wrong format. Unable to load graph");
+                    return;
+                }
+                const graph_content: GraphJSON = jsonData;
 
                 // Create the graph
-                this.graph.build(jsonData);
+                this.graph.build(graph_content);
+
+                // Set settings
+                const settings = graph_content["settings"];
+                this.setDirected(settings.directed);
+                this.setWeighted(settings.weighted);
             } catch (error) {
                 console.error("Error parsing the JSON file: ", error);
             }

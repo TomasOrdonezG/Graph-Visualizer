@@ -5,6 +5,7 @@ import { keyboardState } from "./main.js";
 export interface GraphJSON {
     vertices: { value: number; x: number; y: number }[];
     adjacency_matrix: (number | null)[][];
+    settings: { weighted: boolean; directed: boolean };
 }
 export default class Graph {
     // #region ATTRIBUTES
@@ -249,7 +250,13 @@ export default class Graph {
             y: y / window.innerHeight,
         }));
 
-        return { adjacency_matrix, vertices };
+        // Settings
+        const settings: GraphJSON["settings"] = {
+            directed: this.directed,
+            weighted: this.weighted,
+        };
+
+        return { adjacency_matrix, vertices, settings };
     }
 
     public build(graph_content: GraphJSON): void {

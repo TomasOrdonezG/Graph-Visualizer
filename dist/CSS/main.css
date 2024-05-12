@@ -183,24 +183,31 @@
   right: 0;
   font-size: 16px;
   padding: 0.5%; }
-  .top-right-menu button {
-    font-family: inherit;
-    font-size: inherit;
-    background-color: #8466fc;
+  .top-right-menu div,
+  .top-right-menu label {
+    background-color: #685cfe;
     color: #f4f4fa;
-    border: none;
-    width: 30px;
+    transition: background-color 0.3s;
+    display: flex;
+    cursor: pointer;
+    width: auto;
     height: 30px;
-    text-align: center;
-    text-decoration: none;
     display: inline-block;
     font-size: 16px;
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: none;
     margin: 4px 2px;
-    cursor: pointer;
+    padding-top: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
     border-radius: 5px;
-    transition: background-color 0.3s; }
-    .top-right-menu button:hover {
-      background-color: #6f56d4; }
+    border: none;
+    justify-content: center;
+    align-items: center; }
+    .top-right-menu div:hover,
+    .top-right-menu label:hover {
+      background-color: #574ce9; }
 
 body {
   /* Prevent text highlighting for the entire document */

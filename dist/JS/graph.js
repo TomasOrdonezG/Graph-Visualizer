@@ -214,7 +214,12 @@ class Graph {
             x: x / window.innerWidth,
             y: y / window.innerHeight,
         }));
-        return { adjacency_matrix, vertices };
+        // Settings
+        const settings = {
+            directed: this.directed,
+            weighted: this.weighted,
+        };
+        return { adjacency_matrix, vertices, settings };
     }
     build(graph_content) {
         this.delete_all_nodes();

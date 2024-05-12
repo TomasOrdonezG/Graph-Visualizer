@@ -16,10 +16,10 @@ function main(): void {
         event.preventDefault();
     });
 
-    // Trigger tab close confirmation
-    window.addEventListener("beforeunload", (event) => {
-        event.preventDefault();
-    });
+    // // Trigger tab close confirmation
+    // window.addEventListener("beforeunload", (event) => {
+    //     event.preventDefault();
+    // });
 
     // Keyboard events
     document.addEventListener("keydown", (event): void => {

@@ -28,9 +28,33 @@ export default class Menu {
         this.stop_animation_button = document.querySelector(".stop");
         this.reset_animation_button = document.querySelector(".reset");
         // Top-Right menu HTML elements
-        this.import_file_input = document.querySelector(".import-button");
+        this.import_file_input = document.querySelector(".import-input");
         this.export_button = document.querySelector(".export-button");
         this.reset_graph_button = document.querySelector(".reset-graph-button");
+        this.setWeighted = (on) => {
+            if (on) {
+                this.HTML_weighted_toggle.checked = true;
+                if (!this.graph.weighted)
+                    this.graph.toggle_weighted();
+            }
+            else {
+                this.HTML_weighted_toggle.checked = false;
+                if (this.graph.weighted)
+                    this.graph.toggle_weighted();
+            }
+        };
+        this.setDirected = (on) => {
+            if (on) {
+                this.HTML_directed_toggle.checked = true;
+                if (!this.graph.directed)
+                    this.graph.toggle_directed();
+            }
+            else {
+                this.HTML_directed_toggle.checked = false;
+                if (this.graph.directed)
+                    this.graph.toggle_directed();
+            }
+        };
         this.graph = graph;
         this.algorithms = new Algorithms(this.graph, document.querySelector(".frame-slider"));
         // Add menu event listeners and focus on main menu
@@ -42,13 +66,6 @@ export default class Menu {
     // * MAIN SIDE MENU
     mainMenuEventListeners() {
         // * Animation buttons
-        const weightedOn = () => {
-            if (!this.graph.weighted) {
-                // Change graph to weighted if it isn't already
-                this.HTML_weighted_toggle.checked = true;
-                this.graph.toggle_weighted();
-            }
-        };
         this.BFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.BFS.bind(this.algorithms));
         });
@@ -56,11 +73,11 @@ export default class Menu {
             this.animate(this.algorithms.DFS.bind(this.algorithms));
         });
         this.Dijkstra_Button.addEventListener("click", () => {
-            weightedOn();
+            this.setWeighted(true);
             this.animate(this.algorithms.Dijkstra.bind(this.algorithms));
         });
         this.Kruskal_Button.addEventListener("click", () => {
-            weightedOn();
+            this.setWeighted(true);
             this.animate(this.algorithms.Kruskal.bind(this.algorithms));
         });
         // * Toggles
@@ -210,9 +227,20 @@ export default class Menu {
             const contents = (_a = e.target) === null || _a === void 0 ? void 0 : _a.result;
             try {
                 const jsonData = JSON.parse(contents);
-                // console.log(jsonData);
+                if (!Object.keys(jsonData).includes("vertices") ||
+                    !Object.keys(jsonData).includes("adjacency_matrix") ||
+                    !Object.keys(jsonData).includes("settings")) {
+                    console.log(jsonData);
+                    window.alert("JSON file is in the wrong format. Unable to load graph");
+                    return;
+                }
+                const graph_content = jsonData;
                 // Create the graph
-                this.graph.build(jsonData);
+                this.graph.build(graph_content);
+                // Set settings
+                const settings = graph_content["settings"];
+                this.setDirected(settings.directed);
+                this.setWeighted(settings.weighted);
             }
             catch (error) {
                 console.error("Error parsing the JSON file: ", error);
