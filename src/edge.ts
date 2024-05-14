@@ -375,4 +375,10 @@ export default class Edge {
         if (j === -1) throw Error("Edge does not exist inside destination's in_edges's array, cannot delete");
         else this.destination.in_edges.splice(j, 1);
     }
+
+    public length = (): number => {
+        const dx2 = Math.pow(this.source.x - this.destination.x, 2);
+        const dy2 = Math.pow(this.source.y - this.destination.y, 2);
+        return Math.sqrt(dx2 + dy2);
+    };
 }

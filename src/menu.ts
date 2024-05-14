@@ -54,7 +54,6 @@ export default class Menu {
             this.animate(this.algorithms.DFS.bind(this.algorithms));
         });
         this.Dijkstra_Button.addEventListener("click", () => {
-            this.setWeighted(true);
             this.animate(this.algorithms.Dijkstra.bind(this.algorithms));
         });
         this.Kruskal_Button.addEventListener("click", () => {

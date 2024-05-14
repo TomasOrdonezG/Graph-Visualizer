@@ -55,14 +55,10 @@ Each one of these commands can also be done by clicking the corresponding button
 -   [BFS](https://en.wikipedia.org/wiki/Breadth-first_search)
 -   [DFS](https://en.wikipedia.org/wiki/Depth-first_search)
 -   [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)
+    -   Edge weights will be the set edge weights when the graph is weighted, otherwise it will be the cartesian distance between the nodes in the plane.
 -   [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm)
 
 ## Future Plans
-
-### Features
-
--   Add distance attribute to each node when running BSF and Dijkstra's algorithm.
--   Add discovery time and finish time of each node when running DFS.
 
 ### Animations
 
@@ -79,11 +75,10 @@ Each one of these commands can also be done by clicking the corresponding button
 -   Add visual when adding an edge between two nodes using Right-Click drag.
 -   More keyboard shortcuts (need ideas for this one).
 -   Add a slider for animation speed.
--   Add area selecting with cursor drag.
 -   Colour customization.
 
 ### Known Bugs
 
 -   Unlinking an already exisiting edge will be deleted when attempting to reconnect to the previously linked node.
--   First click adds invisible node.
+-   First click adds invisible node (sometimes).
 -   When reconnecting an edge, if the user attempts to reconnect to the node which the edge is already connected to, it will be highlighted as if connection is ready. However, one cannot connect a node to itself.

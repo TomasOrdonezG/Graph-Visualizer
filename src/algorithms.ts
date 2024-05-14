@@ -314,6 +314,7 @@ class Algorithms {
         const DijkstraAnimation: Animation = new Animation(this.slider);
         const root = this.graph.get_first_selected();
         if (!root) return null;
+        const weight = (edge: Edge): number => (this.graph.weighted ? edge.weight : Math.round(edge.length()));
 
         // Initialize distance map and root distance of 0
         const distance = new WeakMap<GraphNode, number>();
@@ -350,9 +351,9 @@ class Algorithms {
 
             // Relax every adjacent edge
             for (let { outEdge: edge, adj } of node.getOutEdges()) {
-                if ((distance.get(adj) as number) > (distance.get(node) as number) + edge.weight) {
+                if ((distance.get(adj) as number) > (distance.get(node) as number) + weight(edge)) {
                     // Update distance of the neighbour node
-                    distance.set(adj, (distance.get(node) as number) + edge.weight);
+                    distance.set(adj, (distance.get(node) as number) + weight(edge));
                     Q.decreaseKey(Q.arr.indexOf(adj), distance.get(adj) as number);
 
                     // Change colour of the edge and update distance text

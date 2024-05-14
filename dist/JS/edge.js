@@ -86,6 +86,11 @@ class Edge {
             // * Update colour
             this.updateColour(this.colour);
         };
+        this.length = () => {
+            const dx2 = Math.pow(this.source.x - this.destination.x, 2);
+            const dy2 = Math.pow(this.source.y - this.destination.y, 2);
+            return Math.sqrt(dx2 + dy2);
+        };
         this.graph = graph;
         this.source = source;
         this.destination = destination;
