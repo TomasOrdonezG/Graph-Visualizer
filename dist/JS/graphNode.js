@@ -48,7 +48,7 @@ class GraphNode {
             this.div.style.top = this.y - GraphNode.RADIUS + "px";
             // Text pos
             this.text_HTML_element.style.left = this.x + "px";
-            this.text_HTML_element.style.top = this.y - 2.5 * GraphNode.RADIUS + "px";
+            this.text_HTML_element.style.top = this.y - 2.6 * GraphNode.RADIUS + "px";
             // Edges pos
             this.updateEdgesPos();
         };

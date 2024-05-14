@@ -192,12 +192,36 @@ class Algorithms {
         if (!this.graph.nodes)
             return null;
         let time = 0;
+        // dtime and ftime maps
+        const dtime = new WeakMap();
+        const ftime = new WeakMap();
+        for (let node of this.graph.nodes)
+            dtime.set(node, null);
+        for (let node of this.graph.nodes)
+            ftime.set(node, null);
+        // Show dtime and ftime text
+        const interval = (node) => {
+            const dt = dtime.get(node);
+            const ft = ftime.get(node);
+            return `[${dt ? dt : "_"}, ${ft ? ft : "_"}]`;
+        };
+        for (let node of this.graph.nodes) {
+            DFS_Animation.addNodeFrame({
+                target: node,
+                new_show_text: true,
+                new_text: interval(node),
+                chain_to_previous: true,
+            });
+        }
         const DFS_Visit = (node) => {
             // Increment time, set dtime, change node colour and add frame
             time++;
-            DFS_Animation.addNodeFrame({ target: node, new_colour: "gray" });
-            // node.DFS_dtime = String(time);
-            // node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
+            dtime.set(node, time);
+            DFS_Animation.addNodeFrame({
+                target: node,
+                new_colour: "gray",
+                new_text: interval(node),
+            });
             // Recurse on undiscovered neighbours
             for (let { outEdge: edge, adj } of node.getOutEdges()) {
                 if (adj.colour === "white") {
@@ -208,9 +232,12 @@ class Algorithms {
             }
             // Increment time, set ftime, change node colour and add frame
             time++;
-            // node.DFS_ftime = String(time);
-            // node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
-            DFS_Animation.addNodeFrame({ target: node, new_colour: "black" });
+            ftime.set(node, time);
+            DFS_Animation.addNodeFrame({
+                target: node,
+                new_colour: "black",
+                new_text: interval(node),
+            });
         };
         // Run DFS on every undiscovered node
         for (let node of this.graph.nodes) {
@@ -218,6 +245,8 @@ class Algorithms {
                 DFS_Visit(node);
             }
         }
+        for (let node of this.graph.nodes)
+            node.updateShowText(false);
         this.graph.reset_colour();
         DFS_Animation.updateSlider();
         return DFS_Animation;
