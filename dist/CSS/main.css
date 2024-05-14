@@ -25,9 +25,14 @@
     transition: transform 0.1s ease-in-out, font-size 0.1s ease-in-out;
     outline: none;
     z-index: 2; }
-    .graph-container .circle .node-text {
-      position: relative;
-      transform: translateX(-100%); }
+  .graph-container .node-text {
+    position: absolute;
+    transform: translateX(-100%);
+    background-color: inherit;
+    z-index: 2;
+    border-radius: 50%;
+    color: red;
+    padding: 2px 5px; }
   .graph-container .line {
     position: absolute;
     height: 0;
@@ -36,7 +41,7 @@
   .graph-container .weight {
     position: absolute;
     background-color: inherit;
-    padding: 0.5%;
+    padding: 2px 5px;
     font-size: small;
     outline: none;
     transform: translate(-50%, -50%);

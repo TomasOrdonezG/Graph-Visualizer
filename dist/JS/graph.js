@@ -134,12 +134,14 @@ class Graph {
         }
         this.delete_all_selected();
     }
-    reset_colour() {
-        // Initialize each node to white and egde to gray
+    reset_all_attributes() {
         for (let node of this.nodes) {
-            // this.setNodeColour(node, "white");
             node.updateColour("white");
             node.updateBorderColour(GraphNode.DEFAULT_BORDER_COLOUR);
+            node.updateTextColour("black");
+            node.updateShowText(false);
+            node.updateText("");
+            node.deselect();
             for (let edge of node.out_edges) {
                 edge.updateColour(Edge.DEFAULT_COLOUR);
             }

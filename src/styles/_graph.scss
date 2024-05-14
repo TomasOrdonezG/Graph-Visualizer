@@ -21,6 +21,8 @@
         z-index: 3;
     }
 
+    // * GRAPH NODES
+
     .circle {
         border-radius: 50%;
         position: absolute;
@@ -31,12 +33,19 @@
         transition: transform 0.1s ease-in-out, font-size 0.1s ease-in-out;
         outline: none;
         z-index: 2;
-
-        .node-text {
-            position: relative;
-            transform: translateX(-100%);
-        }
     }
+
+    .node-text {
+        position: absolute;
+        transform: translateX(-100%);
+        background-color: inherit;
+        z-index: 2;
+        border-radius: 50%;
+        color: red;
+        padding: 2px 5px;
+    }
+
+    // * EDGES
 
     .line {
         position: absolute;
@@ -48,7 +57,7 @@
     .weight {
         position: absolute;
         background-color: inherit;
-        padding: 0.5%;
+        padding: 2px 5px;
         font-size: small;
         outline: none;
         transform: translate(-50%, -50%);
