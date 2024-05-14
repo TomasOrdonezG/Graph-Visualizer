@@ -157,12 +157,15 @@ export default class Graph {
         this.delete_all_selected();
     }
 
-    public reset_colour(): void {
-        // Initialize each node to white and egde to gray
+    public reset_all_attributes(): void {
         for (let node of this.nodes) {
-            // this.setNodeColour(node, "white");
             node.updateColour("white");
             node.updateBorderColour(GraphNode.DEFAULT_BORDER_COLOUR);
+            node.updateTextColour("black");
+            node.updateShowText(false);
+            node.updateText("");
+            node.deselect();
+
             for (let edge of node.out_edges) {
                 edge.updateColour(Edge.DEFAULT_COLOUR);
             }

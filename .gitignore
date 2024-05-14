@@ -2,6 +2,5 @@ package-lock.json
 package.json
 tsconfig.json
 
-test/
 node_modules/
 Video Demos/

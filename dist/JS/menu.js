@@ -118,7 +118,7 @@ export default class Menu {
             if (this.play_pause_animation_button.textContent === "▶") {
                 if (this.currentAnimation.curr_index === this.currentAnimation.length) {
                     this.currentAnimation.curr_index = 0;
-                    this.graph.reset_colour();
+                    this.graph.reset_all_attributes();
                     this.currentAnimation.updateSlider();
                 }
                 this.play_pause_animation_button.textContent = "⏸";
@@ -138,8 +138,8 @@ export default class Menu {
             this.focusMainMenu();
             (_a = this.currentAnimation) === null || _a === void 0 ? void 0 : _a.pause();
             this.currentAnimation = null;
-            this.graph.reset_colour();
             this.graph.traversing = false;
+            this.graph.reset_all_attributes();
             this.play_pause_animation_button.textContent = "▶";
             // Turn off text
             for (let node of this.graph.nodes) {
@@ -151,7 +151,7 @@ export default class Menu {
             if (!this.currentAnimation)
                 return;
             this.currentAnimation.curr_index = 0;
-            this.graph.reset_colour();
+            this.graph.reset_all_attributes();
             this.currentAnimation.updateSlider();
             this.play_pause_animation_button.textContent = "▶";
             this.currentAnimation.playing = false;
@@ -194,6 +194,7 @@ export default class Menu {
         this.currentAnimation = algorithm();
         if (!this.currentAnimation)
             return;
+        this.graph.reset_all_attributes();
         this.graph.traversing = true;
         this.focusAnimationMenu();
         this.currentAnimation.updateSlider();

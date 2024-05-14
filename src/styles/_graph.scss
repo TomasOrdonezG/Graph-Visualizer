@@ -21,6 +21,8 @@
         z-index: 3;
     }
 
+    // * GRAPH NODES
+
     .circle {
         border-radius: 50%;
         position: absolute;
@@ -36,9 +38,14 @@
     .node-text {
         position: absolute;
         transform: translateX(-100%);
-        background-color: $bg-colour;
+        background-color: inherit;
         z-index: 2;
+        border-radius: 50%;
+        color: red;
+        padding: 2px 5px;
     }
+
+    // * EDGES
 
     .line {
         position: absolute;
@@ -50,7 +57,7 @@
     .weight {
         position: absolute;
         background-color: inherit;
-        padding: 0.5%;
+        padding: 2px 5px;
         font-size: small;
         outline: none;
         transform: translate(-50%, -50%);

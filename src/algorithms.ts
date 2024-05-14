@@ -1,5 +1,5 @@
 import Graph from "./graph";
-import GraphNode from "./graphNode";
+import GraphNode from "./graphNode.js";
 import Edge from "./edge";
 import { MinPriorityQueue } from "./minPQ.js";
 
@@ -9,14 +9,19 @@ type Frame<Target extends GraphNode | Edge> = {
     colour?: Change<string>;
     chain_to_previous?: boolean;
 } & (Target extends GraphNode
-    ? { border_colour?: Change<string>; show_text?: Change<boolean>; text?: Change<string> }
+    ? {
+          border_colour?: Change<string>;
+          show_text?: Change<boolean>;
+          text?: Change<string>;
+          text_colour?: Change<string>;
+      }
     : { weight?: Change<number> });
 type NewFrame<Target extends GraphNode | Edge> = {
     target: Target;
     new_colour?: string;
     chain_to_previous?: boolean;
 } & (Target extends GraphNode
-    ? { new_border_colour?: string; new_show_text?: boolean; new_text?: string }
+    ? { new_border_colour?: string; new_show_text?: boolean; new_text?: string; new_text_colour?: string }
     : { new_weight?: number });
 
 export default class Animation {
@@ -41,31 +46,39 @@ export default class Animation {
         const { target } = new_frame;
         const frame: Frame<GraphNode> = { target };
 
-        // * Update chain_to_previous
+        // Update chain_to_previous
         frame.chain_to_previous = new_frame.chain_to_previous;
 
-        // * Update colour
-        if (new_frame.new_colour) {
-            frame.colour = { before: target.colour, after: new_frame.new_colour };
-            target.updateColour(frame.colour.after);
-        }
+        // Updates frame and node attributes
+        const update = <T extends string | boolean>(
+            new_frame_att: Exclude<keyof NewFrame<GraphNode>, "target" | "chain_to_previous">,
+            attribute: Exclude<keyof Frame<GraphNode>, "target" | "chain_to_previous">,
+            updateMethod: (val: T) => void
+        ) => {
+            // Check if this attribute is being changed
+            if (new_frame[new_frame_att] !== undefined) {
+                // Create `Change<T>` object and add it to the frame
+                const changeAttribute: Change<T> = {
+                    before: target[attribute] as T,
+                    after: new_frame[new_frame_att] as T,
+                };
+                (frame[attribute] as Change<T>) = changeAttribute;
 
-        // * Update border_colour
-        if (new_frame.new_border_colour) {
-            frame.border_colour = { before: target.border_colour, after: new_frame.new_border_colour };
-            target.updateBorderColour(frame.border_colour.after);
-        }
+                // Update the attribute in the actual node
+                updateMethod((frame[attribute] as Change<T>).after as T);
+            }
+        };
 
-        // * Update show_text
-        if (new_frame.new_show_text) {
-            frame.show_text = { before: target.show_text, after: new_frame.new_show_text };
-            target.updateShowText(frame.show_text.after);
-        }
-
-        // * Update text
-        if (new_frame.new_text) {
-            frame.text = { before: target.text, after: new_frame.new_text };
-            target.updateText(frame.text.after);
+        // Update all attributes
+        const update_args: [Exclude<keyof Frame<GraphNode>, "target" | "chain_to_previous">, (val: any) => void][] = [
+            ["colour", target.updateColour.bind(target)],
+            ["border_colour", target.updateBorderColour.bind(target)],
+            ["show_text", target.updateShowText.bind(target)],
+            ["text", target.updateText.bind(target)],
+            ["text_colour", target.updateTextColour.bind(target)],
+        ];
+        for (let args of update_args) {
+            update(`new_${args[0]}` as any, args[0], args[1]);
         }
 
         // Add frame
@@ -77,21 +90,39 @@ export default class Animation {
         const { target } = new_frame;
         const frame: Frame<Edge> = { target };
 
-        // * Update chain_to_previous
+        // Update chain_to_previous
         frame.chain_to_previous = new_frame.chain_to_previous;
 
-        // * Update colour
-        if (new_frame.new_colour) {
-            frame.colour = { before: target.colour, after: new_frame.new_colour };
-            target.updateColour(frame.colour.after);
+        // Updates frame and edge attributes
+        const update = <T extends string | boolean>(
+            new_frame_att: Exclude<keyof NewFrame<Edge>, "target" | "chain_to_previous">,
+            attribute: Exclude<keyof Frame<Edge>, "target" | "chain_to_previous">,
+            updateMethod: (val: T) => void
+        ) => {
+            // Check if this attribute is being changed
+            if (new_frame[new_frame_att] !== undefined) {
+                // Create `Change<T>` object and add it to the frame
+                const changeAttribute: Change<T> = {
+                    before: target[attribute] as T,
+                    after: new_frame[new_frame_att] as T,
+                };
+                (frame[attribute] as Change<T>) = changeAttribute;
+
+                // Update the attribute in the actual edge
+                updateMethod((frame[attribute] as Change<T>).after as T);
+            }
+        };
+
+        // Update all attributes
+        const update_args: [Exclude<keyof Frame<Edge>, "target" | "chain_to_previous">, (val: any) => void][] = [
+            ["colour", target.updateColour.bind(target)],
+            ["weight", target.updateWeight.bind(target)],
+        ];
+        for (let args of update_args) {
+            update(`new_${args[0]}` as any, args[0], args[1]);
         }
 
-        // * Update weight
-        if (new_frame.new_weight) {
-            frame.weight = { before: target.weight, after: new_frame.new_weight };
-            target.updateWeight(frame.weight.after);
-        }
-
+        // Add frame
         this.frames.push(frame);
         this.length++;
     }
@@ -115,24 +146,24 @@ export default class Animation {
             const nodeFrame = frame as Frame<GraphNode>;
             const node = nodeFrame.target;
 
-            if (nodeFrame.colour) node.updateColour(nodeFrame.colour.after);
-            if (nodeFrame.border_colour) node.updateBorderColour(nodeFrame.border_colour.after);
-            if (nodeFrame.text) node.updateText(nodeFrame.text.after);
-            if (nodeFrame.show_text) node.updateShowText(nodeFrame.show_text.after);
+            if (nodeFrame.colour !== undefined) node.updateColour(nodeFrame.colour.after);
+            if (nodeFrame.border_colour !== undefined) node.updateBorderColour(nodeFrame.border_colour.after);
+            if (nodeFrame.text !== undefined) node.updateText(nodeFrame.text.after);
+            if (nodeFrame.show_text !== undefined) node.updateShowText(nodeFrame.show_text.after);
+            if (nodeFrame.text_colour !== undefined) node.updateTextColour(nodeFrame.text_colour.after);
         } else {
             // * Edge frame
             const edgeFrame = frame as Frame<Edge>;
             const edge = edgeFrame.target;
 
-            if (edgeFrame.colour) edge.updateColour(edgeFrame.colour.after);
-            if (edgeFrame.weight) edge.updateWeight(edgeFrame.weight.after);
+            if (edgeFrame.colour !== undefined) edge.updateColour(edgeFrame.colour.after);
+            if (edgeFrame.weight !== undefined) edge.updateWeight(edgeFrame.weight.after);
         }
 
         this.curr_index++;
         if (this.curr_index < this.length && this.frames[this.curr_index].chain_to_previous) {
             this.next_frame();
         }
-        // if (frame.chain_to_previous) this.next_frame();
         this.updateSlider();
         return true;
     }
@@ -146,17 +177,18 @@ export default class Animation {
             const nodeFrame = frame as Frame<GraphNode>;
             const node = nodeFrame.target;
 
-            if (nodeFrame.colour) node.updateColour(nodeFrame.colour.before);
-            if (nodeFrame.border_colour) node.updateBorderColour(nodeFrame.border_colour.before);
-            if (nodeFrame.text) node.updateText(nodeFrame.text.before);
-            if (nodeFrame.show_text) node.updateShowText(nodeFrame.show_text.before);
+            if (nodeFrame.colour !== undefined) node.updateColour(nodeFrame.colour.before);
+            if (nodeFrame.border_colour !== undefined) node.updateBorderColour(nodeFrame.border_colour.before);
+            if (nodeFrame.text !== undefined) node.updateText(nodeFrame.text.before);
+            if (nodeFrame.show_text !== undefined) node.updateShowText(nodeFrame.show_text.before);
+            if (nodeFrame.text_colour !== undefined) node.updateTextColour(nodeFrame.text_colour.before);
         } else {
             // * Edge frame
             const edgeFrame = frame as Frame<Edge>;
             const edge = edgeFrame.target;
 
-            if (edgeFrame.colour) edge.updateColour(edgeFrame.colour.before);
-            if (edgeFrame.weight) edge.updateWeight(edgeFrame.weight.before);
+            if (edgeFrame.colour !== undefined) edge.updateColour(edgeFrame.colour.before);
+            if (edgeFrame.weight !== undefined) edge.updateWeight(edgeFrame.weight.before);
         }
 
         if (frame.chain_to_previous) this.prev_frame();
@@ -181,7 +213,6 @@ class Algorithms {
     }
 
     public BFS(): Animation | null {
-        this.graph.reset_colour();
         let root = this.graph.get_first_selected();
         if (!root) return null;
 
@@ -207,14 +238,12 @@ class Algorithms {
             BFS_Animation.addNodeFrame({ target: node, new_colour: "black" });
         }
 
-        this.graph.reset_colour();
         BFS_Animation.updateSlider();
         return BFS_Animation;
     }
 
     public DFS(): Animation | null {
         // Initialize graph styles, animation object and time
-        this.graph.reset_colour();
         const DFS_Animation: Animation = new Animation(this.slider);
         if (!this.graph.nodes) return null;
         let time = 0;
@@ -277,25 +306,36 @@ class Algorithms {
         }
 
         for (let node of this.graph.nodes) node.updateShowText(false);
-        this.graph.reset_colour();
         DFS_Animation.updateSlider();
         return DFS_Animation;
     }
 
     public Dijkstra(): Animation | null {
         const DijkstraAnimation: Animation = new Animation(this.slider);
-
-        // Initialize graph
-        this.graph.reset_colour();
         const root = this.graph.get_first_selected();
         if (!root) return null;
 
-        // Initialize distance map
+        // Initialize distance map and root distance of 0
         const distance = new WeakMap<GraphNode, number>();
         for (let node of this.graph.nodes) distance.set(node, Infinity);
         distance.set(root, 0);
+        const getDistanceStr = (node: GraphNode): string => {
+            const d = distance.get(node) as number;
+            return d === Infinity ? "∞" : d.toString();
+        };
 
-        // Initialize min-priority-queue
+        // Show all initial distances
+        for (let node of this.graph.nodes) {
+            DijkstraAnimation.addNodeFrame({
+                target: node,
+                new_show_text: true,
+                new_text: getDistanceStr(node),
+                new_border_colour: node === root ? "red" : undefined,
+                chain_to_previous: true,
+            });
+        }
+
+        // Initialize min-priority-queue on all nodes with distance as the key
         const Q = new MinPriorityQueue<GraphNode>(
             (item, key) => distance.set(item, key),
             (item): number => distance.get(item) as number
@@ -311,12 +351,19 @@ class Algorithms {
             // Relax every adjacent edge
             for (let { outEdge: edge, adj } of node.getOutEdges()) {
                 if ((distance.get(adj) as number) > (distance.get(node) as number) + edge.weight) {
-                    // Update distance of the neighbour node and change colour of the edge
-                    DijkstraAnimation.addEdgeFrame({ target: edge, new_colour: "black" });
+                    // Update distance of the neighbour node
                     distance.set(adj, (distance.get(node) as number) + edge.weight);
                     Q.decreaseKey(Q.arr.indexOf(adj), distance.get(adj) as number);
 
-                    // Unhighlight other in edge if exists
+                    // Change colour of the edge and update distance text
+                    DijkstraAnimation.addEdgeFrame({ target: edge, new_colour: "black" });
+                    DijkstraAnimation.addNodeFrame({
+                        target: adj,
+                        new_text: getDistanceStr(adj),
+                        chain_to_previous: true,
+                    });
+
+                    // Unhighlight the previously connecting in_edge if it exists
                     for (let { inEdge } of adj.getInEdges()) {
                         if (edge !== inEdge && inEdge.colour === "black") {
                             DijkstraAnimation.addEdgeFrame({
@@ -328,15 +375,13 @@ class Algorithms {
                     }
                 }
             }
-            DijkstraAnimation.addNodeFrame({ target: node, new_colour: "black" });
+            DijkstraAnimation.addNodeFrame({ target: node, new_colour: "black", new_text_colour: "red" });
         }
 
-        this.graph.reset_colour();
         return DijkstraAnimation;
     }
 
     public Kruskal(): Animation | null {
-        this.graph.reset_colour();
         this.graph.deselect_all();
         if (!this.graph.nodes) return null;
         const KruskalAnimation = new Animation(this.slider);
@@ -392,7 +437,6 @@ class Algorithms {
             }
         }
 
-        this.graph.reset_colour();
         return KruskalAnimation;
     }
 }

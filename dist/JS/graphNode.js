@@ -7,7 +7,7 @@ class GraphNode {
         this.out_edges = [];
         this.in_edges = [];
         this.border_colour = GraphNode.DEFAULT_BORDER_COLOUR;
-        this.text_colour = GraphNode.DEFAULT_BORDER_COLOUR;
+        this.value_text_colour = GraphNode.DEFAULT_BORDER_COLOUR;
         this.colour = "white";
         // State
         this.selected = true;
@@ -25,16 +25,17 @@ class GraphNode {
             move: this.handle_mouse_move.bind(this),
             double_click: this.handle_double_click.bind(this),
         };
-        // Algorithm specific attributes
+        // Text attributes
         this.text = "";
+        this.text_colour = "black";
         this.show_text = false;
         // Update Methods
         this.updateAll = () => {
             this.updateText(this.text);
             this.updateShowText(this.show_text);
+            this.updateTextColour(this.text_colour);
             this.updateValue();
             this.updateColour(this.colour);
-            this.updateSize();
         };
         this.updateText = (text) => {
             this.text = text;
@@ -48,27 +49,27 @@ class GraphNode {
             this.div.style.top = this.y - GraphNode.RADIUS + "px";
             // Text pos
             this.text_HTML_element.style.left = this.x + "px";
-            this.text_HTML_element.style.top = this.y - 2.6 * GraphNode.RADIUS + "px";
+            this.text_HTML_element.style.top = this.y - 2.7 * GraphNode.RADIUS + "px";
             // Edges pos
             this.updateEdgesPos();
         };
         this.updateValue = () => {
             this.div.textContent = this.value.toString();
         };
+        this.updateTextColour = (colour) => {
+            this.text_colour = colour;
+            this.text_HTML_element.style.color = this.text_colour;
+        };
         this.updateColour = (colour) => {
-            this.updateBorderColour(GraphNode.DEFAULT_BORDER_COLOUR);
+            // this.updateBorderColour(GraphNode.DEFAULT_BORDER_COLOUR);
             this.colour = colour;
-            if (colour === "black") {
+            if (colour === "black" && this.border_colour === GraphNode.DEFAULT_BORDER_COLOUR) {
                 this.colour = GraphNode.SEARCHED_COLOUR;
                 this.updateBorderColour("black");
             }
             this.div.style.backgroundColor = this.colour;
-            this.text_colour = colour === "black" ? "white" : "black";
-            this.div.style.color = this.text_colour;
-        };
-        this.updateSize = () => {
-            this.div.style.width = 2 * GraphNode.RADIUS + "px";
-            this.div.style.height = 2 * GraphNode.RADIUS + "px";
+            this.value_text_colour = colour === "black" ? "white" : "black";
+            this.div.style.color = this.value_text_colour;
         };
         this.updateEdgesPos = () => {
             // Update each out edge
@@ -89,6 +90,9 @@ class GraphNode {
         this.div.setAttribute("contenteditable", "false");
         this.div.classList.add("circle", "pan");
         this.graph.HTML_Container.appendChild(this.div);
+        // Set appropiate size according to radius
+        this.div.style.width = 2 * GraphNode.RADIUS + "px";
+        this.div.style.height = 2 * GraphNode.RADIUS + "px";
         // Create text elements
         this.text_HTML_element = document.createElement("p");
         this.text_HTML_element.classList.add("node-text", "pan");
@@ -126,6 +130,12 @@ class GraphNode {
                     node.initialX_drag = event.clientX - node.x;
                     node.initialY_drag = event.clientY - node.y;
                 }
+            }
+            // If graph is traversing, only move the current node, even if it is not selected
+            if (this.graph.traversing) {
+                this.dragging = true;
+                this.initialX_drag = event.clientX - this.x;
+                this.initialY_drag = event.clientY - this.y;
             }
         }
         else if (event.button === 0 && keyboardState.SHIFT && !this.graph.traversing) {
@@ -262,10 +272,14 @@ class GraphNode {
     }
     // Selection
     select() {
+        if (this.graph.traversing)
+            return;
         this.updateBorderColour(GraphNode.SELECTED_BORDER_COLOUR);
         this.selected = true;
     }
     deselect() {
+        if (this.graph.traversing)
+            return;
         this.updateBorderColour(this.colour === GraphNode.SEARCHED_COLOUR ? "black" : GraphNode.DEFAULT_BORDER_COLOUR);
         this.selected = false;
     }
