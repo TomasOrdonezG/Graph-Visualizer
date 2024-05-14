@@ -23,7 +23,7 @@ export default class GraphNode {
     public div: HTMLDivElement;
     public y: number;
     public x: number;
-    private border_colour: string = GraphNode.DEFAULT_BORDER_COLOUR;
+    public border_colour: string = GraphNode.DEFAULT_BORDER_COLOUR;
     public text_colour: string = GraphNode.DEFAULT_BORDER_COLOUR;
     public colour: string = "white";
 
@@ -45,12 +45,9 @@ export default class GraphNode {
     };
 
     // Algorithm specific attributes
-    public time_interval_text: HTMLParagraphElement;
-    // public distance_text: HTMLParagraphElement;
-    public show_time_interval: boolean = false;
-    public DFS_dtime: String = "_";
-    public DFS_ftime: String = "_";
-    public distance: number = 0;
+    public text: string = "";
+    public text_HTML_element: HTMLParagraphElement;
+    public show_text: boolean = false;
 
     // #endregion
 
@@ -68,10 +65,10 @@ export default class GraphNode {
         this.graph.HTML_Container.appendChild(this.div);
 
         // Create text elements
-        this.time_interval_text = document.createElement("p");
-        this.time_interval_text.classList.add("node-text", "pan");
-        this.time_interval_text.textContent = `[${this.DFS_dtime}, ${this.DFS_ftime}]`;
-        this.graph.HTML_Container.appendChild(this.time_interval_text);
+        this.text_HTML_element = document.createElement("p");
+        this.text_HTML_element.classList.add("node-text", "pan");
+        this.text_HTML_element.textContent = this.text;
+        this.graph.HTML_Container.appendChild(this.text_HTML_element);
 
         this.updatePos(this.x, this.y);
         this.updateAll();
@@ -232,29 +229,6 @@ export default class GraphNode {
         document.removeEventListener("keydown", this.bound_set_edited_value);
     }
 
-    // Connection
-    public connect(destination_node: GraphNode): Edge | null {
-        this.graph.initial_node = null;
-
-        // Don't connect if already connected or if connected to itself
-        if (destination_node === this) return null;
-        if (this.out_edges.map((out_edge) => out_edge.destination).includes(destination_node)) return null;
-
-        // Add edges and neighbours
-        const new_edge = new Edge(this, destination_node, this.graph);
-
-        this.out_edges.push(new_edge);
-
-        destination_node.in_edges.push(new_edge);
-
-        // Update attributes
-        destination_node.sortNeighbours();
-        this.sortNeighbours();
-        this.updateEdgesPos();
-
-        return new_edge;
-    }
-
     public delete(): void {
         // Remove from nodes array in this.graph
         let i = this.graph.nodes.indexOf(this);
@@ -287,15 +261,20 @@ export default class GraphNode {
 
     // Update Methods
     public updateAll = (): void => {
-        this.updateText();
+        this.updateText(this.text);
+        this.updateShowText(this.show_text);
         this.updateValue();
         this.updateColour(this.colour);
         this.updateSize();
     };
-    public updateText = (): void => {
-        this.time_interval_text.textContent = `[${this.DFS_dtime}, ${this.DFS_ftime}]`;
-        this.time_interval_text.style.display = this.show_time_interval ? "" : "none";
+    public updateText = (text: string): void => {
+        this.text = text;
+        this.text_HTML_element.textContent = this.text;
     };
+    public updateShowText(on: boolean): void {
+        this.show_text = on;
+        this.text_HTML_element.style.display = this.show_text ? "" : "none";
+    }
     public updatePos = (x: number, y: number): void => {
         // Node pos
         this.x = x;
@@ -304,8 +283,8 @@ export default class GraphNode {
         this.div.style.top = this.y - GraphNode.RADIUS + "px";
 
         // Text pos
-        this.time_interval_text.style.left = this.x + "px";
-        this.time_interval_text.style.top = this.y - 2.5 * GraphNode.RADIUS + "px";
+        this.text_HTML_element.style.left = this.x + "px";
+        this.text_HTML_element.style.top = this.y - 2.5 * GraphNode.RADIUS + "px";
 
         // Edges pos
         this.updateEdgesPos();
@@ -344,6 +323,29 @@ export default class GraphNode {
             in_edge.linkNodesPos();
         }
     };
+
+    // Edges and neighbours
+    public connect(destination_node: GraphNode): Edge | null {
+        this.graph.initial_node = null;
+
+        // Don't connect if already connected or if connected to itself
+        if (destination_node === this) return null;
+        if (this.out_edges.map((out_edge) => out_edge.destination).includes(destination_node)) return null;
+
+        // Add edges and neighbours
+        const new_edge = new Edge(this, destination_node, this.graph);
+
+        this.out_edges.push(new_edge);
+
+        destination_node.in_edges.push(new_edge);
+
+        // Update attributes
+        destination_node.sortNeighbours();
+        this.sortNeighbours();
+        this.updateEdgesPos();
+
+        return new_edge;
+    }
 
     private sortNeighbours() {
         this.out_edges.sort((a, b) => a.destination.value - b.destination.value);

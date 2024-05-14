@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { MinPriorityQueue } from "./minPQ.js";
 class Animation {
+    // #endregion
     constructor(slider) {
         this.fps = 5;
         this.frames = [];
@@ -17,14 +18,51 @@ class Animation {
         this.playing = false;
         this.slider = slider;
     }
-    addFrame(target, new_colour) {
-        const new_frame = {
-            target: target,
-            prev_colour: target.colour,
-            updated_colour: new_colour,
-        };
-        target.updateColour(new_colour);
-        this.frames.push(new_frame);
+    addNodeFrame(new_frame) {
+        const { target } = new_frame;
+        const frame = { target };
+        // * Update chain_to_previous
+        frame.chain_to_previous = new_frame.chain_to_previous;
+        // * Update colour
+        if (new_frame.new_colour) {
+            frame.colour = { before: target.colour, after: new_frame.new_colour };
+            target.updateColour(frame.colour.after);
+        }
+        // * Update border_colour
+        if (new_frame.new_border_colour) {
+            frame.border_colour = { before: target.border_colour, after: new_frame.new_border_colour };
+            target.updateBorderColour(frame.border_colour.after);
+        }
+        // * Update show_text
+        if (new_frame.new_show_text) {
+            frame.show_text = { before: target.show_text, after: new_frame.new_show_text };
+            target.updateShowText(frame.show_text.after);
+        }
+        // * Update text
+        if (new_frame.new_text) {
+            frame.text = { before: target.text, after: new_frame.new_text };
+            target.updateText(frame.text.after);
+        }
+        // Add frame
+        this.frames.push(frame);
+        this.length++;
+    }
+    addEdgeFrame(new_frame) {
+        const { target } = new_frame;
+        const frame = { target };
+        // * Update chain_to_previous
+        frame.chain_to_previous = new_frame.chain_to_previous;
+        // * Update colour
+        if (new_frame.new_colour) {
+            frame.colour = { before: target.colour, after: new_frame.new_colour };
+            target.updateColour(frame.colour.after);
+        }
+        // * Update weight
+        if (new_frame.new_weight) {
+            frame.weight = { before: target.weight, after: new_frame.new_weight };
+            target.updateWeight(frame.weight.after);
+        }
+        this.frames.push(frame);
         this.length++;
     }
     play() {
@@ -39,24 +77,70 @@ class Animation {
         this.playing = false;
     }
     next_frame() {
-        if (this.curr_index < this.length) {
-            const frame = this.frames[this.curr_index];
-            frame.target.updateColour(frame.updated_colour);
-            this.curr_index++;
-            this.updateSlider();
-            return true;
+        if (this.curr_index >= this.length)
+            return false;
+        const frame = this.frames[this.curr_index];
+        if (frame.target.value !== undefined) {
+            // * GraphNode frame
+            const nodeFrame = frame;
+            const node = nodeFrame.target;
+            if (nodeFrame.colour)
+                node.updateColour(nodeFrame.colour.after);
+            if (nodeFrame.border_colour)
+                node.updateBorderColour(nodeFrame.border_colour.after);
+            if (nodeFrame.text)
+                node.updateText(nodeFrame.text.after);
+            if (nodeFrame.show_text)
+                node.updateShowText(nodeFrame.show_text.after);
         }
-        return false;
+        else {
+            // * Edge frame
+            const edgeFrame = frame;
+            const edge = edgeFrame.target;
+            if (edgeFrame.colour)
+                edge.updateColour(edgeFrame.colour.after);
+            if (edgeFrame.weight)
+                edge.updateWeight(edgeFrame.weight.after);
+        }
+        this.curr_index++;
+        if (this.curr_index < this.length && this.frames[this.curr_index].chain_to_previous) {
+            this.next_frame();
+        }
+        // if (frame.chain_to_previous) this.next_frame();
+        this.updateSlider();
+        return true;
     }
     prev_frame() {
-        if (this.curr_index > 0) {
-            this.curr_index--;
-            const frame = this.frames[this.curr_index];
-            frame.target.updateColour(frame.prev_colour);
-            this.updateSlider();
-            return true;
+        if (this.curr_index <= 0)
+            return false;
+        this.curr_index--;
+        const frame = this.frames[this.curr_index];
+        if (frame.target.value !== undefined) {
+            // * GraphNode frame
+            const nodeFrame = frame;
+            const node = nodeFrame.target;
+            if (nodeFrame.colour)
+                node.updateColour(nodeFrame.colour.before);
+            if (nodeFrame.border_colour)
+                node.updateBorderColour(nodeFrame.border_colour.before);
+            if (nodeFrame.text)
+                node.updateText(nodeFrame.text.before);
+            if (nodeFrame.show_text)
+                node.updateShowText(nodeFrame.show_text.before);
         }
-        return false;
+        else {
+            // * Edge frame
+            const edgeFrame = frame;
+            const edge = edgeFrame.target;
+            if (edgeFrame.colour)
+                edge.updateColour(edgeFrame.colour.before);
+            if (edgeFrame.weight)
+                edge.updateWeight(edgeFrame.weight.before);
+        }
+        if (frame.chain_to_previous)
+            this.prev_frame();
+        this.updateSlider();
+        return true;
     }
     updateSlider() {
         this.slider.min = "0";
@@ -64,6 +148,7 @@ class Animation {
         this.slider.value = String(this.curr_index);
     }
 }
+// #region ATTRIBUTES
 Animation.min_fps = 0;
 Animation.max_fps = 30;
 export default Animation;
@@ -72,6 +157,34 @@ class Algorithms {
         this.graph = graph;
         this.slider = slider;
     }
+    BFS() {
+        this.graph.reset_colour();
+        let root = this.graph.get_first_selected();
+        if (!root)
+            return null;
+        const Q = [];
+        Q.push(root);
+        const BFS_Animation = new Animation(this.slider);
+        BFS_Animation.addNodeFrame({ target: root, new_colour: "gray" });
+        // Main BFS loop
+        while (Q.length > 0) {
+            // Dequeue next node and search all its neighbours
+            const node = Q.shift();
+            for (let { outEdge: edge, adj } of node.getOutEdges()) {
+                if (adj.colour === "white") {
+                    // Add frame to connecting endge and newly discovered node. Then enqueue
+                    BFS_Animation.addEdgeFrame({ target: edge, new_colour: "black" });
+                    BFS_Animation.addNodeFrame({ target: adj, new_colour: "gray" });
+                    Q.push(adj);
+                }
+            }
+            // Mark node as fully searched
+            BFS_Animation.addNodeFrame({ target: node, new_colour: "black" });
+        }
+        this.graph.reset_colour();
+        BFS_Animation.updateSlider();
+        return BFS_Animation;
+    }
     DFS() {
         // Initialize graph styles, animation object and time
         this.graph.reset_colour();
@@ -79,30 +192,25 @@ class Algorithms {
         if (!this.graph.nodes)
             return null;
         let time = 0;
-        // // Show dtime and ftime for every node
-        // for (let node of this.graph.nodes) {
-        //     node.show_time_interval = true;
-        //     node.updateText();
-        // }
         const DFS_Visit = (node) => {
             // Increment time, set dtime, change node colour and add frame
             time++;
-            DFS_Animation.addFrame(node, "gray");
-            node.DFS_dtime = String(time);
-            node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
+            DFS_Animation.addNodeFrame({ target: node, new_colour: "gray" });
+            // node.DFS_dtime = String(time);
+            // node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
             // Recurse on undiscovered neighbours
             for (let { outEdge: edge, adj } of node.getOutEdges()) {
                 if (adj.colour === "white") {
                     // Change colour of connecting edge and add frame
-                    DFS_Animation.addFrame(edge, "black");
+                    DFS_Animation.addEdgeFrame({ target: edge, new_colour: "black" });
                     DFS_Visit(adj);
                 }
             }
             // Increment time, set ftime, change node colour and add frame
             time++;
-            node.DFS_ftime = String(time);
-            node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
-            DFS_Animation.addFrame(node, "black");
+            // node.DFS_ftime = String(time);
+            // node.time_interval_text.textContent = `[${node.DFS_dtime}, ${node.DFS_ftime}]`;
+            DFS_Animation.addNodeFrame({ target: node, new_colour: "black" });
         };
         // Run DFS on every undiscovered node
         for (let node of this.graph.nodes) {
@@ -114,70 +222,48 @@ class Algorithms {
         DFS_Animation.updateSlider();
         return DFS_Animation;
     }
-    BFS() {
-        this.graph.reset_colour();
-        let root = this.graph.get_first_selected();
-        if (!root)
-            return null;
-        const Q = [];
-        Q.push(root);
-        const BFS_Animation = new Animation(this.slider);
-        BFS_Animation.addFrame(root, "gray");
-        // Main BFS loop
-        while (Q.length > 0) {
-            // Dequeue next node and search all its neighbours
-            const node = Q.shift();
-            for (let { outEdge: edge, adj } of node.getOutEdges()) {
-                if (adj.colour === "white") {
-                    // Add frame to connecting endge and newly discovered node. Then enqueue
-                    BFS_Animation.addFrame(edge, "black");
-                    BFS_Animation.addFrame(adj, "gray");
-                    Q.push(adj);
-                }
-            }
-            // Mark node as fully searched
-            BFS_Animation.addFrame(node, "black");
-        }
-        this.graph.reset_colour();
-        BFS_Animation.updateSlider();
-        return BFS_Animation;
-    }
     Dijkstra() {
         const DijkstraAnimation = new Animation(this.slider);
         // Initialize graph
         this.graph.reset_colour();
-        this.graph.reset_distances();
         const root = this.graph.get_first_selected();
         if (!root)
             return null;
-        root.distance = 0;
+        // Initialize distance map
+        const distance = new WeakMap();
+        for (let node of this.graph.nodes)
+            distance.set(node, Infinity);
+        distance.set(root, 0);
         // Initialize min-priority-queue
-        const Q = new MinPriorityQueue((item, key) => (item.distance = key), (item) => item.distance);
+        const Q = new MinPriorityQueue((item, key) => distance.set(item, key), (item) => distance.get(item));
         Q.buildPriorityQueueOnArray(this.graph.nodes);
         // Main Dijsktra loop
         while (!Q.isEmpty()) {
             // Extract node with least distance that hasn't been search and colour gray
             const node = Q.extractMin();
-            DijkstraAnimation.addFrame(node, "gray");
+            DijkstraAnimation.addNodeFrame({ target: node, new_colour: "gray" });
             // Relax every adjacent edge
             for (let { outEdge: edge, adj } of node.getOutEdges()) {
-                if (adj.distance > node.distance + edge.weight) {
+                if (distance.get(adj) > distance.get(node) + edge.weight) {
                     // Update distance of the neighbour node and change colour of the edge
-                    DijkstraAnimation.addFrame(edge, "black");
-                    adj.distance = node.distance + edge.weight;
-                    Q.decreaseKey(Q.arr.indexOf(adj), adj.distance);
-                    // Unhighlight every other in edge
+                    DijkstraAnimation.addEdgeFrame({ target: edge, new_colour: "black" });
+                    distance.set(adj, distance.get(node) + edge.weight);
+                    Q.decreaseKey(Q.arr.indexOf(adj), distance.get(adj));
+                    // Unhighlight other in edge if exists
                     for (let { inEdge } of adj.getInEdges()) {
                         if (edge !== inEdge && inEdge.colour === "black") {
-                            DijkstraAnimation.addFrame(inEdge, "gray");
+                            DijkstraAnimation.addEdgeFrame({
+                                target: inEdge,
+                                new_colour: "gray",
+                                chain_to_previous: true,
+                            });
                         }
                     }
                 }
             }
-            DijkstraAnimation.addFrame(node, "black");
+            DijkstraAnimation.addNodeFrame({ target: node, new_colour: "black" });
         }
         this.graph.reset_colour();
-        this.graph.reset_distances();
         return DijkstraAnimation;
     }
     Kruskal() {
@@ -224,14 +310,14 @@ class Algorithms {
         clusters.init(this.graph.nodes);
         // Main Kruskal loop
         for (let edge of edges) {
-            KruskalAnimation.addFrame(edge, "orange");
+            KruskalAnimation.addEdgeFrame({ target: edge, new_colour: "orange" });
             if (!clusters.equal(edge.source, edge.destination)) {
                 // Merge clusters and select edge
                 clusters.merge(edge.source, edge.destination);
-                KruskalAnimation.addFrame(edge, "black");
+                KruskalAnimation.addEdgeFrame({ target: edge, new_colour: "black" });
             }
             else {
-                KruskalAnimation.addFrame(edge, "gray");
+                KruskalAnimation.addEdgeFrame({ target: edge, new_colour: "gray" });
             }
         }
         this.graph.reset_colour();

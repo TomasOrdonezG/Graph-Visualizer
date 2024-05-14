@@ -18,6 +18,7 @@ export default class Menu {
         this.DFS_Button = document.querySelector(".DFS-button");
         this.Dijkstra_Button = document.querySelector(".Dijkstra-button");
         this.Kruskal_Button = document.querySelector(".Kruskal-button");
+        this.test_button = document.querySelector(".test-button");
         this.HTML_directed_toggle = document.querySelector(".directed-switch");
         this.HTML_weighted_toggle = document.querySelector(".weighted-switch");
         // Animation menu HTML elements
@@ -80,6 +81,7 @@ export default class Menu {
             this.setWeighted(true);
             this.animate(this.algorithms.Kruskal.bind(this.algorithms));
         });
+        this.test_button.addEventListener("click", () => { });
         // * Toggles
         // Toggle events
         this.HTML_directed_toggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
@@ -141,8 +143,7 @@ export default class Menu {
             this.play_pause_animation_button.textContent = "▶";
             // Turn off text
             for (let node of this.graph.nodes) {
-                node.show_time_interval = false;
-                node.updateText();
+                node.updateShowText(false);
             }
         };
         const reset_animation = () => {
@@ -195,6 +196,7 @@ export default class Menu {
             return;
         this.graph.traversing = true;
         this.focusAnimationMenu();
+        this.currentAnimation.updateSlider();
     }
     // * TOP-RIGHT MENU
     topRightMenuEventListeners() {
@@ -203,6 +205,8 @@ export default class Menu {
         this.import_file_input.addEventListener("change", this.import_graph.bind(this));
     }
     export_graph() {
+        if (this.graph.traversing)
+            return;
         const json_graph = this.graph.jsonify();
         // Download the JSON for the user
         const json_string = JSON.stringify(json_graph, null, 2);
@@ -215,7 +219,7 @@ export default class Menu {
         document.body.removeChild(download_link);
     }
     import_graph() {
-        if (!this.import_file_input.files || this.import_file_input.files.length <= 0)
+        if (this.graph.traversing || !this.import_file_input.files || this.import_file_input.files.length <= 0)
             return;
         const file = this.import_file_input.files[0];
         if (!file)

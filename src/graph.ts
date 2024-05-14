@@ -114,7 +114,6 @@ export default class Graph {
         if (keyboardState.SHIFT && !keyboardState.CTRL) {
             for (let node of this.nodes) {
                 if (node.selected) {
-                    console.log("Connect");
                     node.connect(new_node);
                 }
             }
@@ -138,6 +137,8 @@ export default class Graph {
     }
 
     public delete_all_selected(): void {
+        if (this.traversing) return;
+
         // Delete selected nodes
         for (let i = this.nodes.length - 1; i >= 0; i--) {
             if (this.nodes[i].selected && this.nodes[i].div.getAttribute("contenteditable") === "false") {
@@ -149,6 +150,7 @@ export default class Graph {
     }
 
     public delete_all_nodes(): void {
+        if (this.traversing) return;
         for (let node of this.nodes) {
             node.select();
         }
@@ -216,12 +218,6 @@ export default class Graph {
 
     public sortNodes() {
         this.nodes.sort((a, b) => a.value - b.value);
-    }
-
-    public reset_distances(): void {
-        for (let node of this.nodes) {
-            node.distance = Infinity;
-        }
     }
 
     public jsonify() {
