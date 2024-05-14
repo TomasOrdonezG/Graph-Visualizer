@@ -55,7 +55,7 @@ Each one of these commands can also be done by clicking the corresponding button
 -   [BFS](https://en.wikipedia.org/wiki/Breadth-first_search)
 -   [DFS](https://en.wikipedia.org/wiki/Depth-first_search)
 -   [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)
-    -   Edge weights will be the set edge weights when the graph is weighted, otherwise it will be the cartesian distance between the nodes in the plane.
+    -   Considers Cartesian distance as edge weights when graph is unweighted.
 -   [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm)
 
 ## Future Plans
