@@ -94,7 +94,6 @@ class Graph {
         if (keyboardState.SHIFT && !keyboardState.CTRL) {
             for (let node of this.nodes) {
                 if (node.selected) {
-                    console.log("Connect");
                     node.connect(new_node);
                 }
             }
@@ -115,6 +114,8 @@ class Graph {
         }
     }
     delete_all_selected() {
+        if (this.traversing)
+            return;
         // Delete selected nodes
         for (let i = this.nodes.length - 1; i >= 0; i--) {
             if (this.nodes[i].selected && this.nodes[i].div.getAttribute("contenteditable") === "false") {
@@ -126,6 +127,8 @@ class Graph {
         this.sortNodes();
     }
     delete_all_nodes() {
+        if (this.traversing)
+            return;
         for (let node of this.nodes) {
             node.select();
         }
@@ -184,11 +187,6 @@ class Graph {
     }
     sortNodes() {
         this.nodes.sort((a, b) => a.value - b.value);
-    }
-    reset_distances() {
-        for (let node of this.nodes) {
-            node.distance = Infinity;
-        }
     }
     jsonify() {
         // Construct adjacency matrix

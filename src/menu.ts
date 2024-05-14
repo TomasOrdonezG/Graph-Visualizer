@@ -13,6 +13,7 @@ export default class Menu {
     private DFS_Button = document.querySelector(".DFS-button") as HTMLButtonElement;
     private Dijkstra_Button = document.querySelector(".Dijkstra-button") as HTMLButtonElement;
     private Kruskal_Button = document.querySelector(".Kruskal-button") as HTMLButtonElement;
+    private test_button = document.querySelector(".test-button") as HTMLButtonElement;
 
     private HTML_directed_toggle = document.querySelector(".directed-switch") as HTMLInputElement;
     private HTML_weighted_toggle = document.querySelector(".weighted-switch") as HTMLInputElement;
@@ -60,6 +61,8 @@ export default class Menu {
             this.setWeighted(true);
             this.animate(this.algorithms.Kruskal.bind(this.algorithms));
         });
+
+        this.test_button.addEventListener("click", () => {});
 
         // * Toggles
         // Toggle events
@@ -136,8 +139,7 @@ export default class Menu {
 
             // Turn off text
             for (let node of this.graph.nodes) {
-                node.show_time_interval = false;
-                node.updateText();
+                node.updateShowText(false);
             }
         };
         const reset_animation = (): void => {
@@ -191,6 +193,7 @@ export default class Menu {
         if (!this.currentAnimation) return;
         this.graph.traversing = true;
         this.focusAnimationMenu();
+        this.currentAnimation.updateSlider();
     }
 
     // * TOP-RIGHT MENU
@@ -201,6 +204,7 @@ export default class Menu {
     }
 
     private export_graph(): void {
+        if (this.graph.traversing) return;
         const json_graph = this.graph.jsonify();
 
         // Download the JSON for the user
@@ -215,7 +219,7 @@ export default class Menu {
     }
 
     private import_graph(): void {
-        if (!this.import_file_input.files || this.import_file_input.files.length <= 0) return;
+        if (this.graph.traversing || !this.import_file_input.files || this.import_file_input.files.length <= 0) return;
         const file = this.import_file_input.files[0];
         if (!file) return;
 
