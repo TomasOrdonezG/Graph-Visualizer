@@ -1,6 +1,6 @@
 import Graph from "./graph";
 import GraphNode from "./graphNode.js";
-import Edge from "./edge";
+import Edge from "./edge.js";
 import { MinPriorityQueue } from "./minPQ.js";
 
 type Change<T> = { before: T; after: T };
@@ -8,6 +8,10 @@ type Frame<Target extends GraphNode | Edge> = {
     target: Target;
     colour?: Change<string>;
     chain_to_previous?: boolean;
+    script?: {
+        do: () => any;
+        undo: () => any;
+    };
 } & (Target extends GraphNode
     ? {
           border_colour?: Change<string>;
@@ -20,6 +24,10 @@ type NewFrame<Target extends GraphNode | Edge> = {
     target: Target;
     new_colour?: string;
     chain_to_previous?: boolean;
+    script?: {
+        do: () => any;
+        undo: () => any;
+    };
 } & (Target extends GraphNode
     ? { new_border_colour?: string; new_show_text?: boolean; new_text?: string; new_text_colour?: string }
     : { new_weight?: number });
@@ -46,13 +54,14 @@ export default class Animation {
         const { target } = new_frame;
         const frame: Frame<GraphNode> = { target };
 
-        // Update chain_to_previous
+        // Update chain_to_previous and script
         frame.chain_to_previous = new_frame.chain_to_previous;
+        frame.script = new_frame.script;
 
         // Updates frame and node attributes
         const update = <T extends string | boolean>(
-            new_frame_att: Exclude<keyof NewFrame<GraphNode>, "target" | "chain_to_previous">,
-            attribute: Exclude<keyof Frame<GraphNode>, "target" | "chain_to_previous">,
+            new_frame_att: Exclude<keyof NewFrame<GraphNode>, "target" | "chain_to_previous" | "script">,
+            attribute: Exclude<keyof Frame<GraphNode>, "target" | "chain_to_previous" | "script">,
             updateMethod: (val: T) => void
         ) => {
             // Check if this attribute is being changed
@@ -70,7 +79,10 @@ export default class Animation {
         };
 
         // Update all attributes
-        const update_args: [Exclude<keyof Frame<GraphNode>, "target" | "chain_to_previous">, (val: any) => void][] = [
+        const update_args: [
+            Exclude<keyof Frame<GraphNode>, "target" | "chain_to_previous" | "script">,
+            (val: any) => void
+        ][] = [
             ["colour", target.updateColour.bind(target)],
             ["border_colour", target.updateBorderColour.bind(target)],
             ["show_text", target.updateShowText.bind(target)],
@@ -92,11 +104,12 @@ export default class Animation {
 
         // Update chain_to_previous
         frame.chain_to_previous = new_frame.chain_to_previous;
+        frame.script = new_frame.script;
 
         // Updates frame and edge attributes
         const update = <T extends string | boolean>(
-            new_frame_att: Exclude<keyof NewFrame<Edge>, "target" | "chain_to_previous">,
-            attribute: Exclude<keyof Frame<Edge>, "target" | "chain_to_previous">,
+            new_frame_att: Exclude<keyof NewFrame<Edge>, "target" | "chain_to_previous" | "script">,
+            attribute: Exclude<keyof Frame<Edge>, "target" | "chain_to_previous" | "script">,
             updateMethod: (val: T) => void
         ) => {
             // Check if this attribute is being changed
@@ -114,7 +127,10 @@ export default class Animation {
         };
 
         // Update all attributes
-        const update_args: [Exclude<keyof Frame<Edge>, "target" | "chain_to_previous">, (val: any) => void][] = [
+        const update_args: [
+            Exclude<keyof Frame<Edge>, "target" | "chain_to_previous" | "script">,
+            (val: any) => void
+        ][] = [
             ["colour", target.updateColour.bind(target)],
             ["weight", target.updateWeight.bind(target)],
         ];
@@ -140,6 +156,8 @@ export default class Animation {
     public next_frame(): boolean {
         if (this.curr_index >= this.length) return false;
         const frame = this.frames[this.curr_index];
+
+        if (frame.script !== undefined) frame.script.do();
 
         if ((frame.target as GraphNode).value !== undefined) {
             // * GraphNode frame
@@ -171,6 +189,8 @@ export default class Animation {
         if (this.curr_index <= 0) return false;
         this.curr_index--;
         const frame = this.frames[this.curr_index];
+
+        if (frame.script !== undefined) frame.script.undo();
 
         if ((frame.target as GraphNode).value !== undefined) {
             // * GraphNode frame
@@ -251,16 +271,17 @@ class Algorithms {
         // dtime and ftime maps
         const dtime = new WeakMap<GraphNode, number | null>();
         const ftime = new WeakMap<GraphNode, number | null>();
-        for (let node of this.graph.nodes) dtime.set(node, null);
-        for (let node of this.graph.nodes) ftime.set(node, null);
-
-        // Show dtime and ftime text
         const interval = (node: GraphNode): string => {
             const dt = dtime.get(node);
             const ft = ftime.get(node);
             return `[${dt ? dt : "_"}, ${ft ? ft : "_"}]`;
         };
         for (let node of this.graph.nodes) {
+            // Initialize dtime, ftime
+            dtime.set(node, null);
+            ftime.set(node, null);
+
+            // Show dtime and ftime text
             DFS_Animation.addNodeFrame({
                 target: node,
                 new_show_text: true,
@@ -439,6 +460,171 @@ class Algorithms {
         }
 
         return KruskalAnimation;
+    }
+
+    public FindSCCs(): Animation | null {
+        const SCCs_Animation = new Animation(this.slider);
+
+        // Initialize node ftime map
+        const ftime = new WeakMap<GraphNode, number | null>();
+        const get_ftime = (node: GraphNode): number => ftime.get(node) as number;
+        for (let node of this.graph.nodes) ftime.set(node, null);
+
+        // * Run DFS in normal order
+        let time = 0;
+        const DFS_Visit = (node: GraphNode): void => {
+            SCCs_Animation.addNodeFrame({ target: node, new_colour: "gray" });
+            for (let { outEdge, adj } of node.getOutEdges()) {
+                if (adj.colour === "white") {
+                    SCCs_Animation.addEdgeFrame({ target: outEdge, new_colour: "black" });
+                    DFS_Visit(adj);
+                }
+            }
+            time++;
+            ftime.set(node, time);
+            SCCs_Animation.addNodeFrame({
+                target: node,
+                new_colour: "black",
+                new_text_colour: "red",
+                new_show_text: true,
+                new_text: get_ftime(node).toString(),
+            });
+        };
+        for (let node of this.graph.nodes) {
+            if (node.colour === "white") {
+                DFS_Visit(node);
+            }
+        }
+
+        // * Compute G^T (by reversing all edges)
+        const reverse_all_edges = (): void => {
+            // Reverse function
+            const reverse = (edge: Edge) => {
+                // Update out_edges and in_edges arrays for source and destination
+                const source = edge.source;
+                source.in_edges.push(edge);
+                source.out_edges.splice(source.out_edges.indexOf(edge), 1);
+
+                const destination = edge.destination;
+                destination.out_edges.push(edge);
+                destination.in_edges.splice(destination.in_edges.indexOf(edge), 1);
+
+                // Swap source and destination nodes
+                const temp: GraphNode = edge.source;
+                edge.source = edge.destination;
+                edge.destination = temp;
+
+                // Update attributes
+                edge.linkNodesPos();
+                edge.source.sortNeighbours();
+                edge.destination.sortNeighbours();
+            };
+
+            // Keep track of which edges have already been reversed
+            const reversed = new WeakMap<Edge, boolean>();
+            for (let node of this.graph.nodes) {
+                for (let out_edge of node.out_edges) {
+                    reversed.set(out_edge, false);
+                }
+            }
+
+            // Find all edges
+            const all_edges: Edge[] = [];
+            for (let node of this.graph.nodes) {
+                for (let out_edge of node.out_edges) {
+                    all_edges.push(out_edge);
+                }
+            }
+
+            // Reverse all edges
+            for (let i = 0; i < all_edges.length; i++) {
+                // Check if edge has already been reversed
+                if (reversed.get(all_edges[i]) as boolean) continue;
+
+                // Add script as frames
+                SCCs_Animation.addEdgeFrame({
+                    target: all_edges[i],
+                    script: { do: () => reverse(all_edges[i]), undo: () => reverse(all_edges[i]) },
+                    chain_to_previous: i !== 0,
+                });
+                reverse(all_edges[i]);
+                reversed.set(all_edges[i], true);
+            }
+        };
+        reverse_all_edges();
+
+        // * Reset colours
+        for (let i = 0; i < this.graph.nodes.length; i++) {
+            // Nodes
+            SCCs_Animation.addNodeFrame({
+                target: this.graph.nodes[i],
+                new_colour: "white",
+                chain_to_previous: i !== 0,
+            });
+
+            for (let out_edge of this.graph.nodes[i].out_edges) {
+                // Edges
+                SCCs_Animation.addEdgeFrame({
+                    target: out_edge,
+                    new_colour: Edge.DEFAULT_COLOUR,
+                    chain_to_previous: true,
+                });
+            }
+        }
+
+        // * Run DFS on G^T in order ftime decreasing and separate each tree in the DFS forest
+        const SCCs: GraphNode[][] = [];
+        const DFS_Visit_ftime_desc = (node: GraphNode, SCC: GraphNode[]): void => {
+            // Colour node as discovered and add node to current SCC
+            SCCs_Animation.addNodeFrame({ target: node, new_colour: "gray" });
+            SCC.push(node);
+
+            // get all out edges sorted by ftime descending
+            let out_edges = node.getOutEdges();
+            out_edges = out_edges.sort(({ adj: adj1 }, { adj: adj2 }) => get_ftime(adj2) - get_ftime(adj1));
+
+            // Recurse on undiscovered neighbours
+            for (let { outEdge, adj } of out_edges) {
+                if (adj.colour === "white") {
+                    SCCs_Animation.addEdgeFrame({ target: outEdge, new_colour: "black" });
+                    DFS_Visit_ftime_desc(adj, SCC);
+                }
+            }
+            SCCs_Animation.addNodeFrame({ target: node, new_colour: "black" });
+        };
+        for (let node of this.graph.nodes.sort((a, b) => get_ftime(b) - get_ftime(a))) {
+            if (node.colour === "white") {
+                const SCC: GraphNode[] = [];
+                DFS_Visit_ftime_desc(node, SCC);
+                SCCs.push(SCC);
+            }
+        }
+
+        // * Compute G^T^T to return the graph to normal and turn off ftime
+        reverse_all_edges();
+        for (let node of this.graph.nodes) {
+            SCCs_Animation.addNodeFrame({
+                target: node,
+                new_show_text: false,
+                chain_to_previous: true,
+            });
+        }
+
+        // * Separate each tree in the DFS forest into a group by colour
+        const hue_interval: number = 360 / SCCs.length;
+        let first: boolean = true;
+        for (let i = 0; i < SCCs.length; i++) {
+            for (let node of SCCs[i]) {
+                SCCs_Animation.addNodeFrame({
+                    target: node,
+                    new_colour: `hsl(${i * hue_interval}, 100%, 65%)`,
+                    chain_to_previous: !first,
+                });
+                first = false;
+            }
+        }
+
+        return SCCs_Animation;
     }
 }
 

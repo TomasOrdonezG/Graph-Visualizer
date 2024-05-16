@@ -361,7 +361,7 @@ export default class GraphNode {
         return new_edge;
     }
 
-    private sortNeighbours() {
+    public sortNeighbours() {
         this.out_edges.sort((a, b) => a.destination.value - b.destination.value);
         this.in_edges.sort((a, b) => a.source.value - b.source.value);
     }
