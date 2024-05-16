@@ -57,13 +57,13 @@ Each one of these commands can also be done by clicking the corresponding button
 -   [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)
     -   Considers Cartesian distance as edge weights when graph is unweighted.
 -   [Kruskal's Algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm)
+-   Find [Strongly Connected Components (SCC)](https://en.wikipedia.org/wiki/Strongly_connected_component) of the graph.
 
 ## Future Plans
 
 ### Animations
 
 -   Check if the graph is a [Directed Acyclic Graph (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph) using DFS.
--   Find [Strongly Connected Components (SCC)](https://en.wikipedia.org/wiki/Strongly_connected_component) of the graph.
 -   Find a [Topological Order](https://en.wikipedia.org/wiki/Topological_sorting) of the graph using DFS.
 -   Create a [Heap](<https://en.wikipedia.org/wiki/Heap_(data_structure)>).
 -   Create a [Binary Search Tree (BST)](https://en.wikipedia.org/wiki/Binary_search_tree).

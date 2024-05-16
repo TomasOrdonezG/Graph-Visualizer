@@ -18,7 +18,7 @@ export default class Menu {
         this.DFS_Button = document.querySelector(".DFS-button");
         this.Dijkstra_Button = document.querySelector(".Dijkstra-button");
         this.Kruskal_Button = document.querySelector(".Kruskal-button");
-        this.test_button = document.querySelector(".test-button");
+        this.SCCs_Button = document.querySelector(".SCCs-button");
         this.HTML_directed_toggle = document.querySelector(".directed-switch");
         this.HTML_weighted_toggle = document.querySelector(".weighted-switch");
         // Animation menu HTML elements
@@ -80,7 +80,10 @@ export default class Menu {
             this.setWeighted(true);
             this.animate(this.algorithms.Kruskal.bind(this.algorithms));
         });
-        this.test_button.addEventListener("click", () => { });
+        this.SCCs_Button.addEventListener("click", () => {
+            this.setDirected(true);
+            this.animate(this.algorithms.FindSCCs.bind(this.algorithms));
+        });
         // * Toggles
         // Toggle events
         this.HTML_directed_toggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
@@ -234,7 +237,6 @@ export default class Menu {
                 if (!Object.keys(jsonData).includes("vertices") ||
                     !Object.keys(jsonData).includes("adjacency_matrix") ||
                     !Object.keys(jsonData).includes("settings")) {
-                    console.log(jsonData);
                     window.alert("JSON file is in the wrong format. Unable to load graph");
                     return;
                 }
