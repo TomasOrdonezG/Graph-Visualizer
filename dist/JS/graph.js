@@ -203,7 +203,7 @@ class Graph {
                     next_adj_i++;
                 }
                 else {
-                    row.push(null); // Cade node2 is not a neighbour of node1
+                    row.push(null); // Case node2 is not a neighbour of node1
                 }
             }
             adjacency_matrix.push(row);
@@ -241,6 +241,7 @@ class Graph {
                 }
             }
         }
+        this.deselect_all();
     }
     // Selection box methods
     hide_selection_box() {

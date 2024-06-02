@@ -231,12 +231,12 @@ export default class Graph {
             let next_adj_i = 0; // Keep track of the next adjacent edge index
 
             for (let node2 of this.nodes) {
-                const next_out_edge = node1.out_edges[next_adj_i];
+                const next_out_edge: Edge = node1.out_edges[next_adj_i];
                 if (next_out_edge && next_out_edge.destination === node2) {
                     row.push(next_out_edge.weight); // Push weight when node2 is a neighbour of node1
                     next_adj_i++;
                 } else {
-                    row.push(null); // Cade node2 is not a neighbour of node1
+                    row.push(null); // Case node2 is not a neighbour of node1
                 }
             }
             adjacency_matrix.push(row);
@@ -280,6 +280,8 @@ export default class Graph {
                 }
             }
         }
+
+        this.deselect_all();
     }
 
     // Selection box methods

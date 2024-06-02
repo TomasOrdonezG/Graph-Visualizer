@@ -208,6 +208,7 @@ export default class Menu {
         this.import_file_input.addEventListener("change", this.import_graph.bind(this));
     }
     export_graph() {
+        this.graph.sortNodes();
         if (this.graph.traversing)
             return;
         const json_graph = this.graph.jsonify();

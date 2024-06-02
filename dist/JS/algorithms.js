@@ -537,6 +537,7 @@ class Algorithms {
                 first = false;
             }
         }
+        this.graph.sortNodes();
         return SCCs_Animation;
     }
 }
