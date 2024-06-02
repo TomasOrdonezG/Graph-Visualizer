@@ -276,7 +276,10 @@ export default class Graph {
                 const adj = this.nodes[j];
                 const weight: number | null = graph_content.adjacency_matrix[i][j];
                 if (weight) {
-                    target_node.connect(adj);
+                    const new_edge: Edge | null = target_node.connect(adj);
+                    if (new_edge) {
+                        new_edge.updateWeight(weight);
+                    }
                 }
             }
         }

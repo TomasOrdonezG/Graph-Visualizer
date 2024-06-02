@@ -237,7 +237,10 @@ class Graph {
                 const adj = this.nodes[j];
                 const weight = graph_content.adjacency_matrix[i][j];
                 if (weight) {
-                    target_node.connect(adj);
+                    const new_edge = target_node.connect(adj);
+                    if (new_edge) {
+                        new_edge.updateWeight(weight);
+                    }
                 }
             }
         }
