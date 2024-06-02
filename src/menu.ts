@@ -207,6 +207,7 @@ export default class Menu {
     }
 
     private export_graph(): void {
+        this.graph.sortNodes();
         if (this.graph.traversing) return;
         const json_graph = this.graph.jsonify();
 

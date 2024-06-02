@@ -624,6 +624,7 @@ class Algorithms {
             }
         }
 
+        this.graph.sortNodes();
         return SCCs_Animation;
     }
 }
