@@ -30,6 +30,7 @@ export default class Menu {
     private moveButton = document.querySelector(".action-move") as HTMLButtonElement;
     private linkButton = document.querySelector(".action-link") as HTMLButtonElement;
     private deleteButton = document.querySelector(".action-delete") as HTMLButtonElement;
+    private actionButtons = [this.cursorButton, this.addButton, this.moveButton, this.linkButton, this.deleteButton];
 
     // Animation menu HTML elements
     private animationSideNav = document.querySelector(".animation-menu") as HTMLDivElement;
@@ -76,7 +77,33 @@ export default class Menu {
     }
 
     // * ACTION MENU
-    private actionMenuEventListeners() {}
+    private actionMenuEventListeners() {
+        for (let button of this.actionButtons) {
+            button.addEventListener("click", () => {
+                // Unselected all buttons
+                for (let button of this.actionButtons) {
+                    button.classList.remove("selected");
+                }
+
+                // Select this button
+                button.classList.add("selected");
+
+                // Set the graph action mode based on the button selected
+                switch (button) {
+                    case this.cursorButton:
+                        break;
+                    case this.addButton:
+                        break;
+                    case this.moveButton:
+                        break;
+                    case this.linkButton:
+                        break;
+                    case this.deleteButton:
+                        break;
+                }
+            });
+        }
+    }
 
     // * MAIN SIDE MENU
     private mainMenuEventListeners() {

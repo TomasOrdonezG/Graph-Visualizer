@@ -33,6 +33,7 @@ export default class Menu {
         this.moveButton = document.querySelector(".action-move");
         this.linkButton = document.querySelector(".action-link");
         this.deleteButton = document.querySelector(".action-delete");
+        this.actionButtons = [this.cursorButton, this.addButton, this.moveButton, this.linkButton, this.deleteButton];
         // Animation menu HTML elements
         this.animationSideNav = document.querySelector(".animation-menu");
         this.prevFrameButton = document.querySelector(".prev-frame");
@@ -92,7 +93,31 @@ export default class Menu {
         this.actionMenu.style.display = "none";
     }
     // * ACTION MENU
-    actionMenuEventListeners() { }
+    actionMenuEventListeners() {
+        for (let button of this.actionButtons) {
+            button.addEventListener("click", () => {
+                // Unselected all buttons
+                for (let button of this.actionButtons) {
+                    button.classList.remove("selected");
+                }
+                // Select this button
+                button.classList.add("selected");
+                // Set the graph action mode based on the button selected
+                switch (button) {
+                    case this.cursorButton:
+                        break;
+                    case this.addButton:
+                        break;
+                    case this.moveButton:
+                        break;
+                    case this.linkButton:
+                        break;
+                    case this.deleteButton:
+                        break;
+                }
+            });
+        }
+    }
     // * MAIN SIDE MENU
     mainMenuEventListeners() {
         // * Animation buttons
