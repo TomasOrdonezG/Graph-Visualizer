@@ -246,6 +246,7 @@ export default class Menu {
         if (!this.currentAnimation) return;
         this.graph.reset_all_attributes();
         this.graph.traversing = true;
+        this.graph.action = Action.CURSOR;
         this.focusAnimationMenus();
         this.currentAnimation.updateSlider();
     }

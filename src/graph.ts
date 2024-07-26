@@ -54,9 +54,11 @@ export default class Graph {
             if (event.button === 0 && !(event.target as HTMLElement).closest(".pan")) {
                 // Handle right down state
                 this.isLeftMouseDown = true;
-                this.deselect_all();
+                if ([Action.MOVE, Action.DELETE].includes(this.action)) {
+                    this.deselect_all();
+                }
 
-                if ([Action.CURSOR, Action.MOVE, Action.DELETE].includes(this.action)) {
+                if (this.action !== Action.ADD) {
                     this.show_selection_box(event.clientX, event.clientY);
                 }
             } else if (event.button === 2) {
@@ -79,12 +81,12 @@ export default class Graph {
             if (event.button === 0) {
                 this.isLeftMouseDown = false;
 
-                if ([Action.CURSOR, Action.MOVE, Action.DELETE].includes(this.action)) {
+                if (this.action !== Action.ADD) {
                     this.select_content_inside_selection_box();
                     this.hide_selection_box();
                 }
 
-                if (this.action === Action.CURSOR) {
+                if (this.action === Action.CURSOR || this.action === Action.LINK) {
                     // Add node when selection div is small and not clicking another node
                     if (
                         parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
@@ -112,7 +114,7 @@ export default class Graph {
         this.HTML_Container.addEventListener("mousemove", (event: MouseEvent): void => {
             if (this.isLeftMouseDown) {
                 // Handle left click drag
-                if ([Action.CURSOR, Action.MOVE, Action.DELETE].includes(this.action)) {
+                if (this.action !== Action.ADD) {
                     this.resize_selection_box(event.clientX, event.clientY);
                 }
             }
