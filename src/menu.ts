@@ -7,29 +7,37 @@ export default class Menu {
     private algorithms: Algorithms;
     public currentAnimation: Animation | null = null;
 
-    // Main menu HTML elements
+    // Main menu HTML elements (left)
     private mainSideNav = document.querySelector(".graph-sidenav") as HTMLDivElement;
     private BFS_Button = document.querySelector(".BFS-button") as HTMLButtonElement;
     private DFS_Button = document.querySelector(".DFS-button") as HTMLButtonElement;
-    private Dijkstra_Button = document.querySelector(".Dijkstra-button") as HTMLButtonElement;
-    private Kruskal_Button = document.querySelector(".Kruskal-button") as HTMLButtonElement;
-    private SCCs_Button = document.querySelector(".SCCs-button") as HTMLButtonElement;
+    private DijkstraButton = document.querySelector(".Dijkstra-button") as HTMLButtonElement;
+    private KruskalButton = document.querySelector(".Kruskal-button") as HTMLButtonElement;
+    private SCCsButton = document.querySelector(".SCCs-button") as HTMLButtonElement;
+    private HTMLdirectedToggle = document.querySelector(".directed-switch") as HTMLInputElement;
+    private HTMLweightedToggle = document.querySelector(".weighted-switch") as HTMLInputElement;
 
-    private HTML_directed_toggle = document.querySelector(".directed-switch") as HTMLInputElement;
-    private HTML_weighted_toggle = document.querySelector(".weighted-switch") as HTMLInputElement;
+    // Top-Right menu HTML elements
+    private topRightMenu = document.querySelector(".top-right-menu") as HTMLDivElement;
+    private importFileInput = document.querySelector(".import-input") as HTMLInputElement;
+    private exportButton = document.querySelector(".export-button") as HTMLDivElement;
+    private resetGraphButton = document.querySelector(".reset-graph-button") as HTMLDivElement;
+
+    // Action menu (right)
+    private actionMenu = document.querySelector(".action-menu") as HTMLDivElement;
+    private cursorButton = document.querySelector(".action-cursor") as HTMLButtonElement;
+    private addButton = document.querySelector(".action-add") as HTMLButtonElement;
+    private moveButton = document.querySelector(".action-move") as HTMLButtonElement;
+    private linkButton = document.querySelector(".action-link") as HTMLButtonElement;
+    private deleteButton = document.querySelector(".action-delete") as HTMLButtonElement;
 
     // Animation menu HTML elements
     private animationSideNav = document.querySelector(".animation-menu") as HTMLDivElement;
-    private prev_frame_button = document.querySelector(".prev-frame") as HTMLButtonElement;
-    private play_pause_animation_button = document.querySelector(".play-pause") as HTMLButtonElement;
-    private next_frame_button = document.querySelector(".next-frame") as HTMLButtonElement;
-    private stop_animation_button = document.querySelector(".stop") as HTMLButtonElement;
-    private reset_animation_button = document.querySelector(".reset") as HTMLButtonElement;
-
-    // Top-Right menu HTML elements
-    private import_file_input = document.querySelector(".import-input") as HTMLInputElement;
-    private export_button = document.querySelector(".export-button") as HTMLDivElement;
-    private reset_graph_button = document.querySelector(".reset-graph-button") as HTMLDivElement;
+    private prevFrameButton = document.querySelector(".prev-frame") as HTMLButtonElement;
+    private playPauseAnimationButton = document.querySelector(".play-pause") as HTMLButtonElement;
+    private nextFrameButton = document.querySelector(".next-frame") as HTMLButtonElement;
+    private stopAnimationButton = document.querySelector(".stop") as HTMLButtonElement;
+    private resetAnimationButton = document.querySelector(".reset") as HTMLButtonElement;
 
     // #endregion
 
@@ -41,8 +49,34 @@ export default class Menu {
         this.animationMenuEventListeners();
         this.mainMenuEventListeners();
         this.topRightMenuEventListeners();
-        this.focusMainMenu();
+        this.actionMenuEventListeners();
+
+        this.focusEditingMenus();
     }
+
+    private focusEditingMenus() {
+        // Show editing menus
+        this.mainSideNav.style.display = "";
+        this.topRightMenu.style.display = "";
+        this.actionMenu.style.display = "";
+
+        // Hide animation menus
+        this.animationSideNav.style.display = "none";
+    }
+
+    private focusAnimationMenus() {
+        // Show animation menus
+        if (!this.currentAnimation) return;
+        this.animationSideNav.style.display = "";
+
+        // Hide editing menus
+        this.mainSideNav.style.display = "none";
+        this.topRightMenu.style.display = "none";
+        this.actionMenu.style.display = "none";
+    }
+
+    // * ACTION MENU
+    private actionMenuEventListeners() {}
 
     // * MAIN SIDE MENU
     private mainMenuEventListeners() {
@@ -53,53 +87,46 @@ export default class Menu {
         this.DFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.DFS.bind(this.algorithms));
         });
-        this.Dijkstra_Button.addEventListener("click", () => {
+        this.DijkstraButton.addEventListener("click", () => {
             this.animate(this.algorithms.Dijkstra.bind(this.algorithms));
         });
-        this.Kruskal_Button.addEventListener("click", () => {
+        this.KruskalButton.addEventListener("click", () => {
             this.setWeighted(true);
             this.animate(this.algorithms.Kruskal.bind(this.algorithms));
         });
 
-        this.SCCs_Button.addEventListener("click", () => {
+        this.SCCsButton.addEventListener("click", () => {
             this.setDirected(true);
             this.animate(this.algorithms.FindSCCs.bind(this.algorithms));
         });
 
         // * Toggles
         // Toggle events
-        this.HTML_directed_toggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
-        this.HTML_weighted_toggle.addEventListener("click", this.graph.toggle_weighted.bind(this.graph));
+        this.HTMLdirectedToggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
+        this.HTMLweightedToggle.addEventListener("click", this.graph.toggle_weighted.bind(this.graph));
 
         // Check if toggles checks (checkboxes) align with default graph states
-        if (this.HTML_directed_toggle.checked !== this.graph.directed) this.graph.toggle_directed();
-        if (this.HTML_weighted_toggle.checked !== this.graph.weighted) this.graph.toggle_weighted();
+        if (this.HTMLdirectedToggle.checked !== this.graph.directed) this.graph.toggle_directed();
+        if (this.HTMLweightedToggle.checked !== this.graph.weighted) this.graph.toggle_weighted();
     }
     private setWeighted = (on: boolean): void => {
         if (on) {
-            this.HTML_weighted_toggle.checked = true;
+            this.HTMLweightedToggle.checked = true;
             if (!this.graph.weighted) this.graph.toggle_weighted();
         } else {
-            this.HTML_weighted_toggle.checked = false;
+            this.HTMLweightedToggle.checked = false;
             if (this.graph.weighted) this.graph.toggle_weighted();
         }
     };
     private setDirected = (on: boolean): void => {
         if (on) {
-            this.HTML_directed_toggle.checked = true;
+            this.HTMLdirectedToggle.checked = true;
             if (!this.graph.directed) this.graph.toggle_directed();
         } else {
-            this.HTML_directed_toggle.checked = false;
+            this.HTMLdirectedToggle.checked = false;
             if (this.graph.directed) this.graph.toggle_directed();
         }
     };
-    private focusMainMenu() {
-        this.mainSideNav.style.display = "";
-        this.hideAnimationMenu();
-    }
-    private hideMainMenu() {
-        this.mainSideNav.style.display = "none";
-    }
 
     // * ANIMATION MENU
     private animationMenuEventListeners() {
@@ -114,17 +141,17 @@ export default class Menu {
         const play_pause_animation = async (): Promise<void> => {
             // Toggle playing attribute of the current animation
             if (!this.currentAnimation) return;
-            if (this.play_pause_animation_button.textContent === "▶") {
+            if (this.playPauseAnimationButton.textContent === "▶") {
                 if (this.currentAnimation.curr_index === this.currentAnimation.length) {
                     this.currentAnimation.curr_index = 0;
                     this.graph.reset_all_attributes();
                     this.currentAnimation.updateSlider();
                 }
-                this.play_pause_animation_button.textContent = "⏸";
+                this.playPauseAnimationButton.textContent = "⏸";
                 await this.currentAnimation.play();
-                this.play_pause_animation_button.textContent = "▶";
+                this.playPauseAnimationButton.textContent = "▶";
             } else {
-                this.play_pause_animation_button.textContent = "▶";
+                this.playPauseAnimationButton.textContent = "▶";
                 this.currentAnimation.pause();
             }
         };
@@ -132,12 +159,12 @@ export default class Menu {
             if (!this.currentAnimation) return;
 
             // Removes the current animation and resets all nodes
-            this.focusMainMenu();
+            this.focusEditingMenus();
             this.currentAnimation?.pause();
             this.currentAnimation = null;
             this.graph.traversing = false;
             this.graph.reset_all_attributes();
-            this.play_pause_animation_button.textContent = "▶";
+            this.playPauseAnimationButton.textContent = "▶";
 
             // Turn off text
             for (let node of this.graph.nodes) {
@@ -151,16 +178,16 @@ export default class Menu {
             this.graph.reset_all_attributes();
             this.currentAnimation.updateSlider();
 
-            this.play_pause_animation_button.textContent = "▶";
+            this.playPauseAnimationButton.textContent = "▶";
             this.currentAnimation.playing = false;
         };
 
         // Animation controls with buttons
-        this.prev_frame_button.addEventListener("click", prev_frame);
-        this.next_frame_button.addEventListener("click", next_frame);
-        this.play_pause_animation_button.addEventListener("click", play_pause_animation);
-        this.stop_animation_button.addEventListener("click", stop_animation);
-        this.reset_animation_button.addEventListener("click", reset_animation);
+        this.prevFrameButton.addEventListener("click", prev_frame);
+        this.nextFrameButton.addEventListener("click", next_frame);
+        this.playPauseAnimationButton.addEventListener("click", play_pause_animation);
+        this.stopAnimationButton.addEventListener("click", stop_animation);
+        this.resetAnimationButton.addEventListener("click", reset_animation);
 
         // Animation controls with keyboard
         document.addEventListener("keydown", (event: KeyboardEvent): void => {
@@ -181,31 +208,22 @@ export default class Menu {
             }
         });
     }
-    private focusAnimationMenu() {
-        if (!this.currentAnimation) return;
-        this.animationSideNav.style.display = "";
-        this.hideMainMenu();
-    }
-    private hideAnimationMenu() {
-        this.animationSideNav.style.display = "none";
-    }
     private animate(algorithm: () => Animation | null) {
         // Get animation object and focus on the animation menu
         this.currentAnimation = algorithm();
         if (!this.currentAnimation) return;
         this.graph.reset_all_attributes();
         this.graph.traversing = true;
-        this.focusAnimationMenu();
+        this.focusAnimationMenus();
         this.currentAnimation.updateSlider();
     }
 
     // * TOP-RIGHT MENU
     private topRightMenuEventListeners(): void {
-        this.reset_graph_button.addEventListener("click", this.graph.delete_all_nodes.bind(this.graph));
-        this.export_button.addEventListener("click", this.export_graph.bind(this));
-        this.import_file_input.addEventListener("change", this.import_graph.bind(this));
+        this.resetGraphButton.addEventListener("click", this.graph.delete_all_nodes.bind(this.graph));
+        this.exportButton.addEventListener("click", this.export_graph.bind(this));
+        this.importFileInput.addEventListener("change", this.import_graph.bind(this));
     }
-
     private export_graph(): void {
         if (this.graph.traversing) return;
         const json_graph = this.graph.jsonify();
@@ -220,10 +238,9 @@ export default class Menu {
         download_link.click();
         document.body.removeChild(download_link);
     }
-
     private import_graph(): void {
-        if (this.graph.traversing || !this.import_file_input.files || this.import_file_input.files.length <= 0) return;
-        const file = this.import_file_input.files[0];
+        if (this.graph.traversing || !this.importFileInput.files || this.importFileInput.files.length <= 0) return;
+        const file = this.importFileInput.files[0];
         if (!file) return;
 
         // Read file

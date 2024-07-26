@@ -12,46 +12,54 @@ export default class Menu {
     // #endregion
     constructor(graph) {
         this.currentAnimation = null;
-        // Main menu HTML elements
+        // Main menu HTML elements (left)
         this.mainSideNav = document.querySelector(".graph-sidenav");
         this.BFS_Button = document.querySelector(".BFS-button");
         this.DFS_Button = document.querySelector(".DFS-button");
-        this.Dijkstra_Button = document.querySelector(".Dijkstra-button");
-        this.Kruskal_Button = document.querySelector(".Kruskal-button");
-        this.SCCs_Button = document.querySelector(".SCCs-button");
-        this.HTML_directed_toggle = document.querySelector(".directed-switch");
-        this.HTML_weighted_toggle = document.querySelector(".weighted-switch");
+        this.DijkstraButton = document.querySelector(".Dijkstra-button");
+        this.KruskalButton = document.querySelector(".Kruskal-button");
+        this.SCCsButton = document.querySelector(".SCCs-button");
+        this.HTMLdirectedToggle = document.querySelector(".directed-switch");
+        this.HTMLweightedToggle = document.querySelector(".weighted-switch");
+        // Top-Right menu HTML elements
+        this.topRightMenu = document.querySelector(".top-right-menu");
+        this.importFileInput = document.querySelector(".import-input");
+        this.exportButton = document.querySelector(".export-button");
+        this.resetGraphButton = document.querySelector(".reset-graph-button");
+        // Action menu (right)
+        this.actionMenu = document.querySelector(".action-menu");
+        this.cursorButton = document.querySelector(".action-cursor");
+        this.addButton = document.querySelector(".action-add");
+        this.moveButton = document.querySelector(".action-move");
+        this.linkButton = document.querySelector(".action-link");
+        this.deleteButton = document.querySelector(".action-delete");
         // Animation menu HTML elements
         this.animationSideNav = document.querySelector(".animation-menu");
-        this.prev_frame_button = document.querySelector(".prev-frame");
-        this.play_pause_animation_button = document.querySelector(".play-pause");
-        this.next_frame_button = document.querySelector(".next-frame");
-        this.stop_animation_button = document.querySelector(".stop");
-        this.reset_animation_button = document.querySelector(".reset");
-        // Top-Right menu HTML elements
-        this.import_file_input = document.querySelector(".import-input");
-        this.export_button = document.querySelector(".export-button");
-        this.reset_graph_button = document.querySelector(".reset-graph-button");
+        this.prevFrameButton = document.querySelector(".prev-frame");
+        this.playPauseAnimationButton = document.querySelector(".play-pause");
+        this.nextFrameButton = document.querySelector(".next-frame");
+        this.stopAnimationButton = document.querySelector(".stop");
+        this.resetAnimationButton = document.querySelector(".reset");
         this.setWeighted = (on) => {
             if (on) {
-                this.HTML_weighted_toggle.checked = true;
+                this.HTMLweightedToggle.checked = true;
                 if (!this.graph.weighted)
                     this.graph.toggle_weighted();
             }
             else {
-                this.HTML_weighted_toggle.checked = false;
+                this.HTMLweightedToggle.checked = false;
                 if (this.graph.weighted)
                     this.graph.toggle_weighted();
             }
         };
         this.setDirected = (on) => {
             if (on) {
-                this.HTML_directed_toggle.checked = true;
+                this.HTMLdirectedToggle.checked = true;
                 if (!this.graph.directed)
                     this.graph.toggle_directed();
             }
             else {
-                this.HTML_directed_toggle.checked = false;
+                this.HTMLdirectedToggle.checked = false;
                 if (this.graph.directed)
                     this.graph.toggle_directed();
             }
@@ -62,8 +70,29 @@ export default class Menu {
         this.animationMenuEventListeners();
         this.mainMenuEventListeners();
         this.topRightMenuEventListeners();
-        this.focusMainMenu();
+        this.actionMenuEventListeners();
+        this.focusEditingMenus();
     }
+    focusEditingMenus() {
+        // Show editing menus
+        this.mainSideNav.style.display = "";
+        this.topRightMenu.style.display = "";
+        this.actionMenu.style.display = "";
+        // Hide animation menus
+        this.animationSideNav.style.display = "none";
+    }
+    focusAnimationMenus() {
+        // Show animation menus
+        if (!this.currentAnimation)
+            return;
+        this.animationSideNav.style.display = "";
+        // Hide editing menus
+        this.mainSideNav.style.display = "none";
+        this.topRightMenu.style.display = "none";
+        this.actionMenu.style.display = "none";
+    }
+    // * ACTION MENU
+    actionMenuEventListeners() { }
     // * MAIN SIDE MENU
     mainMenuEventListeners() {
         // * Animation buttons
@@ -73,33 +102,26 @@ export default class Menu {
         this.DFS_Button.addEventListener("click", () => {
             this.animate(this.algorithms.DFS.bind(this.algorithms));
         });
-        this.Dijkstra_Button.addEventListener("click", () => {
+        this.DijkstraButton.addEventListener("click", () => {
             this.animate(this.algorithms.Dijkstra.bind(this.algorithms));
         });
-        this.Kruskal_Button.addEventListener("click", () => {
+        this.KruskalButton.addEventListener("click", () => {
             this.setWeighted(true);
             this.animate(this.algorithms.Kruskal.bind(this.algorithms));
         });
-        this.SCCs_Button.addEventListener("click", () => {
+        this.SCCsButton.addEventListener("click", () => {
             this.setDirected(true);
             this.animate(this.algorithms.FindSCCs.bind(this.algorithms));
         });
         // * Toggles
         // Toggle events
-        this.HTML_directed_toggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
-        this.HTML_weighted_toggle.addEventListener("click", this.graph.toggle_weighted.bind(this.graph));
+        this.HTMLdirectedToggle.addEventListener("click", this.graph.toggle_directed.bind(this.graph));
+        this.HTMLweightedToggle.addEventListener("click", this.graph.toggle_weighted.bind(this.graph));
         // Check if toggles checks (checkboxes) align with default graph states
-        if (this.HTML_directed_toggle.checked !== this.graph.directed)
+        if (this.HTMLdirectedToggle.checked !== this.graph.directed)
             this.graph.toggle_directed();
-        if (this.HTML_weighted_toggle.checked !== this.graph.weighted)
+        if (this.HTMLweightedToggle.checked !== this.graph.weighted)
             this.graph.toggle_weighted();
-    }
-    focusMainMenu() {
-        this.mainSideNav.style.display = "";
-        this.hideAnimationMenu();
-    }
-    hideMainMenu() {
-        this.mainSideNav.style.display = "none";
     }
     // * ANIMATION MENU
     animationMenuEventListeners() {
@@ -117,18 +139,18 @@ export default class Menu {
             // Toggle playing attribute of the current animation
             if (!this.currentAnimation)
                 return;
-            if (this.play_pause_animation_button.textContent === "▶") {
+            if (this.playPauseAnimationButton.textContent === "▶") {
                 if (this.currentAnimation.curr_index === this.currentAnimation.length) {
                     this.currentAnimation.curr_index = 0;
                     this.graph.reset_all_attributes();
                     this.currentAnimation.updateSlider();
                 }
-                this.play_pause_animation_button.textContent = "⏸";
+                this.playPauseAnimationButton.textContent = "⏸";
                 yield this.currentAnimation.play();
-                this.play_pause_animation_button.textContent = "▶";
+                this.playPauseAnimationButton.textContent = "▶";
             }
             else {
-                this.play_pause_animation_button.textContent = "▶";
+                this.playPauseAnimationButton.textContent = "▶";
                 this.currentAnimation.pause();
             }
         });
@@ -137,12 +159,12 @@ export default class Menu {
             if (!this.currentAnimation)
                 return;
             // Removes the current animation and resets all nodes
-            this.focusMainMenu();
+            this.focusEditingMenus();
             (_a = this.currentAnimation) === null || _a === void 0 ? void 0 : _a.pause();
             this.currentAnimation = null;
             this.graph.traversing = false;
             this.graph.reset_all_attributes();
-            this.play_pause_animation_button.textContent = "▶";
+            this.playPauseAnimationButton.textContent = "▶";
             // Turn off text
             for (let node of this.graph.nodes) {
                 node.updateShowText(false);
@@ -155,15 +177,15 @@ export default class Menu {
             this.currentAnimation.curr_index = 0;
             this.graph.reset_all_attributes();
             this.currentAnimation.updateSlider();
-            this.play_pause_animation_button.textContent = "▶";
+            this.playPauseAnimationButton.textContent = "▶";
             this.currentAnimation.playing = false;
         };
         // Animation controls with buttons
-        this.prev_frame_button.addEventListener("click", prev_frame);
-        this.next_frame_button.addEventListener("click", next_frame);
-        this.play_pause_animation_button.addEventListener("click", play_pause_animation);
-        this.stop_animation_button.addEventListener("click", stop_animation);
-        this.reset_animation_button.addEventListener("click", reset_animation);
+        this.prevFrameButton.addEventListener("click", prev_frame);
+        this.nextFrameButton.addEventListener("click", next_frame);
+        this.playPauseAnimationButton.addEventListener("click", play_pause_animation);
+        this.stopAnimationButton.addEventListener("click", stop_animation);
+        this.resetAnimationButton.addEventListener("click", reset_animation);
         // Animation controls with keyboard
         document.addEventListener("keydown", (event) => {
             const keyControls = [
@@ -182,15 +204,6 @@ export default class Menu {
             }
         });
     }
-    focusAnimationMenu() {
-        if (!this.currentAnimation)
-            return;
-        this.animationSideNav.style.display = "";
-        this.hideMainMenu();
-    }
-    hideAnimationMenu() {
-        this.animationSideNav.style.display = "none";
-    }
     animate(algorithm) {
         // Get animation object and focus on the animation menu
         this.currentAnimation = algorithm();
@@ -198,14 +211,14 @@ export default class Menu {
             return;
         this.graph.reset_all_attributes();
         this.graph.traversing = true;
-        this.focusAnimationMenu();
+        this.focusAnimationMenus();
         this.currentAnimation.updateSlider();
     }
     // * TOP-RIGHT MENU
     topRightMenuEventListeners() {
-        this.reset_graph_button.addEventListener("click", this.graph.delete_all_nodes.bind(this.graph));
-        this.export_button.addEventListener("click", this.export_graph.bind(this));
-        this.import_file_input.addEventListener("change", this.import_graph.bind(this));
+        this.resetGraphButton.addEventListener("click", this.graph.delete_all_nodes.bind(this.graph));
+        this.exportButton.addEventListener("click", this.export_graph.bind(this));
+        this.importFileInput.addEventListener("change", this.import_graph.bind(this));
     }
     export_graph() {
         if (this.graph.traversing)
@@ -222,9 +235,9 @@ export default class Menu {
         document.body.removeChild(download_link);
     }
     import_graph() {
-        if (this.graph.traversing || !this.import_file_input.files || this.import_file_input.files.length <= 0)
+        if (this.graph.traversing || !this.importFileInput.files || this.importFileInput.files.length <= 0)
             return;
-        const file = this.import_file_input.files[0];
+        const file = this.importFileInput.files[0];
         if (!file)
             return;
         // Read file
