@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import { Action } from "./graph.js";
 import { Algorithms } from "./algorithms.js";
 export default class Menu {
     // #endregion
@@ -105,14 +106,19 @@ export default class Menu {
                 // Set the graph action mode based on the button selected
                 switch (button) {
                     case this.cursorButton:
+                        this.graph.action = Action.CURSOR;
                         break;
                     case this.addButton:
+                        this.graph.action = Action.ADD;
                         break;
                     case this.moveButton:
+                        this.graph.action = Action.MOVE;
                         break;
                     case this.linkButton:
+                        this.graph.action = Action.LINK;
                         break;
                     case this.deleteButton:
+                        this.graph.action = Action.DELETE;
                         break;
                 }
             });

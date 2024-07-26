@@ -1,6 +1,14 @@
 import GraphNode from "./graphNode.js";
 import Edge from "./edge.js";
 import { keyboardState } from "./main.js";
+export var Action;
+(function (Action) {
+    Action[Action["CURSOR"] = 0] = "CURSOR";
+    Action[Action["ADD"] = 1] = "ADD";
+    Action[Action["MOVE"] = 2] = "MOVE";
+    Action[Action["LINK"] = 3] = "LINK";
+    Action[Action["DELETE"] = 4] = "DELETE";
+})(Action || (Action = {}));
 class Graph {
     // #endregion
     constructor() {
@@ -15,11 +23,12 @@ class Graph {
         this.size = 0;
         this.next_node_val = 0;
         // Graph states
+        this.action = Action.CURSOR;
         this.traversing = false;
         this.isLeftMouseDown = false;
-        this.isMiddleMouseDown = false;
-        this.middleDown_x1 = 0;
-        this.middleDown_y1 = 0;
+        this.isRightMouseDown = false;
+        this.rightDown_x1 = 0;
+        this.rightDown_y1 = 0;
         this.initial_node_positions = [];
         // Selection box
         this.selection_div = document.querySelector(".selection-box");
@@ -30,51 +39,74 @@ class Graph {
             if (event.button === 0 && !event.target.closest(".pan")) {
                 // Handle right down state
                 this.isLeftMouseDown = true;
-                this.show_selection_box(event.clientX, event.clientY);
+                this.deselect_all();
+                if ([Action.CURSOR, Action.MOVE, Action.DELETE].includes(this.action)) {
+                    this.show_selection_box(event.clientX, event.clientY);
+                }
             }
-            else if (event.button === 1) {
+            else if (event.button === 2) {
                 event.preventDefault();
-                this.isMiddleMouseDown = true;
-                // Remember the initial click position and all of the initial positions of the nodes
-                this.middleDown_x1 = event.clientX;
-                this.middleDown_y1 = event.clientY;
-                this.initial_node_positions = this.nodes.map((node) => ({
-                    node: node,
-                    x1: node.x,
-                    y1: node.y,
-                }));
+                this.isRightMouseDown = true;
+                if (this.action === Action.MOVE) {
+                    // Remember the initial click position and all of the initial positions of the nodes
+                    this.rightDown_x1 = event.clientX;
+                    this.rightDown_y1 = event.clientY;
+                    this.initial_node_positions = this.nodes.map((node) => ({
+                        node: node,
+                        x1: node.x,
+                        y1: node.y,
+                    }));
+                }
             }
         });
         this.HTML_Container.addEventListener("mouseup", (event) => {
             if (event.button === 0) {
-                // Turn off left down state and hide the selection box
                 this.isLeftMouseDown = false;
-                this.hide_selection_box();
-                // Add node when selection div is small and not clicking another node
-                if (parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
-                    parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
-                    !event.target.closest(".pan")) {
-                    this.addNode(event.clientX, event.clientY);
+                if ([Action.CURSOR, Action.MOVE, Action.DELETE].includes(this.action)) {
+                    this.select_content_inside_selection_box();
+                    this.hide_selection_box();
+                }
+                if (this.action === Action.CURSOR) {
+                    // Add node when selection div is small and not clicking another node
+                    if (parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
+                        parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
+                        !event.target.closest(".pan")) {
+                        this.addNode(event.clientX, event.clientY);
+                    }
+                }
+                else if (this.action === Action.ADD) {
+                    if (!event.target.closest(".pan")) {
+                        this.addNode(event.clientX, event.clientY);
+                    }
+                }
+                else if (this.action === Action.DELETE) {
+                    this.delete_all_selected();
                 }
             }
-            else if (event.button === 1) {
+            else if (event.button === 2) {
                 event.preventDefault();
-                this.isMiddleMouseDown = false;
-                this.initial_node_positions = [];
+                this.isRightMouseDown = false;
+                if (this.action === Action.MOVE) {
+                    this.initial_node_positions = [];
+                }
             }
         });
         this.HTML_Container.addEventListener("mousemove", (event) => {
             if (this.isLeftMouseDown) {
                 // Handle left click drag
-                this.resize_selection_box(event.clientX, event.clientY);
+                if ([Action.CURSOR, Action.MOVE, Action.DELETE].includes(this.action)) {
+                    this.resize_selection_box(event.clientX, event.clientY);
+                }
             }
-            if (this.isMiddleMouseDown) {
-                // Move everything
+            if (this.isRightMouseDown) {
                 event.preventDefault();
-                this.selection_x1;
-                this.selection_y1;
-                for (let { node, x1, y1 } of this.initial_node_positions) {
-                    node.updatePos(x1 + event.clientX - this.middleDown_x1, y1 + event.clientY - this.middleDown_y1);
+                if (this.action === Action.MOVE) {
+                    // Move everything
+                    this.selection_x1;
+                    this.selection_y1;
+                    for (let { node, x1, y1 } of this.initial_node_positions) {
+                        node.updatePos(x1 + event.clientX - this.rightDown_x1, y1 + event.clientY - this.rightDown_y1);
+                    }
                 }
             }
         });
@@ -248,7 +280,6 @@ class Graph {
     }
     // Selection box methods
     hide_selection_box() {
-        this.select_content_inside();
         this.selection_div.style.display = "none";
     }
     show_selection_box(x1, y1) {
@@ -266,7 +297,7 @@ class Graph {
         this.selection_div.style.width = `${Math.abs(x2 - this.selection_x1)}px`;
         this.selection_div.style.height = `${Math.abs(y2 - this.selection_y1)}px`;
     }
-    select_content_inside() {
+    select_content_inside_selection_box() {
         if (this.selection_div.style.display === "none")
             return;
         const selection_left = parseInt(this.selection_div.style.left);

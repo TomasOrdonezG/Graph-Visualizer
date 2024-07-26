@@ -1,4 +1,4 @@
-import Graph from "./graph.js";
+import Graph, { Action } from "./graph.js";
 import Edge from "./edge.js";
 import { keyboardState } from "./main.js";
 
@@ -100,7 +100,14 @@ export default class GraphNode {
             // * LEFT CLICK NO SHIFT: Select node and initialize drag for all selected nodes
 
             // Select
-            if (!keyboardState.CTRL) this.graph.deselect_all();
+            if (this.graph.action === Action.MOVE && !this.selected) {
+                this.graph.deselect_all();
+            }
+
+            if (!keyboardState.CTRL && this.graph.action !== Action.MOVE) {
+                this.graph.deselect_all();
+            }
+
             this.select();
 
             // Set dragging to true on ALL selected nodes. Compute the initial position of the cursor
