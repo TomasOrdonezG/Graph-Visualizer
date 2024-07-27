@@ -21,11 +21,16 @@ export default class Menu {
     private topRightMenu = document.querySelector(".top-right-menu") as HTMLDivElement;
     private importFileInput = document.querySelector(".import-input") as HTMLInputElement;
     private exportButton = document.querySelector(".export-button") as HTMLDivElement;
+    private browseButton = document.querySelector(".browse-graph-button") as HTMLDivElement;
     private resetGraphButton = document.querySelector(".reset-graph-button") as HTMLDivElement;
+
+    // Browse Graphs PopUp Menu
+    private browsePopUp = document.querySelector(".browse-graph-popup") as HTMLDivElement;
+    private browsePopUpOverlay = document.querySelector(".browse-graph-overlay") as HTMLDivElement;
+    private closePopUpButton = document.querySelector(".popup-close-button") as HTMLButtonElement;
 
     // Action menu (right)
     private actionMenu = document.querySelector(".action-menu") as HTMLDivElement;
-    // private cursorButton = document.querySelector(".action-cursor") as HTMLButtonElement;
     private addButton = document.querySelector(".action-add") as HTMLButtonElement;
     private linkButton = document.querySelector(".action-link") as HTMLButtonElement;
     private moveButton = document.querySelector(".action-move") as HTMLButtonElement;
@@ -51,6 +56,7 @@ export default class Menu {
         this.mainMenuEventListeners();
         this.topRightMenuEventListeners();
         this.actionMenuEventListeners();
+        this.browseGraphPupUpEventListeners();
 
         this.focusEditingMenus();
     }
@@ -281,9 +287,15 @@ export default class Menu {
 
     // * TOP-RIGHT MENU
     private topRightMenuEventListeners(): void {
-        this.resetGraphButton.addEventListener("click", this.graph.delete_all_nodes.bind(this.graph));
-        this.exportButton.addEventListener("click", this.export_graph.bind(this));
         this.importFileInput.addEventListener("change", this.import_graph.bind(this));
+        this.exportButton.addEventListener("click", this.export_graph.bind(this));
+        this.resetGraphButton.addEventListener("click", this.graph.delete_all_nodes.bind(this.graph));
+
+        this.browseButton.addEventListener("click", (): void => {
+            // Show the popup
+            this.browsePopUp.classList.remove("hidden");
+            this.browsePopUpOverlay.classList.remove("hidden");
+        });
     }
     private export_graph(): void {
         if (this.graph.traversing) return;
@@ -332,5 +344,40 @@ export default class Menu {
             }
         };
         reader.readAsText(file);
+    }
+
+    // * BROWSE GRAPH POPUP MENU
+    private browseGraphPupUpEventListeners() {
+        this.closePopUpButton.addEventListener("click", (): void => {
+            this.browsePopUp.classList.add("hidden");
+            this.browsePopUpOverlay.classList.add("hidden");
+        });
+
+        interface ExampleGraphs {
+            [Key: string]: GraphJSON;
+        }
+
+        const rawData =
+            '{"BFS":{"adjacency_matrix":[[null,1,1,1,1,null,null,null,null,null,null,null,null,null],[null,null,1,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,1,1,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,1,1,1,null,null],[null,null,1,1,null,1,null,null,1,null,null,null,null,null],[null,null,null,null,null,null,null,1,null,null,null,null,null,null],[null,null,null,null,null,null,null,1,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,1,null,null,null,null,null,1],[null,null,null,null,null,null,null,null,null,null,null,null,1,null],[null,null,null,null,null,null,null,null,1,null,null,null,null,1],[null,null,null,null,null,null,null,null,null,null,null,null,null,1],[null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null]],"vertices":[{"value":0,"x":0.537109375,"y":0.15725806451612903},{"value":1,"x":0.3795572916666667,"y":0.1478494623655914},{"value":2,"x":0.3541666666666667,"y":0.36155913978494625},{"value":3,"x":0.654296875,"y":0.28091397849462363},{"value":4,"x":0.5247395833333334,"y":0.4327956989247312},{"value":5,"x":0.4140625,"y":0.6008064516129032},{"value":6,"x":0.2682291666666667,"y":0.5282258064516129},{"value":7,"x":0.3333333333333333,"y":0.8225806451612904},{"value":8,"x":0.4934895833333333,"y":0.7473118279569892},{"value":9,"x":0.7721354166666666,"y":0.33198924731182794},{"value":10,"x":0.6145833333333334,"y":0.5604838709677419},{"value":12,"x":0.7376302083333334,"y":0.6303763440860215},{"value":13,"x":0.8522135416666666,"y":0.5887096774193549},{"value":11,"x":0.6451822916666666,"y":0.7768817204301075}],"settings":{"directed":true,"weighted":false}},"DFS":{"adjacency_matrix":[[null,1,null,1,null,null,1,null,null,null,null,null,null],[null,null,1,null,null,1,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,1,1,null,null],[null,null,null,null,1,1,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,1,null,null,null,1],[null,null,null,null,null,null,null,null,null,null,1,1,null],[null,null,null,null,null,null,null,1,null,null,null,null,null],[null,null,null,null,1,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,1],[null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,1,null],[null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null]],"vertices":[{"value":0,"x":0.4563802083333333,"y":0.12634408602150538},{"value":1,"x":0.380859375,"y":0.33198924731182794},{"value":2,"x":0.3111979166666667,"y":0.5981182795698925},{"value":3,"x":0.5384114583333334,"y":0.3387096774193548},{"value":4,"x":0.6595052083333334,"y":0.5887096774193549},{"value":5,"x":0.4928385416666667,"y":0.5887096774193549},{"value":6,"x":0.6451822916666666,"y":0.13844086021505375},{"value":7,"x":0.736328125,"y":0.3172043010752688},{"value":8,"x":0.822265625,"y":0.5793010752688172},{"value":9,"x":0.2819010416666667,"y":0.8131720430107527},{"value":10,"x":0.4127604166666667,"y":0.8575268817204301},{"value":11,"x":0.591796875,"y":0.8494623655913979},{"value":12,"x":0.77734375,"y":0.8185483870967742}],"settings":{"directed":true,"weighted":false}},"Dijkstra":{"adjacency_matrix":[[null,null,null,null,8,null,5,null],[null,null,null,null,null,null,null,6],[2,null,null,null,4,null,null,null],[null,null,6,null,null,null,null,null],[null,3,null,1,null,null,3,null],[null,4,null,null,null,null,null,null],[null,7,null,null,null,5,null,null],[null,null,null,9,null,null,null,null]],"vertices":[{"value":0,"x":0.3639322916666667,"y":0.15994623655913978},{"value":1,"x":0.6907552083333334,"y":0.6263440860215054},{"value":2,"x":0.2955729166666667,"y":0.4771505376344086},{"value":3,"x":0.3678385416666667,"y":0.8467741935483871},{"value":4,"x":0.4635416666666667,"y":0.40591397849462363},{"value":5,"x":0.7936197916666666,"y":0.29435483870967744},{"value":6,"x":0.6178385416666666,"y":0.16129032258064516},{"value":7,"x":0.5279947916666666,"y":0.8306451612903226}],"settings":{"directed":false,"weighted":true}},"Kruskal":{"adjacency_matrix":[[null,1,2,null,null,null,null,null,null,null],[null,null,null,4,null,null,7,null,null,null],[null,null,null,null,2,null,null,null,null,null],[null,null,null,null,null,null,null,3,null,null],[null,null,null,null,null,12,null,null,15,null],[null,null,null,10,null,null,null,null,null,null],[null,null,8,null,null,null,null,null,null,null],[null,null,null,null,1,null,null,null,null,null],[null,null,null,null,null,null,11,null,null,null],[null,8,null,9,null,null,null,5,null,null]],"vertices":[{"value":0,"x":0.2669270833333333,"y":0.5026881720430108},{"value":1,"x":0.400390625,"y":0.19086021505376344},{"value":2,"x":0.4016927083333333,"y":0.8413978494623656},{"value":3,"x":0.65234375,"y":0.18548387096774194},{"value":4,"x":0.6575520833333334,"y":0.8400537634408602},{"value":5,"x":0.7936197916666666,"y":0.4932795698924731},{"value":6,"x":0.4016927083333333,"y":0.49731182795698925},{"value":7,"x":0.654296875,"y":0.5053763440860215},{"value":8,"x":0.525390625,"y":0.6639784946236559},{"value":9,"x":0.525390625,"y":0.34543010752688175}],"settings":{"directed":false,"weighted":true}},"Find SCCs":{"adjacency_matrix":[[null,1,null,1,null,null,null,null,null,null,null,null,null,null],[null,null,1,null,null,null,1,null,null,null,null,null,null,null],[1,null,null,1,1,1,null,null,null,null,null,null,null,null],[null,null,null,null,1,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,1,1,1,null,null,null,null],[null,null,null,null,1,null,null,null,null,1,1,null,null,null],[null,null,1,null,null,1,null,null,null,null,1,null,null,null],[null,null,null,1,null,null,null,null,1,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,1,null],[null,null,null,null,null,null,null,null,1,null,null,null,null,1],[null,null,null,null,null,null,null,null,null,null,null,1,null,null],[null,null,null,null,null,1,null,null,null,1,null,null,null,1],[null,null,null,null,null,null,null,null,null,1,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,1,null]],"vertices":[{"value":0,"x":0.255859375,"y":0.385752688172043},{"value":1,"x":0.330078125,"y":0.15591397849462366},{"value":2,"x":0.4088541666666667,"y":0.38306451612903225},{"value":3,"x":0.3391927083333333,"y":0.6115591397849462},{"value":4,"x":0.490234375,"y":0.6115591397849462},{"value":5,"x":0.5690104166666666,"y":0.3763440860215054},{"value":6,"x":0.4811197916666667,"y":0.15591397849462366},{"value":7,"x":0.4134114583333333,"y":0.831989247311828},{"value":8,"x":0.5716145833333334,"y":0.8252688172043011},{"value":9,"x":0.6451822916666666,"y":0.603494623655914},{"value":10,"x":0.63671875,"y":0.15994623655913978},{"value":11,"x":0.7200520833333334,"y":0.3803763440860215},{"value":12,"x":0.7311197916666666,"y":0.8266129032258065},{"value":13,"x":0.7981770833333334,"y":0.6048387096774194}],"settings":{"directed":true,"weighted":false}}}';
+        const exampleGraphs: ExampleGraphs = JSON.parse(rawData);
+
+        document.querySelectorAll(".graph-option-button").forEach((button) => {
+            (button as HTMLButtonElement).addEventListener("click", () => {
+                const title = button.getAttribute("title") as string;
+
+                if (exampleGraphs[title]) {
+                    // Build the graph from the json
+                    const graph_content: GraphJSON = exampleGraphs[title];
+                    this.graph.build(graph_content);
+
+                    // Set settings
+                    const settings = graph_content["settings"];
+                    this.setDirected(settings.directed);
+                    this.setWeighted(settings.weighted);
+                } else {
+                    console.error(`'${title}' not found.`);
+                }
+            });
+        });
     }
 }

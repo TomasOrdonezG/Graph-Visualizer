@@ -18,16 +18,36 @@
             <input type="file" id="import-input" class="import-input" accept=".json" style="display: none" />
 
             <div class="export-button"><span>Export</span></div>
-            <div class="reset-graph-button"><span>↺</span></div>
+            <div class="browse-graph-button"><span>Browse</span></div>
+            <div class="reset-graph-button"><span>↻</span></div>
+        </div>
+
+        <!-- Browse Graph PopUp Menu -->
+        <div class="browse-graph-overlay hidden"></div>
+        <div class="browse-graph-popup hidden">
+            <div class="popup-header">
+                <h3>Click to load a premade graph</h2>
+                <button title="Close" class="popup-close-button">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M6 6L18 18M6 18L18 6"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+                </button>
+            </div>
+
+            <button title="BFS" class="graph-option-button">BFS</button>
+            <button title="DFS" class="graph-option-button">DFS</button>
+            <button title="Dijkstra" class="graph-option-button">Dijkstra</button>
+            <button title="Kruskal" class="graph-option-button">Kruskal</button>
+            <button title="Find SCCs" class="graph-option-button">Find SCCs</button>
         </div>
 
         <!-- Action Menu -->
         <div class="action-menu">
-            <!-- <button class="action-cursor selected">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M5 5 l6 18 l2 -10 l10 -2z" fill="none" stroke-width="2" stroke-linejoin="round" />
-                </svg>
-            </button> -->
             <button title="Add (1)" class="action action-add selected">
                 <svg viewBox="0 0 24 24" fill="none">
                     <path d="M12 5V19M5 12H19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
