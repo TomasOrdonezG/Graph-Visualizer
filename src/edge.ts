@@ -125,7 +125,6 @@ export default class Edge {
         // Start moving the tip of the arrow
         if (this.hovering) {
             this.graph.initial_node = this.source;
-            this.moving_head = true;
             this.graph.set_phantom_edge(Edge.createPhantomEdge(this.source, "source", this.graph));
             this.delete();
         }
@@ -134,7 +133,6 @@ export default class Edge {
         // Start moving the end of the arrow
         if (this.hovering) {
             this.graph.final_node = this.destination;
-            this.moving_tail = true;
             this.graph.set_phantom_edge(Edge.createPhantomEdge(this.destination, "destination", this.graph));
             this.delete();
         }

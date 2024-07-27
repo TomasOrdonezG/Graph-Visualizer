@@ -175,7 +175,7 @@ class GraphNode {
         }
         else if (event.button === 2 && !this.graph.traversing) {
             // * RIGHT CLICK: Set as source node for next connection
-            if ([Action.CURSOR, Action.ADD].includes(this.graph.action)) {
+            if (Action.ADD === this.graph.action) {
                 this.startLinking();
             }
         }
@@ -187,7 +187,7 @@ class GraphNode {
     }
     handle_mouse_up_div(event) {
         // * Connect TO this node
-        if ([Action.CURSOR, Action.ADD, Action.MOVE].includes(this.graph.action) ||
+        if ([Action.ADD, Action.MOVE].includes(this.graph.action) ||
             (this.graph.action === Action.LINK && event.button === 0)) {
             if (this.graph.final_node === null && this.graph.initial_node && this.graph.initial_node !== this) {
                 // Connect to the initial node
@@ -322,7 +322,6 @@ class GraphNode {
     startLinking() {
         this.graph.initial_node = this;
         let phantomEdge = Edge.createPhantomEdge(this, "source", this.graph);
-        phantomEdge.moving_head = true;
         this.graph.set_phantom_edge(phantomEdge);
     }
     connect(destination_node) {

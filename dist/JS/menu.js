@@ -29,12 +29,12 @@ export default class Menu {
         this.resetGraphButton = document.querySelector(".reset-graph-button");
         // Action menu (right)
         this.actionMenu = document.querySelector(".action-menu");
-        this.cursorButton = document.querySelector(".action-cursor");
+        // private cursorButton = document.querySelector(".action-cursor") as HTMLButtonElement;
         this.addButton = document.querySelector(".action-add");
         this.moveButton = document.querySelector(".action-move");
         this.linkButton = document.querySelector(".action-link");
         this.deleteButton = document.querySelector(".action-delete");
-        this.actionButtons = [this.cursorButton, this.addButton, this.moveButton, this.linkButton, this.deleteButton];
+        this.actionButtons = [this.addButton, this.moveButton, this.linkButton, this.deleteButton];
         // Animation menu HTML elements
         this.animationSideNav = document.querySelector(".animation-menu");
         this.prevFrameButton = document.querySelector(".prev-frame");
@@ -103,9 +103,6 @@ export default class Menu {
         button.classList.add("selected");
         // Set the graph action mode based on the button selected
         switch (button) {
-            case this.cursorButton:
-                this.graph.action = Action.CURSOR;
-                break;
             case this.addButton:
                 this.graph.action = Action.ADD;
                 break;
@@ -245,7 +242,7 @@ export default class Menu {
             return;
         this.graph.reset_all_attributes();
         this.graph.traversing = true;
-        this.actionButtonClick(this.cursorButton);
+        this.actionButtonClick(this.addButton);
         this.focusAnimationMenus();
         this.currentAnimation.updateSlider();
     }

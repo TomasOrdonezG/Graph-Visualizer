@@ -162,7 +162,7 @@ export default class GraphNode {
             this.select();
         } else if (event.button === 2 && !this.graph.traversing) {
             // * RIGHT CLICK: Set as source node for next connection
-            if ([Action.CURSOR, Action.ADD].includes(this.graph.action)) {
+            if (Action.ADD === this.graph.action) {
                 this.startLinking();
             }
         }
@@ -176,7 +176,7 @@ export default class GraphNode {
         // * Connect TO this node
 
         if (
-            [Action.CURSOR, Action.ADD, Action.MOVE].includes(this.graph.action) ||
+            [Action.ADD, Action.MOVE].includes(this.graph.action) ||
             (this.graph.action === Action.LINK && event.button === 0)
         ) {
             if (this.graph.final_node === null && this.graph.initial_node && this.graph.initial_node !== this) {
@@ -380,7 +380,6 @@ export default class GraphNode {
     private startLinking() {
         this.graph.initial_node = this;
         let phantomEdge: Edge = Edge.createPhantomEdge(this, "source", this.graph);
-        phantomEdge.moving_head = true;
         this.graph.set_phantom_edge(phantomEdge);
     }
 

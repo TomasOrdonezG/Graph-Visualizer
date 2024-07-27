@@ -3,7 +3,6 @@ import Edge from "./edge.js";
 import { keyboardState } from "./main.js";
 
 export enum Action {
-    CURSOR,
     ADD,
     MOVE,
     LINK,
@@ -35,7 +34,7 @@ export default class Graph {
     public phantom_edge: Edge | null = null;
 
     // Graph states
-    public action: Action = Action.CURSOR;
+    public action: Action = Action.ADD;
     public traversing: boolean = false;
     private isLeftMouseDown: boolean = false;
     private isRightMouseDown: boolean = false;

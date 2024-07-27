@@ -3,11 +3,10 @@ import Edge from "./edge.js";
 import { keyboardState } from "./main.js";
 export var Action;
 (function (Action) {
-    Action[Action["CURSOR"] = 0] = "CURSOR";
-    Action[Action["ADD"] = 1] = "ADD";
-    Action[Action["MOVE"] = 2] = "MOVE";
-    Action[Action["LINK"] = 3] = "LINK";
-    Action[Action["DELETE"] = 4] = "DELETE";
+    Action[Action["ADD"] = 0] = "ADD";
+    Action[Action["MOVE"] = 1] = "MOVE";
+    Action[Action["LINK"] = 2] = "LINK";
+    Action[Action["DELETE"] = 3] = "DELETE";
 })(Action || (Action = {}));
 class Graph {
     // #endregion
@@ -24,7 +23,7 @@ class Graph {
         this.next_node_val = 0;
         this.phantom_edge = null;
         // Graph states
-        this.action = Action.CURSOR;
+        this.action = Action.ADD;
         this.traversing = false;
         this.isLeftMouseDown = false;
         this.isRightMouseDown = false;
