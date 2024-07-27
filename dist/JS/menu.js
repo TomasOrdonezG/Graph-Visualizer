@@ -31,10 +31,10 @@ export default class Menu {
         this.actionMenu = document.querySelector(".action-menu");
         // private cursorButton = document.querySelector(".action-cursor") as HTMLButtonElement;
         this.addButton = document.querySelector(".action-add");
-        this.moveButton = document.querySelector(".action-move");
         this.linkButton = document.querySelector(".action-link");
+        this.moveButton = document.querySelector(".action-move");
         this.deleteButton = document.querySelector(".action-delete");
-        this.actionButtons = [this.addButton, this.moveButton, this.linkButton, this.deleteButton];
+        this.actionButtons = [this.addButton, this.linkButton, this.moveButton, this.deleteButton];
         // Animation menu HTML elements
         this.animationSideNav = document.querySelector(".animation-menu");
         this.prevFrameButton = document.querySelector(".prev-frame");
@@ -106,11 +106,11 @@ export default class Menu {
             case this.addButton:
                 this.graph.action = Action.ADD;
                 break;
-            case this.moveButton:
-                this.graph.action = Action.MOVE;
-                break;
             case this.linkButton:
                 this.graph.action = Action.LINK;
+                break;
+            case this.moveButton:
+                this.graph.action = Action.MOVE;
                 break;
             case this.deleteButton:
                 this.graph.action = Action.DELETE;
@@ -118,11 +118,40 @@ export default class Menu {
         }
     }
     actionMenuEventListeners() {
+        // Click event listeners
         for (let button of this.actionButtons) {
             button.addEventListener("click", () => {
                 this.actionButtonClick(button);
             });
         }
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "1") {
+                this.actionButtonClick(this.addButton);
+            }
+            else if (event.key === "2") {
+                this.actionButtonClick(this.linkButton);
+            }
+            else if (event.key === "3") {
+                this.actionButtonClick(this.moveButton);
+            }
+            else if (event.key === "4") {
+                this.actionButtonClick(this.deleteButton);
+            }
+        });
+        document.addEventListener("wheel", (event) => {
+            let index = this.graph.action;
+            if (event.deltaY < 0) {
+                index--;
+            }
+            else if (event.deltaY > 0) {
+                index++;
+            }
+            if (index >= this.actionButtons.length)
+                index--;
+            if (index < 0)
+                index++;
+            this.actionButtonClick(this.actionButtons[index]);
+        });
     }
     // * MAIN SIDE MENU
     mainMenuEventListeners() {

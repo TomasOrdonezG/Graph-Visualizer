@@ -109,21 +109,13 @@ class GraphNode {
         this.div.style.fontSize = "20px";
         // Highlight when about to be deleted
         if (this.graph.action === Action.DELETE) {
-            for (let node of this.graph.nodes) {
-                if (node.selected) {
-                    node.updateBorderColour(GraphNode.TO_DELETE_COLOUR);
-                }
-            }
+            this.updateBorderColour(GraphNode.TO_DELETE_COLOUR);
         }
     }
     handle_mouse_leave_div() {
         // Unighlight when about to be deleted
         if (this.graph.action === Action.DELETE) {
-            for (let node of this.graph.nodes) {
-                if (node.selected) {
-                    node.updateBorderColour(this.selected ? GraphNode.SELECTED_BORDER_COLOUR : GraphNode.DEFAULT_BORDER_COLOUR);
-                }
-            }
+            this.updateBorderColour(this.selected ? GraphNode.SELECTED_BORDER_COLOUR : GraphNode.DEFAULT_BORDER_COLOUR);
         }
         this.div.style.transform = "scale(1)";
     }
@@ -149,7 +141,7 @@ class GraphNode {
                     }
                 }
             }
-            // Linking can happen using left drags too in linking mode
+            // Linking can happen using left drag in LINK mode
             if (this.graph.action === Action.LINK) {
                 this.startLinking();
             }
@@ -173,12 +165,6 @@ class GraphNode {
             this.graph.deselect_all();
             this.select();
         }
-        else if (event.button === 2 && !this.graph.traversing) {
-            // * RIGHT CLICK: Set as source node for next connection
-            if (Action.ADD === this.graph.action) {
-                this.startLinking();
-            }
-        }
     }
     handle_mouse_up_doc(event) {
         event.preventDefault();
@@ -187,8 +173,7 @@ class GraphNode {
     }
     handle_mouse_up_div(event) {
         // * Connect TO this node
-        if ([Action.ADD, Action.MOVE].includes(this.graph.action) ||
-            (this.graph.action === Action.LINK && event.button === 0)) {
+        if (this.graph.action === Action.LINK && event.button === 0) {
             if (this.graph.final_node === null && this.graph.initial_node && this.graph.initial_node !== this) {
                 // Connect to the initial node
                 this.graph.initial_node.connect(this);

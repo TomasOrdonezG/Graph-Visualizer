@@ -4,8 +4,8 @@ import { keyboardState } from "./main.js";
 export var Action;
 (function (Action) {
     Action[Action["ADD"] = 0] = "ADD";
-    Action[Action["MOVE"] = 1] = "MOVE";
-    Action[Action["LINK"] = 2] = "LINK";
+    Action[Action["LINK"] = 1] = "LINK";
+    Action[Action["MOVE"] = 2] = "MOVE";
     Action[Action["DELETE"] = 3] = "DELETE";
 })(Action || (Action = {}));
 class Graph {
@@ -71,11 +71,8 @@ class Graph {
                 // End selection box visual
                 this.select_content_inside_selection_box();
                 this.hide_selection_box();
-                // Delete node on action === DELETE, add node otherwise
-                if (this.action === Action.DELETE) {
-                    this.delete_all_selected();
-                }
-                else {
+                // Add node if not action = DELETE
+                if (this.action !== Action.DELETE) {
                     // Add node when selection div is small and not clicking another node
                     let is_click_but_not_drag = parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
                         parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
