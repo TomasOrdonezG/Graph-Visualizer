@@ -77,35 +77,38 @@ export default class Menu {
     }
 
     // * ACTION MENU
+    private actionButtonClick(button: HTMLButtonElement) {
+        // Unselected all buttons
+        for (let button of this.actionButtons) {
+            button.classList.remove("selected");
+        }
+
+        // Select this button
+        button.classList.add("selected");
+
+        // Set the graph action mode based on the button selected
+        switch (button) {
+            case this.cursorButton:
+                this.graph.action = Action.CURSOR;
+                break;
+            case this.addButton:
+                this.graph.action = Action.ADD;
+                break;
+            case this.moveButton:
+                this.graph.action = Action.MOVE;
+                break;
+            case this.linkButton:
+                this.graph.action = Action.LINK;
+                break;
+            case this.deleteButton:
+                this.graph.action = Action.DELETE;
+                break;
+        }
+    }
     private actionMenuEventListeners() {
         for (let button of this.actionButtons) {
             button.addEventListener("click", () => {
-                // Unselected all buttons
-                for (let button of this.actionButtons) {
-                    button.classList.remove("selected");
-                }
-
-                // Select this button
-                button.classList.add("selected");
-
-                // Set the graph action mode based on the button selected
-                switch (button) {
-                    case this.cursorButton:
-                        this.graph.action = Action.CURSOR;
-                        break;
-                    case this.addButton:
-                        this.graph.action = Action.ADD;
-                        break;
-                    case this.moveButton:
-                        this.graph.action = Action.MOVE;
-                        break;
-                    case this.linkButton:
-                        this.graph.action = Action.LINK;
-                        break;
-                    case this.deleteButton:
-                        this.graph.action = Action.DELETE;
-                        break;
-                }
+                this.actionButtonClick(button);
             });
         }
     }
@@ -246,7 +249,7 @@ export default class Menu {
         if (!this.currentAnimation) return;
         this.graph.reset_all_attributes();
         this.graph.traversing = true;
-        this.graph.action = Action.CURSOR;
+        this.actionButtonClick(this.cursorButton);
         this.focusAnimationMenus();
         this.currentAnimation.updateSlider();
     }

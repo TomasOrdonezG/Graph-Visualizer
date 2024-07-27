@@ -28,10 +28,11 @@ export default class Graph {
     // Objects to keep track of
     public initial_node: GraphNode | null = null;
     public final_node: GraphNode | null = null;
-    public moving_edge: Edge | null = null;
+    // public moving_edge: Edge | null = null;
 
     public size: number = 0;
     public next_node_val: number = 0;
+    public phantom_edge: Edge | null = null;
 
     // Graph states
     public action: Action = Action.CURSOR;
@@ -58,9 +59,7 @@ export default class Graph {
                     this.deselect_all();
                 }
 
-                if (this.action !== Action.ADD) {
-                    this.show_selection_box(event.clientX, event.clientY);
-                }
+                this.show_selection_box(event.clientX, event.clientY);
             } else if (event.button === 2) {
                 event.preventDefault();
                 this.isRightMouseDown = true;
@@ -78,29 +77,32 @@ export default class Graph {
             }
         });
         this.HTML_Container.addEventListener("mouseup", (event: MouseEvent): void => {
+            // Delete phantom edge, and reset initial and final nodes
+            this.phantom_edge?.deleteHTML();
+            this.phantom_edge = null;
+            this.initial_node = null;
+            this.final_node = null;
+
             if (event.button === 0) {
                 this.isLeftMouseDown = false;
 
-                if (this.action !== Action.ADD) {
-                    this.select_content_inside_selection_box();
-                    this.hide_selection_box();
-                }
+                // End selection box visual
+                this.select_content_inside_selection_box();
+                this.hide_selection_box();
 
-                if (this.action === Action.CURSOR || this.action === Action.LINK) {
+                // Delete node on action === DELETE, add node otherwise
+                if (this.action === Action.DELETE) {
+                    this.delete_all_selected();
+                } else {
                     // Add node when selection div is small and not clicking another node
-                    if (
+                    let is_click_but_not_drag: boolean =
                         parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
                         parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
-                        !(event.target as HTMLDivElement).closest(".pan")
-                    ) {
+                        !(event.target as HTMLDivElement).closest(".pan");
+
+                    if (is_click_but_not_drag) {
                         this.addNode(event.clientX, event.clientY);
                     }
-                } else if (this.action === Action.ADD) {
-                    if (!(event.target as HTMLDivElement).closest(".pan")) {
-                        this.addNode(event.clientX, event.clientY);
-                    }
-                } else if (this.action === Action.DELETE) {
-                    this.delete_all_selected();
                 }
             } else if (event.button === 2) {
                 event.preventDefault();
@@ -112,12 +114,20 @@ export default class Graph {
             }
         });
         this.HTML_Container.addEventListener("mousemove", (event: MouseEvent): void => {
-            if (this.isLeftMouseDown) {
-                // Handle left click drag
-                if (this.action !== Action.ADD) {
-                    this.resize_selection_box(event.clientX, event.clientY);
+            // Handle phantom edge if exists
+            if (this.phantom_edge) {
+                if (this.phantom_edge.moving_head) {
+                    this.phantom_edge.linkCursorToHeadPos(event);
+                } else if (this.phantom_edge.moving_tail) {
+                    this.phantom_edge.linkCursorToTailPos(event);
                 }
             }
+
+            if (this.isLeftMouseDown) {
+                // Handle left click drag
+                this.resize_selection_box(event.clientX, event.clientY);
+            }
+
             if (this.isRightMouseDown) {
                 event.preventDefault();
 
@@ -132,7 +142,7 @@ export default class Graph {
             }
         });
         document.addEventListener("keydown", (event: KeyboardEvent) => {
-            if (event.key === "Backspace") {
+            if (event.key === "Backspace" && this.phantom_edge === null) {
                 this.delete_all_selected();
             }
         });
@@ -163,6 +173,13 @@ export default class Graph {
         this.next_node_val++;
         this.size++;
         this.sortNodes();
+    }
+
+    public set_phantom_edge(edge: Edge): void {
+        if (this.phantom_edge) {
+            this.phantom_edge.delete();
+        }
+        this.phantom_edge = edge;
     }
 
     public deselect_all(): void {

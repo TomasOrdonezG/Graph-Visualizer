@@ -19,9 +19,10 @@ class Graph {
         // Objects to keep track of
         this.initial_node = null;
         this.final_node = null;
-        this.moving_edge = null;
+        // public moving_edge: Edge | null = null;
         this.size = 0;
         this.next_node_val = 0;
+        this.phantom_edge = null;
         // Graph states
         this.action = Action.CURSOR;
         this.traversing = false;
@@ -42,9 +43,7 @@ class Graph {
                 if ([Action.MOVE, Action.DELETE].includes(this.action)) {
                     this.deselect_all();
                 }
-                if (this.action !== Action.ADD) {
-                    this.show_selection_box(event.clientX, event.clientY);
-                }
+                this.show_selection_box(event.clientX, event.clientY);
             }
             else if (event.button === 2) {
                 event.preventDefault();
@@ -62,27 +61,29 @@ class Graph {
             }
         });
         this.HTML_Container.addEventListener("mouseup", (event) => {
+            var _a;
+            // Delete phantom edge, and reset initial and final nodes
+            (_a = this.phantom_edge) === null || _a === void 0 ? void 0 : _a.deleteHTML();
+            this.phantom_edge = null;
+            this.initial_node = null;
+            this.final_node = null;
             if (event.button === 0) {
                 this.isLeftMouseDown = false;
-                if (this.action !== Action.ADD) {
-                    this.select_content_inside_selection_box();
-                    this.hide_selection_box();
-                }
-                if (this.action === Action.CURSOR || this.action === Action.LINK) {
-                    // Add node when selection div is small and not clicking another node
-                    if (parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
-                        parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
-                        !event.target.closest(".pan")) {
-                        this.addNode(event.clientX, event.clientY);
-                    }
-                }
-                else if (this.action === Action.ADD) {
-                    if (!event.target.closest(".pan")) {
-                        this.addNode(event.clientX, event.clientY);
-                    }
-                }
-                else if (this.action === Action.DELETE) {
+                // End selection box visual
+                this.select_content_inside_selection_box();
+                this.hide_selection_box();
+                // Delete node on action === DELETE, add node otherwise
+                if (this.action === Action.DELETE) {
                     this.delete_all_selected();
+                }
+                else {
+                    // Add node when selection div is small and not clicking another node
+                    let is_click_but_not_drag = parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
+                        parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
+                        !event.target.closest(".pan");
+                    if (is_click_but_not_drag) {
+                        this.addNode(event.clientX, event.clientY);
+                    }
                 }
             }
             else if (event.button === 2) {
@@ -94,11 +95,18 @@ class Graph {
             }
         });
         this.HTML_Container.addEventListener("mousemove", (event) => {
+            // Handle phantom edge if exists
+            if (this.phantom_edge) {
+                if (this.phantom_edge.moving_head) {
+                    this.phantom_edge.linkCursorToHeadPos(event);
+                }
+                else if (this.phantom_edge.moving_tail) {
+                    this.phantom_edge.linkCursorToTailPos(event);
+                }
+            }
             if (this.isLeftMouseDown) {
                 // Handle left click drag
-                if (this.action !== Action.ADD) {
-                    this.resize_selection_box(event.clientX, event.clientY);
-                }
+                this.resize_selection_box(event.clientX, event.clientY);
             }
             if (this.isRightMouseDown) {
                 event.preventDefault();
@@ -113,7 +121,7 @@ class Graph {
             }
         });
         document.addEventListener("keydown", (event) => {
-            if (event.key === "Backspace") {
+            if (event.key === "Backspace" && this.phantom_edge === null) {
                 this.delete_all_selected();
             }
         });
@@ -141,6 +149,12 @@ class Graph {
         this.next_node_val++;
         this.size++;
         this.sortNodes();
+    }
+    set_phantom_edge(edge) {
+        if (this.phantom_edge) {
+            this.phantom_edge.delete();
+        }
+        this.phantom_edge = edge;
     }
     deselect_all() {
         for (let node of this.nodes) {
