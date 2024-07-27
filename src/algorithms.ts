@@ -145,19 +145,26 @@ export default class Animation {
 
     public async play() {
         this.playing = true;
+
         do {
             await new Promise((resolve) => setTimeout(resolve, 1000 / this.fps));
         } while (this.playing && this.next_frame());
     }
+
     public pause() {
         this.playing = false;
     }
 
     public next_frame(): boolean {
-        if (this.curr_index >= this.length) return false;
+        if (this.curr_index >= this.length) {
+            return false;
+        }
+
         const frame = this.frames[this.curr_index];
 
-        if (frame.script !== undefined) frame.script.do();
+        if (frame.script !== undefined) {
+            frame.script.do();
+        }
 
         if ((frame.target as GraphNode).value !== undefined) {
             // * GraphNode frame
@@ -183,14 +190,21 @@ export default class Animation {
             this.next_frame();
         }
         this.updateSlider();
+
         return true;
     }
+
     public prev_frame(): boolean {
-        if (this.curr_index <= 0) return false;
+        if (this.curr_index <= 0) {
+            return false;
+        }
+
         this.curr_index--;
         const frame = this.frames[this.curr_index];
 
-        if (frame.script !== undefined) frame.script.undo();
+        if (frame.script !== undefined) {
+            frame.script.undo();
+        }
 
         if ((frame.target as GraphNode).value !== undefined) {
             // * GraphNode frame
@@ -211,7 +225,10 @@ export default class Animation {
             if (edgeFrame.weight !== undefined) edge.updateWeight(edgeFrame.weight.before);
         }
 
-        if (frame.chain_to_previous) this.prev_frame();
+        if (frame.chain_to_previous) {
+            this.prev_frame();
+        }
+
         this.updateSlider();
         return true;
     }
@@ -276,6 +293,7 @@ class Algorithms {
             const ft = ftime.get(node);
             return `[${dt ? dt : "_"}, ${ft ? ft : "_"}]`;
         };
+
         for (let node of this.graph.nodes) {
             // Initialize dtime, ftime
             dtime.set(node, null);

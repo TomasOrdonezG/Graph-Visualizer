@@ -1,0 +1,9 @@
+{
+    "graphs": [
+        { "name": "BFS", "description": "Breadth-first search" },
+        { "name": "DFS", "description": "Depth-first search" },
+        { "name": "Dijkstra", "description": "Dijkstra's shortest path" },
+        { "name": "Kruskal", "description": "Kruskal's minimum spanning tree" },
+        { "name": "Find SCCs", "description": "Strongly connected components" }
+    ]
+}

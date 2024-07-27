@@ -1,3 +1,4 @@
+import { Action } from "./graph.js";
 import Edge from "./edge.js";
 import { keyboardState } from "./main.js";
 class GraphNode {
@@ -106,30 +107,43 @@ class GraphNode {
     handle_mouse_enter() {
         this.div.style.transform = "scale(1.05)";
         this.div.style.fontSize = "20px";
-        // Highlight when edge is begin dragged (and this is being hovered)
-        if (this.graph.moving_edge && (this !== this.graph.initial_node || this !== this.graph.final_node)) {
-            this.graph.moving_edge.updateColour(Edge.READY_COLOUR);
-            this.updateBorderColour(GraphNode.READY_BORDER_COLOUR);
+        // Highlight when about to be deleted
+        if (this.graph.action === Action.DELETE) {
+            this.updateBorderColour(GraphNode.TO_DELETE_COLOUR);
         }
     }
     handle_mouse_leave_div() {
+        // Unighlight when about to be deleted
+        if (this.graph.action === Action.DELETE) {
+            this.updateBorderColour(this.selected ? GraphNode.SELECTED_BORDER_COLOUR : GraphNode.DEFAULT_BORDER_COLOUR);
+        }
         this.div.style.transform = "scale(1)";
     }
     handle_mouse_down_div(event) {
         event.preventDefault();
-        if (event.button === 0 && !keyboardState.SHIFT) {
+        if (event.button === 0 && this.graph.action === Action.DELETE) {
+            // * LEFT CLICK DELETE
+            this.delete();
+        }
+        else if (event.button === 0 && !keyboardState.SHIFT) {
             // * LEFT CLICK NO SHIFT: Select node and initialize drag for all selected nodes
-            // Select
-            if (!keyboardState.CTRL)
+            if ((this.graph.action === Action.MOVE && !this.selected) ||
+                (this.graph.action !== Action.MOVE && !keyboardState.CTRL))
                 this.graph.deselect_all();
             this.select();
             // Set dragging to true on ALL selected nodes. Compute the initial position of the cursor
-            for (let node of this.graph.nodes) {
-                if (node.selected) {
-                    node.dragging = true;
-                    node.initialX_drag = event.clientX - node.x;
-                    node.initialY_drag = event.clientY - node.y;
+            if (this.graph.action !== Action.LINK) {
+                for (let node of this.graph.nodes) {
+                    if (node.selected) {
+                        node.dragging = true;
+                        node.initialX_drag = event.clientX - node.x;
+                        node.initialY_drag = event.clientY - node.y;
+                    }
                 }
+            }
+            // Linking can happen using left drag in LINK mode
+            if (this.graph.action === Action.LINK) {
+                this.startLinking();
             }
             // If graph is traversing, only move the current node, even if it is not selected
             if (this.graph.traversing) {
@@ -151,42 +165,40 @@ class GraphNode {
             this.graph.deselect_all();
             this.select();
         }
-        else if (event.button === 2 && !this.graph.traversing) {
-            // * RIGHT CLICK: Set as source node for next connection
-            this.graph.initial_node = this;
-        }
     }
     handle_mouse_up_doc(event) {
         event.preventDefault();
         this.dragging = false;
         this.graph.initial_node = null;
     }
-    handle_mouse_up_div() {
+    handle_mouse_up_div(event) {
         // * Connect TO this node
-        if (this.graph.final_node === null && this.graph.initial_node && this.graph.initial_node !== this) {
-            // Connect to the initial node
-            this.graph.initial_node.connect(this);
-            // Select only this node as the newly connected node destination
-            this.graph.deselect_all();
-            this.select();
-            this.graph.initial_node = null;
-        }
-        else {
-            // Don't connect if there is no initial node or if initial node is itself
-            this.graph.initial_node = null;
-        }
-        // * Connect FROM this node
-        if (this.graph.final_node && this.graph.initial_node === null && this.graph.final_node !== this) {
-            // Connect final node to this node
-            this.connect(this.graph.final_node);
-            // Select only final node as the newly connected node destination
-            this.graph.deselect_all();
-            this.select();
-            this.graph.final_node = null;
-        }
-        else {
-            // Don't connect if there is no final node or if final node is itself
-            this.graph.final_node = null;
+        if (this.graph.action === Action.LINK && event.button === 0) {
+            if (this.graph.final_node === null && this.graph.initial_node && this.graph.initial_node !== this) {
+                // Connect to the initial node
+                this.graph.initial_node.connect(this);
+                // Select only this node as the newly connected node destination
+                this.graph.deselect_all();
+                this.select();
+                this.graph.initial_node = null;
+            }
+            else {
+                // Don't connect if there is no initial node or if initial node is itself
+                this.graph.initial_node = null;
+            }
+            // * Connect FROM this node
+            if (this.graph.final_node && this.graph.initial_node === null && this.graph.final_node !== this) {
+                // Connect final node to this node
+                this.connect(this.graph.final_node);
+                // Select only final node as the newly connected node destination
+                this.graph.deselect_all();
+                this.select();
+                this.graph.final_node = null;
+            }
+            else {
+                // Don't connect if there is no final node or if final node is itself
+                this.graph.final_node = null;
+            }
         }
     }
     handle_mouse_move(event) {
@@ -292,6 +304,11 @@ class GraphNode {
         this.div.style.border = GraphNode.BORDER_WIDTH + "px" + " solid " + this.border_colour;
     }
     // Edges and neighbours
+    startLinking() {
+        this.graph.initial_node = this;
+        let phantomEdge = Edge.createPhantomEdge(this, "source", this.graph);
+        this.graph.set_phantom_edge(phantomEdge);
+    }
     connect(destination_node) {
         this.graph.initial_node = null;
         // Don't connect if already connected or if connected to itself
@@ -368,6 +385,7 @@ class GraphNode {
 GraphNode.RADIUS = 25;
 GraphNode.BORDER_WIDTH = 3;
 GraphNode.SELECTED_BORDER_COLOUR = "coral";
+GraphNode.TO_DELETE_COLOUR = "red";
 GraphNode.DEFAULT_BORDER_COLOUR = "#444444";
 GraphNode.SEARCHED_COLOUR = "#353535";
 GraphNode.READY_BORDER_COLOUR = Edge.READY_COLOUR;

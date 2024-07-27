@@ -2,6 +2,7 @@ import GraphNode from "./graphNode.js";
 class Edge {
     // #endregion
     constructor(source, destination, graph) {
+        this.phantom = false;
         this.colour = Edge.DEFAULT_COLOUR;
         this.weight = 1;
         this.hovering = false;
@@ -130,6 +131,18 @@ class Edge {
         // Add mouse event listeners
         this.addAllEventListeners();
     }
+    // Phantom edges (Edges that are linked to source node, and follow the cursor)
+    static createPhantomEdge(pivot_node, node_is, graph) {
+        let edge = new Edge(pivot_node, pivot_node, graph);
+        edge.phantom = true;
+        if (node_is === "source") {
+            edge.moving_head = true;
+        }
+        else {
+            edge.moving_tail = true;
+        }
+        return edge;
+    }
     // Event listeners and handlers
     handle_mouse_enter() {
         // Hover starts
@@ -149,36 +162,20 @@ class Edge {
         // Start moving the tip of the arrow
         if (this.hovering) {
             this.graph.initial_node = this.source;
-            this.moving_head = true;
-            this.graph.moving_edge = this;
+            this.graph.set_phantom_edge(Edge.createPhantomEdge(this.source, "source", this.graph));
+            this.delete();
         }
     }
     handle_mouse_down_tail_hitbox() {
         // Start moving the end of the arrow
         if (this.hovering) {
             this.graph.final_node = this.destination;
-            this.moving_tail = true;
-            this.graph.moving_edge = this;
-        }
-    }
-    handle_mouse_up() {
-        // Connection failed, reset attributes
-        if (this.moving_head || this.moving_tail) {
+            this.graph.set_phantom_edge(Edge.createPhantomEdge(this.destination, "destination", this.graph));
             this.delete();
-            this.graph.moving_edge = null;
-            this.graph.initial_node = null;
-            this.graph.final_node = null;
         }
     }
-    handle_mouse_move(event) {
-        // When the tail or head is moving, link them to the cursor positio
-        if (this.moving_head) {
-            this.linkCursorToHeadPos(event);
-        }
-        if (this.moving_tail) {
-            this.linkCursorToTailPos(event);
-        }
-    }
+    handle_mouse_up() { }
+    handle_mouse_move(event) { }
     handle_double_click() {
         this.weightDiv.setAttribute("contenteditable", "true");
         this.weightDiv.focus();
@@ -289,12 +286,15 @@ class Edge {
         const y2 = this.destination.y - node_rnorm * (this.destination.y - event.clientY);
         this.updatePos(x1, y1, x2, y2);
     }
-    delete() {
+    deleteHTML() {
         // Remove divs and event listeners
         this.HTMLElementDependencies.forEach((el) => {
             this.graph.HTML_Container.removeChild(el);
         });
         this.removeAllEventListeners();
+    }
+    delete() {
+        this.deleteHTML();
         // Remove edge from source's out_edges
         let i = this.source.out_edges.indexOf(this);
         if (i === -1)

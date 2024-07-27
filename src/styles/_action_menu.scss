@@ -1,0 +1,61 @@
+@import "_variables";
+
+.action-menu {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: $background-colour; // Background color of the nav
+    border-radius: 10px; // Rounded borders
+    padding: 10px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.4); // Optional: add shadow for effect
+
+    button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        margin-bottom: 10px;
+        background-color: #fff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &.selected {
+            background-color: $primary-colour;
+
+            path,
+            circle {
+                stroke: $background-colour;
+            }
+
+            &:hover {
+                background-color: $secondary-colour;
+            }
+        }
+
+        &:hover {
+            background-color: #e0e0e0; // Hover color
+        }
+
+        &:last-child {
+            margin-bottom: 0; // Remove margin from last button
+        }
+
+        svg {
+            width: 24px;
+            height: 24px;
+            fill: #000; // Fill color for SVG
+
+            path,
+            circle {
+                stroke: black;
+            }
+        }
+    }
+}

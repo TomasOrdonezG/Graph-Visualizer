@@ -98,11 +98,13 @@ class Animation {
         this.playing = false;
     }
     next_frame() {
-        if (this.curr_index >= this.length)
+        if (this.curr_index >= this.length) {
             return false;
+        }
         const frame = this.frames[this.curr_index];
-        if (frame.script !== undefined)
+        if (frame.script !== undefined) {
             frame.script.do();
+        }
         if (frame.target.value !== undefined) {
             // * GraphNode frame
             const nodeFrame = frame;
@@ -135,12 +137,14 @@ class Animation {
         return true;
     }
     prev_frame() {
-        if (this.curr_index <= 0)
+        if (this.curr_index <= 0) {
             return false;
+        }
         this.curr_index--;
         const frame = this.frames[this.curr_index];
-        if (frame.script !== undefined)
+        if (frame.script !== undefined) {
             frame.script.undo();
+        }
         if (frame.target.value !== undefined) {
             // * GraphNode frame
             const nodeFrame = frame;
@@ -165,8 +169,9 @@ class Animation {
             if (edgeFrame.weight !== undefined)
                 edge.updateWeight(edgeFrame.weight.before);
         }
-        if (frame.chain_to_previous)
+        if (frame.chain_to_previous) {
             this.prev_frame();
+        }
         this.updateSlider();
         return true;
     }

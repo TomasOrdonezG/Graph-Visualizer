@@ -14,6 +14,7 @@ export default class Edge {
     static READY_COLOUR = "lightseagreen";
 
     private graph: Graph;
+    private phantom: boolean = false;
     public source: GraphNode;
     public destination: GraphNode;
     public colour: string = Edge.DEFAULT_COLOUR;
@@ -91,6 +92,20 @@ export default class Edge {
         this.addAllEventListeners();
     }
 
+    // Phantom edges (Edges that are linked to source node, and follow the cursor)
+    public static createPhantomEdge(pivot_node: GraphNode, node_is: "source" | "destination", graph: Graph): Edge {
+        let edge = new Edge(pivot_node, pivot_node, graph);
+        edge.phantom = true;
+
+        if (node_is === "source") {
+            edge.moving_head = true;
+        } else {
+            edge.moving_tail = true;
+        }
+
+        return edge;
+    }
+
     // Event listeners and handlers
     private handle_mouse_enter(): void {
         // Hover starts
@@ -110,36 +125,20 @@ export default class Edge {
         // Start moving the tip of the arrow
         if (this.hovering) {
             this.graph.initial_node = this.source;
-            this.moving_head = true;
-            this.graph.moving_edge = this;
+            this.graph.set_phantom_edge(Edge.createPhantomEdge(this.source, "source", this.graph));
+            this.delete();
         }
     }
     private handle_mouse_down_tail_hitbox(): void {
         // Start moving the end of the arrow
         if (this.hovering) {
             this.graph.final_node = this.destination;
-            this.moving_tail = true;
-            this.graph.moving_edge = this;
-        }
-    }
-    private handle_mouse_up(): void {
-        // Connection failed, reset attributes
-        if (this.moving_head || this.moving_tail) {
+            this.graph.set_phantom_edge(Edge.createPhantomEdge(this.destination, "destination", this.graph));
             this.delete();
-            this.graph.moving_edge = null;
-            this.graph.initial_node = null;
-            this.graph.final_node = null;
         }
     }
-    private handle_mouse_move(event: MouseEvent): void {
-        // When the tail or head is moving, link them to the cursor positio
-        if (this.moving_head) {
-            this.linkCursorToHeadPos(event);
-        }
-        if (this.moving_tail) {
-            this.linkCursorToTailPos(event);
-        }
-    }
+    private handle_mouse_up(): void {}
+    private handle_mouse_move(event: MouseEvent): void {}
     private handle_double_click(): void {
         this.weightDiv.setAttribute("contenteditable", "true");
         this.weightDiv.focus();
@@ -358,12 +357,15 @@ export default class Edge {
         this.updatePos(x1, y1, x2, y2);
     }
 
-    public delete(): void {
+    public deleteHTML(): void {
         // Remove divs and event listeners
         this.HTMLElementDependencies.forEach((el: HTMLElement) => {
             this.graph.HTML_Container.removeChild(el);
         });
         this.removeAllEventListeners();
+    }
+    public delete(): void {
+        this.deleteHTML();
 
         // Remove edge from source's out_edges
         let i = this.source.out_edges.indexOf(this);

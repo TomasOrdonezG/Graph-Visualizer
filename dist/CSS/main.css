@@ -82,9 +82,9 @@
     cursor: pointer;
     background-color: transparent; }
     .graph-sidenav .sidenav-item:hover {
-      background-color: #dfdee2; }
+      background-color: #e0e0e0; }
   .graph-sidenav .switch-container {
-    background-color: #dfdee2;
+    background-color: #e0e0e0;
     flex: 1;
     margin: 2px 15px;
     align-items: center;
@@ -213,6 +213,115 @@
     .top-right-menu div:hover,
     .top-right-menu label:hover {
       background-color: #574ce9; }
+
+.action-menu {
+  position: fixed;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f4f4fa;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4); }
+  .action-menu button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s; }
+    .action-menu button.selected {
+      background-color: #685cfe; }
+      .action-menu button.selected path,
+      .action-menu button.selected circle {
+        stroke: #f4f4fa; }
+      .action-menu button.selected:hover {
+        background-color: #574ce9; }
+    .action-menu button:hover {
+      background-color: #e0e0e0; }
+    .action-menu button:last-child {
+      margin-bottom: 0; }
+    .action-menu button svg {
+      width: 24px;
+      height: 24px;
+      fill: #000; }
+      .action-menu button svg path,
+      .action-menu button svg circle {
+        stroke: black; }
+
+.hidden {
+  display: none; }
+
+.browse-graph-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  background-color: #f4f4fa;
+  align-items: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #0e0d1b;
+  border-radius: 10px;
+  font-size: 16px; }
+  .browse-graph-popup .popup-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px; }
+    .browse-graph-popup .popup-header h2 {
+      margin: 0; }
+  .browse-graph-popup .graph-option-button {
+    font-size: inherit;
+    color: inherit;
+    margin: 2px 15px;
+    padding: 7px 15px;
+    text-decoration: none;
+    transition: 0.3s;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: transparent; }
+    .browse-graph-popup .graph-option-button:hover {
+      background-color: #e0e0e0; }
+  .browse-graph-popup .popup-close-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s; }
+    .browse-graph-popup .popup-close-button:hover {
+      background-color: #685cfe; }
+    .browse-graph-popup .popup-close-button svg {
+      width: 24px;
+      height: 24px;
+      fill: #000; }
+      .browse-graph-popup .popup-close-button svg path,
+      .browse-graph-popup .popup-close-button svg circle {
+        stroke: black; }
+
+.browse-graph-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000; }
 
 body {
   /* Prevent text highlighting for the entire document */
