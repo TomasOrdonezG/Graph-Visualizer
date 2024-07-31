@@ -130,6 +130,8 @@ export default class Menu {
             });
         }
         document.addEventListener("keydown", (event) => {
+            if (this.graph.editingValue)
+                return;
             if (event.key === "1") {
                 this.actionButtonClick(this.addButton);
             }

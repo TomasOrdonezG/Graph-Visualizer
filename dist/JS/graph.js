@@ -18,12 +18,12 @@ class Graph {
         // Objects to keep track of
         this.initial_node = null;
         this.final_node = null;
-        // public moving_edge: Edge | null = null;
         this.size = 0;
         this.next_node_val = 0;
         this.phantom_edge = null;
         // Graph states
         this.action = Action.ADD;
+        this.editingValue = false;
         this.traversing = false;
         this.isLeftMouseDown = false;
         this.isRightMouseDown = false;
@@ -36,13 +36,17 @@ class Graph {
         this.selection_y1 = 0;
         this.selection_div.style.display = "none";
         this.HTML_Container.addEventListener("mousedown", (event) => {
-            if (event.button === 0 && !event.target.closest(".pan")) {
-                // Handle right down state
-                this.isLeftMouseDown = true;
-                if ([Action.MOVE, Action.DELETE].includes(this.action)) {
-                    this.deselect_all();
+            if (event.button === 0) {
+                if (!event.target.closest(".pan")) {
+                    this.show_selection_box(event.clientX, event.clientY);
+                    this.isLeftMouseDown = true;
+                    if ([Action.MOVE, Action.DELETE].includes(this.action)) {
+                        this.deselect_all();
+                    }
                 }
-                this.show_selection_box(event.clientX, event.clientY);
+                else {
+                    this.reset_selection_box();
+                }
             }
             else if (event.button === 2) {
                 event.preventDefault();
@@ -71,15 +75,17 @@ class Graph {
                 // End selection box visual
                 this.select_content_inside_selection_box();
                 this.hide_selection_box();
-                // Add node if not action = DELETE
-                if (this.action !== Action.DELETE) {
-                    // Add node when selection div is small and not clicking another node
-                    let is_click_but_not_drag = parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
-                        parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
-                        !event.target.closest(".pan");
-                    if (is_click_but_not_drag) {
-                        this.addNode(event.clientX, event.clientY);
-                    }
+                let is_click_but_not_drag = parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
+                    parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
+                    !event.target.closest(".pan");
+                // Delete all selected when selection box is large
+                if (!is_click_but_not_drag && this.action === Action.DELETE) {
+                    this.delete_all_selected();
+                }
+                // Add node when selection div is small and not clicking another node
+                if (is_click_but_not_drag && this.action !== Action.DELETE) {
+                    console.log("add");
+                    this.addNode(event.clientX, event.clientY);
                 }
             }
             else if (event.button === 2) {
@@ -294,14 +300,17 @@ class Graph {
     hide_selection_box() {
         this.selection_div.style.display = "none";
     }
+    reset_selection_box() {
+        this.selection_div.style.display = "";
+        this.selection_div.style.width = `0px`;
+        this.selection_div.style.height = `0px`;
+    }
     show_selection_box(x1, y1) {
         this.selection_x1 = x1;
         this.selection_y1 = y1;
-        this.selection_div.style.display = "";
         this.selection_div.style.left = `${x1}px`;
         this.selection_div.style.top = `${y1}px`;
-        this.selection_div.style.width = `0px`;
-        this.selection_div.style.height = `0px`;
+        this.reset_selection_box();
     }
     resize_selection_box(x2, y2) {
         this.selection_div.style.left = `${Math.min(this.selection_x1, x2)}px`;

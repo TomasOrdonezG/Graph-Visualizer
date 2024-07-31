@@ -2,55 +2,44 @@
 
 ## Description
 
-This is a simple directed and undirected graph creator. You're able to add and delete nodes and edges to a graph. The goal of this app is to visualize the way various graph algorithms work for better understanding. The current algorithms implemented are BFS and DFS.
+This is a simple directed and undirected graph creator. You're able to add and delete nodes and edges to a graph. The goal of this app is to visualize the way various graph algorithms work for better understanding.
 
 ## Usage
 
-Place cursor near the left side of the screen to open the sidebar.
+## Action Modes
 
-### Graph
+There are four different action modes. Each action mode allows different editing functionality.
 
--   Toggle `Directed` in the sidebar to switch between a directed and an undirected graph.
--   Toggle `Weighted` in the sidebar to switch between a weighted and an unweighted graph.
--   **Middle-Click** and drag to pan around the canvas.
+#### Ways to switch between action modes
 
-### Nodes/Vertices
+1. Mouse scroll.
+2. Number keys from 1 to 4.
+3. Right hand side menu.
 
--   **Left-Click** anywhere in the blank page to **add a graph node**.
--   **Left-Click and drag** a node to **move** it (and select it).
--   **Left-Click and drag** on an empty space to create a box which will select all nodes inside.
--   **Hold `Shift` + Left-Click** anywhere in the blank page to **add a node and an edge** that connects all selected nodes to the newly created node.
--   **Hold `Ctrl` + Left-Click** to **select multiple nodes**.
--   **Hold `Ctrl` + Left-Click drag** to **move all selected nodes**.
--   **`Ctrl` + `A`** to **select all** nodes.
--   **`Backspace`** to **delete all selected nodes**.
--   **Double-click** a node to **edit its value**, click **`Enter`**, or click away to confirm.
+#### The four action modes: Add, Link, Move, Delete.
 
-### Edges/Arrows
+1. Add Mode
+    - Click on the screen to add a node.
+    - Drag a node to move it.
+2. Linking Mode
+    - Drag from one node to another to link them.
+    - Click on the screen to add a node.
+3. Moving Mode
+    - Drag a node to move it.
+    - Drag with right mouse button to move all nodes.
+    - Drag to select multiple nodes. Then moving any node will move every other selected node.
+    - Click on the screen to add a node.
+4. Delete Mode
+    - Click on any node to delete it.
+    - Drag an area to delete every node inside.
+5. All action modes have these features:
+    - Click on either side of an edge to delete it.
+    - `CRTL`+`A` to select all nodes.
+    - `BACKSPACE` to delete all selected nodes.
+    - Double click on an edge to change its weight when on weighted graph mode.
+    - Double click on a node to change the node number.
 
--   **Right-Click** and drag from one node to another to **add an edge** to connect them.
--   **Left-Click and drag** the head of an arrow/edge to another node to **reconnect** to set that node as the new destination node.
--   **Left-Click and drag** the tail of an arrow/edge to another node to **reconnect** to set that node as the new source node.
--   **Left-Click and drag** the head or tail and let go on an empty spot to remove the edge.
--   **Hold `Shift` + Right-Click** on a node to **add an edge** that connects all selected nodes to the clicked node.
--   **Hold `Shift` + Left-Click** anywhere in the blank page to **add a node and an edge** that connects all selected nodes to the newly created node.
--   **Double-click** an edge to **edit its weight**, click **`Enter`**, or click away to confirm.
-
-### Animations
-
-The left hand side menu contains buttons to run many different types of algorithms. Some algorithms need to have one node as the root, this node will be chosen as the first selected node or the node with lowest value.
-
-**Once the animation has been created:**
-
--   **`LeftArrow`** to skip to the previous frame.
--   **`RightArrow`** to skip to the next frame.
--   **`SPACE`** to toggle play/pause.
--   **`r`** to reset the animation.
--   **`ESC`** to exit the animation state.
-
-Each one of these commands can also be done by clicking the corresponding buttons on the animation menu.
-
-**Available algorithms:**
+### **Available algorithms:**
 
 -   [BFS](https://en.wikipedia.org/wiki/Breadth-first_search)
 -   [DFS](https://en.wikipedia.org/wiki/Depth-first_search)
@@ -69,16 +58,3 @@ Each one of these commands can also be done by clicking the corresponding button
 -   Create a [Binary Search Tree (BST)](https://en.wikipedia.org/wiki/Binary_search_tree).
     -   Balance the BST using [AVL rotation](https://en.wikipedia.org/wiki/AVL_tree#Rebalancing).
 -   [Prim's Algorithm](https://en.wikipedia.org/wiki/Prim's_algorithm).
-
-### QoL
-
--   Add visual when adding an edge between two nodes using Right-Click drag.
--   More keyboard shortcuts (need ideas for this one).
--   Add a slider for animation speed.
--   Colour customization.
-
-### Known Bugs
-
--   Unlinking an already exisiting edge will be deleted when attempting to reconnect to the previously linked node.
--   First click adds invisible node (sometimes).
--   When reconnecting an edge, if the user attempts to reconnect to the node which the edge is already connected to, it will be highlighted as if connection is ready. However, one cannot connect a node to itself.
