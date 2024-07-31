@@ -27,7 +27,6 @@ export default class Graph {
     // Objects to keep track of
     public initial_node: GraphNode | null = null;
     public final_node: GraphNode | null = null;
-    // public moving_edge: Edge | null = null;
 
     public size: number = 0;
     public next_node_val: number = 0;
@@ -35,6 +34,7 @@ export default class Graph {
 
     // Graph states
     public action: Action = Action.ADD;
+    public editingValue: boolean = false;
     public traversing: boolean = false;
     private isLeftMouseDown: boolean = false;
     private isRightMouseDown: boolean = false;
@@ -51,14 +51,16 @@ export default class Graph {
     constructor() {
         this.selection_div.style.display = "none";
         this.HTML_Container.addEventListener("mousedown", (event: MouseEvent): void => {
-            if (event.button === 0 && !(event.target as HTMLElement).closest(".pan")) {
-                // Handle right down state
-                this.isLeftMouseDown = true;
-                if ([Action.MOVE, Action.DELETE].includes(this.action)) {
-                    this.deselect_all();
+            if (event.button === 0) {
+                if (!(event.target as HTMLElement).closest(".pan")) {
+                    this.show_selection_box(event.clientX, event.clientY);
+                    this.isLeftMouseDown = true;
+                    if ([Action.MOVE, Action.DELETE].includes(this.action)) {
+                        this.deselect_all();
+                    }
+                } else {
+                    this.reset_selection_box();
                 }
-
-                this.show_selection_box(event.clientX, event.clientY);
             } else if (event.button === 2) {
                 event.preventDefault();
                 this.isRightMouseDown = true;
@@ -89,17 +91,20 @@ export default class Graph {
                 this.select_content_inside_selection_box();
                 this.hide_selection_box();
 
-                // Add node if not action = DELETE
-                if (this.action !== Action.DELETE) {
-                    // Add node when selection div is small and not clicking another node
-                    let is_click_but_not_drag: boolean =
-                        parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
-                        parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
-                        !(event.target as HTMLDivElement).closest(".pan");
+                let is_click_but_not_drag: boolean =
+                    parseInt(this.selection_div.style.width) < GraphNode.RADIUS &&
+                    parseInt(this.selection_div.style.height) < GraphNode.RADIUS &&
+                    !(event.target as HTMLDivElement).closest(".pan");
 
-                    if (is_click_but_not_drag) {
-                        this.addNode(event.clientX, event.clientY);
-                    }
+                // Delete all selected when selection box is large
+                if (!is_click_but_not_drag && this.action === Action.DELETE) {
+                    this.delete_all_selected();
+                }
+
+                // Add node when selection div is small and not clicking another node
+                if (is_click_but_not_drag && this.action !== Action.DELETE) {
+                    console.log("add");
+                    this.addNode(event.clientX, event.clientY);
                 }
             } else if (event.button === 2) {
                 event.preventDefault();
@@ -341,14 +346,18 @@ export default class Graph {
         this.selection_div.style.display = "none";
     }
 
+    private reset_selection_box() {
+        this.selection_div.style.display = "";
+        this.selection_div.style.width = `0px`;
+        this.selection_div.style.height = `0px`;
+    }
+
     private show_selection_box(x1: number, y1: number): void {
         this.selection_x1 = x1;
         this.selection_y1 = y1;
-        this.selection_div.style.display = "";
         this.selection_div.style.left = `${x1}px`;
         this.selection_div.style.top = `${y1}px`;
-        this.selection_div.style.width = `0px`;
-        this.selection_div.style.height = `0px`;
+        this.reset_selection_box();
     }
 
     private resize_selection_box(x2: number, y2: number): void {

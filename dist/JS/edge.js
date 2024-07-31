@@ -179,6 +179,7 @@ class Edge {
     handle_double_click() {
         this.weightDiv.setAttribute("contenteditable", "true");
         this.weightDiv.focus();
+        this.graph.editingValue = true;
         // Select content inside the div
         const selection = window.getSelection();
         const range = document.createRange();
@@ -191,6 +192,7 @@ class Edge {
             (("key" in event && event.key === "Enter") || "clientX" in event)) {
             // Save editing changes
             this.weightDiv.setAttribute("contenteditable", "false");
+            this.graph.editingValue = false;
             // Validate input and update value
             const new_weight = parseInt(this.weightDiv.innerText);
             if (new_weight) {

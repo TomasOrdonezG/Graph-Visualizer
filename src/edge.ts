@@ -143,6 +143,8 @@ export default class Edge {
         this.weightDiv.setAttribute("contenteditable", "true");
         this.weightDiv.focus();
 
+        this.graph.editingValue = true;
+
         // Select content inside the div
         const selection = window.getSelection();
         const range = document.createRange();
@@ -157,6 +159,7 @@ export default class Edge {
         ) {
             // Save editing changes
             this.weightDiv.setAttribute("contenteditable", "false");
+            this.graph.editingValue = false;
 
             // Validate input and update value
             const new_weight = parseInt(this.weightDiv.innerText);

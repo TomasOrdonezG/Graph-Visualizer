@@ -202,6 +202,8 @@ export default class GraphNode {
         this.div.setAttribute("contenteditable", "true");
         this.div.focus();
 
+        this.graph.editingValue = true;
+
         // Select content inside the div
         const selection = window.getSelection();
         const range = document.createRange();
@@ -216,6 +218,7 @@ export default class GraphNode {
         ) {
             // Save editing changes
             this.div.setAttribute("contenteditable", "false");
+            this.graph.editingValue = false;
 
             // Validate input and update value
             const new_val = parseInt(this.div.innerText);

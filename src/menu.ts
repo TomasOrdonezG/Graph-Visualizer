@@ -117,6 +117,8 @@ export default class Menu {
         }
 
         document.addEventListener("keydown", (event: KeyboardEvent): void => {
+            if (this.graph.editingValue) return;
+
             if (event.key === "1") {
                 this.actionButtonClick(this.addButton);
             } else if (event.key === "2") {
