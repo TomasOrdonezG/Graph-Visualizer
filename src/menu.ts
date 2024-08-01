@@ -14,6 +14,7 @@ export default class Menu {
     private DijkstraButton = document.querySelector(".Dijkstra-button") as HTMLButtonElement;
     private KruskalButton = document.querySelector(".Kruskal-button") as HTMLButtonElement;
     private SCCsButton = document.querySelector(".SCCs-button") as HTMLButtonElement;
+    private toggleButton = document.querySelector(".toggle-button") as HTMLDivElement;
     private HTMLdirectedToggle = document.querySelector(".directed-switch") as HTMLInputElement;
     private HTMLweightedToggle = document.querySelector(".weighted-switch") as HTMLInputElement;
 
@@ -162,10 +163,14 @@ export default class Menu {
             this.setWeighted(true);
             this.animate(this.algorithms.Kruskal.bind(this.algorithms));
         });
-
         this.SCCsButton.addEventListener("click", () => {
             this.setDirected(true);
             this.animate(this.algorithms.FindSCCs.bind(this.algorithms));
+        });
+
+        // Collapse
+        this.toggleButton.addEventListener("click", () => {
+            this.mainSideNav.classList.toggle("collapsed");
         });
 
         // * Toggles

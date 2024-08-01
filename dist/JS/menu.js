@@ -20,6 +20,7 @@ export default class Menu {
         this.DijkstraButton = document.querySelector(".Dijkstra-button");
         this.KruskalButton = document.querySelector(".Kruskal-button");
         this.SCCsButton = document.querySelector(".SCCs-button");
+        this.toggleButton = document.querySelector(".toggle-button");
         this.HTMLdirectedToggle = document.querySelector(".directed-switch");
         this.HTMLweightedToggle = document.querySelector(".weighted-switch");
         // Top-Right menu HTML elements
@@ -179,6 +180,10 @@ export default class Menu {
         this.SCCsButton.addEventListener("click", () => {
             this.setDirected(true);
             this.animate(this.algorithms.FindSCCs.bind(this.algorithms));
+        });
+        // Collapse
+        this.toggleButton.addEventListener("click", () => {
+            this.mainSideNav.classList.toggle("collapsed");
         });
         // * Toggles
         // Toggle events
