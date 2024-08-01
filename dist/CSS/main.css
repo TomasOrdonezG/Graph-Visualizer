@@ -53,8 +53,7 @@
 
 .graph-sidenav {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  padding-bottom: 8px;
-  padding-top: 8px;
+  padding-bottom: 15px;
   position: absolute;
   height: 95vh;
   width: 18%;
@@ -68,7 +67,47 @@
   flex-direction: column;
   border-radius: 10px;
   box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.4);
-  font-size: 16px; }
+  font-size: 16px;
+  transition: width 0.3s; }
+  .graph-sidenav.collapsed {
+    width: 80px; }
+    .graph-sidenav.collapsed .toggle-button {
+      transform: rotateZ(180deg); }
+    .graph-sidenav.collapsed .sidenav-item {
+      color: transparent;
+      justify-content: center;
+      align-items: center;
+      background-color: inherit; }
+      .graph-sidenav.collapsed .sidenav-item p {
+        display: none; }
+    .graph-sidenav.collapsed .switch-container .switch {
+      padding: 0px 12px; }
+    .graph-sidenav.collapsed .switch-container:hover {
+      background-color: transparent; }
+    .graph-sidenav.collapsed button:hover {
+      color: inherit;
+      padding-left: 60%;
+      padding-right: 120%; }
+  .graph-sidenav .toggle-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    margin: 15px;
+    padding: 0px;
+    border-radius: 50%;
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: 1.5em;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.3s; }
+    .graph-sidenav .toggle-button:hover {
+      background-color: #e0e0e0; }
+    .graph-sidenav .toggle-button:focus {
+      outline: none; }
   .graph-sidenav .sidenav-item {
     flex: 1;
     font-size: inherit;
@@ -76,10 +115,10 @@
     margin: 2px 15px;
     padding: 7px 15px;
     text-decoration: none;
-    transition: 0.3s;
     border-radius: 4px;
     border: none;
     cursor: pointer;
+    transition: 0.3s;
     background-color: transparent; }
     .graph-sidenav .sidenav-item:hover {
       background-color: #e0e0e0; }
@@ -87,13 +126,15 @@
     background-color: #e0e0e0;
     flex: 1;
     margin: 2px 15px;
-    align-items: center;
     padding: 7px 15px;
+    align-items: center;
     display: flex;
     justify-content: space-between;
     border-radius: 4px;
     transition: 0.3s; }
     .graph-sidenav .switch-container p {
+      color: #0e0d1b;
+      display: contents;
       padding: 0;
       margin: 0; }
     .graph-sidenav .switch-container .switch {
